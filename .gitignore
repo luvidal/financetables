@@ -1,2 +1,22 @@
 node_modules/
 *.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Test / coverage
+coverage/
+
+# Playwright MCP debug logs
+.playwright-mcp/

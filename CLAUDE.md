@@ -25,32 +25,41 @@ npm run test:watch   # Run tests in watch mode
 
 ```
 src/
-├── index.tsx           # Main MonthlyTable component + re-exports of all tables
-├── types.ts            # RowData, Month, MonthlyTableProps, RowType, SectionDef
-├── helpers.ts          # Month generation, row type checks, grouping, totals
-├── datarow.tsx         # Single editable data row
-├── addrow.tsx          # "Add new row" input row
-├── grouprow.tsx        # Collapsible group header row
-├── floatingaction.tsx  # HeaderSelectionBar + ContextMenu (right-click)
-├── usekeyboard.ts     # Grid keyboard navigation hook
-├── usedragreorder.ts  # HTML5 drag-and-drop reorder hook
-├── editablecell.tsx    # Inline-editable table cell (inlined from jogi)
-├── styles.ts           # Tailwind class tokens (T object, inlined from jogi)
-├── utils.ts            # Currency formatting (displayCurrencyCompact, displayCurrency)
-├── usemobile.ts        # useIsMobile media query hook
-├── debtstable.tsx      # Debt entries table (accordion, editable, late payment tracking)
-├── boletastable.tsx    # Boletas de honorarios table (monthly breakdown, accordion)
-├── tributariotable.tsx # Tributario info table (carpeta tributaria + balance anual)
-└── assettable.tsx      # Asset table (editable rows, total calculation)
+├── index.tsx              # Re-export hub (no component code)
+├── common/                # Shared components, hooks, utils — see common/README.md
+│   ├── styles.ts          # T object — Tailwind class tokens
+│   ├── utils.ts           # displayCurrency, displayCurrencyCompact
+│   ├── editablecell.tsx   # Inline-editable table cell
+│   └── usemobile.ts       # useIsMobile hook
+├── monthly/               # MonthlyTable — see monthly/README.md
+│   ├── index.tsx          # MonthlyTable component
+│   ├── types.ts           # RowData, Month, RowType, SectionDef, MonthlyTableProps
+│   ├── helpers.ts         # generateLastNMonths, grouping, totals
+│   ├── datarow.tsx        # Single editable data row
+│   ├── addrow.tsx         # "Add new row" input row
+│   ├── grouprow.tsx       # Collapsible group header
+│   ├── floatingaction.tsx # HeaderSelectionBar + ContextMenu
+│   ├── usekeyboard.ts    # Grid keyboard navigation hook
+│   ├── usedragreorder.ts # Drag-and-drop reorder hook
+│   ├── deletedialog.tsx   # Soft-delete confirmation modal
+│   └── recyclebin.tsx     # Recycle bin footer
+├── debts/                 # DebtsTable — see debts/README.md
+│   └── index.tsx
+├── boletas/               # BoletasTable — see boletas/README.md
+│   └── index.tsx
+├── tributario/            # TributarioTable — see tributario/README.md
+│   └── index.tsx
+└── assets/                # AssetTable — see assets/README.md
+    └── index.tsx
 
 dev/
-├── index.html          # Visual test page entry point
-├── main.tsx            # Renders test scenarios with mock data
-└── tailwind.css        # Tailwind base styles for dev page
+├── index.html             # Visual test page entry point
+├── main.tsx               # Renders test scenarios with mock data
+└── tailwind.css           # Tailwind base styles for dev page
 
 tests/
-├── helpers.test.ts     # Unit tests for pure helper functions
-└── utils.test.ts       # Unit tests for currency formatting
+├── helpers.test.ts        # Unit tests for monthly/helpers
+└── utils.test.ts          # Unit tests for common/utils
 ```
 
 ## Communication Style
@@ -76,6 +85,7 @@ All user-facing text uses informal **tú**, never **usted**:
 6. **API stability** — the exported props interface (`MonthlyTableProps`) must stay backward-compatible with jogi's call sites. Breaking changes require updating jogi's `lib/reports/monthlytable.tsx` re-export
 7. **Optimistic updates** — always update UI immediately, then fire callbacks. Don't block UI on async responses
 8. **After modifying a feature**, update this CLAUDE.md if any key behavior changed
+9. **README.md maintenance** — every modification to a component folder must update its `README.md` to reflect changes. Verify that new upgrades don't cause regressions in existing functionality before marking work as complete
 
 ## Exports
 
@@ -139,10 +149,10 @@ These were copied from jogi during extraction. They are now owned by this packag
 
 | File | Origin in jogi |
 |------|---------------|
-| `styles.ts` | `lib/reports/styles.ts` (T object) |
-| `utils.ts` | `lib/reports/utils.ts` (displayCurrencyCompact, displayCurrency) |
-| `usemobile.ts` | `context/device.ts` (useIsMobile) |
-| `editablecell.tsx` | `components/forms/editablecell.tsx` |
+| `common/styles.ts` | `lib/reports/styles.ts` (T object) |
+| `common/utils.ts` | `lib/reports/utils.ts` (displayCurrencyCompact, displayCurrency) |
+| `common/usemobile.ts` | `context/device.ts` (useIsMobile) |
+| `common/editablecell.tsx` | `components/forms/editablecell.tsx` |
 
 ## Key Behaviors
 
