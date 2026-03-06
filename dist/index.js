@@ -74,7 +74,7 @@ var rowMatchesSection = (row, sectionType) => {
 var defaultCalculateTotal = (monthId, rows) => {
   let total = 0;
   for (const row of rows) {
-    if (row.isGroup) continue;
+    if (row.isGroup || row.deletedAt) continue;
     const value = row.values[monthId];
     if (value !== null && value !== void 0) {
       if (isAddType(row.type)) {
@@ -87,7 +87,7 @@ var defaultCalculateTotal = (monthId, rows) => {
   return total;
 };
 var getOrderedItems = (rows, sectionType) => {
-  const sectionRows = rows.filter((r) => rowMatchesSection(r, sectionType));
+  const sectionRows = rows.filter((r) => rowMatchesSection(r, sectionType) && !r.deletedAt);
   const groups = sectionRows.filter((r) => r.isGroup);
   const groupedChildren = sectionRows.filter((r) => r.groupId && !r.isGroup);
   const ungrouped = sectionRows.filter((r) => !r.isGroup && !r.groupId);
@@ -103,7 +103,7 @@ var getOrderedItems = (rows, sectionType) => {
   return items;
 };
 var computeSectionSubtotal = (rows, sectionType, months) => {
-  const sectionRows = rows.filter((r) => rowMatchesSection(r, sectionType) && !r.isGroup);
+  const sectionRows = rows.filter((r) => rowMatchesSection(r, sectionType) && !r.isGroup && !r.deletedAt);
   const result = {};
   for (const month of months) {
     let sum = 0;
@@ -135,7 +135,7 @@ var createGroup = (rows, selectedIds, groupName) => {
     if (selectedIds.has(r.id)) {
       return { ...r, groupId, order: idx };
     }
-    return r;
+    return { ...r, order: idx };
   });
   const groupHeader = {
     id: groupId,
@@ -143,11 +143,11 @@ var createGroup = (rows, selectedIds, groupName) => {
     type: groupType,
     values: {},
     isGroup: true,
-    collapsed: false,
+    collapsed: true,
     order: firstIdx
   };
   newRows.splice(firstIdx, 0, groupHeader);
-  return newRows;
+  return autoUngroup(newRows);
 };
 var ungroupRows = (rows, groupId) => {
   return rows.filter((r) => r.id !== groupId).map((r) => {
@@ -159,15 +159,30 @@ var ungroupRows = (rows, groupId) => {
   });
 };
 var autoUngroup = (rows) => {
-  const groups = rows.filter((r) => r.isGroup);
+  const groups = rows.filter((r) => r.isGroup && !r.deletedAt);
   let result = rows;
   for (const group of groups) {
-    const children = result.filter((r) => r.groupId === group.id);
+    const children = result.filter((r) => r.groupId === group.id && !r.deletedAt);
     if (children.length < 2) {
       result = ungroupRows(result, group.id);
     }
   }
   return result;
+};
+var softDeleteRows = (rows, ids, reason) => {
+  const now = (/* @__PURE__ */ new Date()).toISOString();
+  let result = rows.map((r) => {
+    if (!ids.has(r.id)) return r;
+    return { ...r, deletedAt: now, deletionReason: reason || void 0 };
+  });
+  return autoUngroup(result);
+};
+var restoreRows = (rows, ids) => {
+  return rows.map((r) => {
+    if (!ids.has(r.id)) return r;
+    const { deletedAt: _, deletionReason: __, ...rest } = r;
+    return rest;
+  });
 };
 var useIsMobile = () => {
   const [isMobile, setIsMobile] = React6.useState(false);
@@ -330,7 +345,6 @@ var DataRow = ({
   row,
   months,
   isHovered,
-  indented = false,
   selected = false,
   anySelected = false,
   selectable = false,
@@ -354,6 +368,7 @@ var DataRow = ({
   onDrop,
   onDragEnd
 }) => {
+  const indented = !!row.groupId;
   const subtract = isSubtractType(row.type);
   const rowBg = selected ? "bg-emerald-50/60" : subtract ? "bg-red-50/50 hover:bg-red-100/50" : "hover:bg-gray-50";
   const showCheckbox = selectable && (anySelected || isHovered);
@@ -389,14 +404,6 @@ var DataRow = ({
               onChange: onToggleSelect,
               className: "shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
             }
-          ) : isHovered ? /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              onClick: onRemove,
-              className: "p-0.5 rounded shrink-0 text-red-400 hover:text-red-600 hover:bg-red-100",
-              title: "Eliminar fila",
-              children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.X, { size: 14 })
-            }
           ) : null,
           /* @__PURE__ */ jsxRuntime.jsx(
             "input",
@@ -404,6 +411,9 @@ var DataRow = ({
               type: "text",
               value: row.label,
               onChange: (e) => onLabelChange(e.target.value),
+              onKeyDown: (e) => {
+                if (e.key === "Enter") e.target.blur();
+              },
               className: `flex-1 min-w-0 ${T.rowLabel} ${isHovered || showCheckbox ? "" : "pl-1"}`,
               title: row.label
             }
@@ -438,7 +448,15 @@ var DataRow = ({
             p.id
           );
         }),
-        /* @__PURE__ */ jsxRuntime.jsx("td", { style: { width: "40px" } })
+        /* @__PURE__ */ jsxRuntime.jsx("td", { style: { width: "40px" }, className: "text-center", children: isHovered && !anySelected && /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            onClick: onRemove,
+            className: "p-0.5 rounded text-red-400 hover:text-red-600 hover:bg-red-100",
+            title: "Eliminar fila",
+            children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.X, { size: 14 })
+          }
+        ) })
       ]
     }
   );
@@ -547,17 +565,11 @@ var GroupRow = ({
               type: "text",
               value: group.label,
               onChange: (e) => onLabelChange(e.target.value),
+              onKeyDown: (e) => {
+                if (e.key === "Enter") e.target.blur();
+              },
               className: "flex-1 min-w-0 bg-transparent border-none outline-none text-xs font-semibold text-gray-700 truncate",
               title: group.label
-            }
-          ),
-          isHovered && /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              onClick: onUngroup,
-              className: "p-0.5 rounded shrink-0 text-gray-400 hover:text-gray-600 hover:bg-gray-100",
-              title: "Desagrupar",
-              children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Ungroup, { size: 14 })
             }
           )
         ] }) }),
@@ -574,13 +586,160 @@ var GroupRow = ({
             p.id
           );
         }),
-        /* @__PURE__ */ jsxRuntime.jsx("td", { style: { width: "40px" } })
+        /* @__PURE__ */ jsxRuntime.jsx("td", { style: { width: "40px" }, className: "text-center", children: isHovered && /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            onClick: onUngroup,
+            className: "p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100",
+            title: "Desagrupar",
+            children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Ungroup, { size: 14 })
+          }
+        ) })
       ]
     }
   );
 };
 var grouprow_default = GroupRow;
-var ContextMenu = ({ x, y, canGroup, selectedCount, onGroup, onCancel, onClose }) => {
+var DeleteDialog = ({ count, onConfirm, onCancel }) => {
+  const [reason, setReason] = React6.useState("");
+  const inputRef = React6.useRef(null);
+  const cardRef = React6.useRef(null);
+  React6.useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+  React6.useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape") onCancel();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onCancel]);
+  const handleBackdropClick = (e) => {
+    if (cardRef.current && !cardRef.current.contains(e.target)) {
+      onCancel();
+    }
+  };
+  const handleSubmit = () => {
+    onConfirm(reason.trim());
+  };
+  const dialog = /* @__PURE__ */ jsxRuntime.jsx(
+    "div",
+    {
+      className: "fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm",
+      onClick: handleBackdropClick,
+      children: /* @__PURE__ */ jsxRuntime.jsxs(
+        "div",
+        {
+          ref: cardRef,
+          className: "bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm mx-4 text-center",
+          children: [
+            /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex justify-center mb-4", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "w-14 h-14 rounded-full bg-red-50 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Trash2, { size: 24, className: "text-red-500" }) }) }),
+            /* @__PURE__ */ jsxRuntime.jsx("h3", { className: "text-lg font-semibold text-gray-900 mb-2", children: "\xBFCu\xE1l es la raz\xF3n para borrar?" }),
+            /* @__PURE__ */ jsxRuntime.jsx("p", { className: "text-sm text-gray-500 mb-5", children: count === 1 ? "Esta fila se mover\xE1 a la papelera." : `${count} filas se mover\xE1n a la papelera.` }),
+            /* @__PURE__ */ jsxRuntime.jsx(
+              "textarea",
+              {
+                ref: inputRef,
+                value: reason,
+                onChange: (e) => setReason(e.target.value),
+                placeholder: "Escribe una raz\xF3n...",
+                rows: 2,
+                className: "w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mb-5 outline-none focus:border-red-300 focus:ring-1 focus:ring-red-300 resize-none placeholder-gray-400",
+                onKeyDown: (e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit();
+                  }
+                }
+              }
+            ),
+            /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex gap-3", children: [
+              /* @__PURE__ */ jsxRuntime.jsx(
+                "button",
+                {
+                  onClick: handleSubmit,
+                  className: "flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors",
+                  children: "Confirmar"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntime.jsx(
+                "button",
+                {
+                  onClick: onCancel,
+                  className: "flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors",
+                  children: "Cancelar"
+                }
+              )
+            ] })
+          ]
+        }
+      )
+    }
+  );
+  if (typeof document !== "undefined") {
+    return reactDom.createPortal(dialog, document.body);
+  }
+  return dialog;
+};
+var deletedialog_default = DeleteDialog;
+var formatDeletedDate = (iso) => {
+  const d = new Date(iso);
+  const now = /* @__PURE__ */ new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffMin = Math.floor(diffMs / 6e4);
+  if (diffMin < 1) return "hace un momento";
+  if (diffMin < 60) return `hace ${diffMin} min`;
+  const diffHrs = Math.floor(diffMin / 60);
+  if (diffHrs < 24) return `hace ${diffHrs}h`;
+  const diffDays = Math.floor(diffHrs / 24);
+  if (diffDays < 7) return `hace ${diffDays}d`;
+  return d.toLocaleDateString("es-CL", { day: "numeric", month: "short" });
+};
+var RecycleBin = ({ deletedRows, onRestore }) => {
+  const [expanded, setExpanded] = React6.useState(false);
+  if (deletedRows.length === 0) return null;
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "border-t border-gray-200 bg-gray-50/50", children: [
+    /* @__PURE__ */ jsxRuntime.jsxs(
+      "button",
+      {
+        onClick: () => setExpanded(!expanded),
+        className: "w-full px-4 py-2 flex items-center gap-2 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 transition-colors",
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Trash2, { size: 12 }),
+          /* @__PURE__ */ jsxRuntime.jsxs("span", { children: [
+            deletedRows.length,
+            " eliminado",
+            deletedRows.length !== 1 ? "s" : ""
+          ] }),
+          expanded ? /* @__PURE__ */ jsxRuntime.jsx(lucideReact.ChevronUp, { size: 12 }) : /* @__PURE__ */ jsxRuntime.jsx(lucideReact.ChevronDown, { size: 12 })
+        ]
+      }
+    ),
+    expanded && /* @__PURE__ */ jsxRuntime.jsx("div", { className: "px-4 pb-3", children: deletedRows.map((row) => /* @__PURE__ */ jsxRuntime.jsxs(
+      "div",
+      {
+        className: "flex items-center gap-3 py-1.5 group",
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsx(
+            "button",
+            {
+              onClick: () => onRestore(row.id),
+              className: "shrink-0 p-1 rounded text-gray-300 hover:text-emerald-600 hover:bg-emerald-50 transition-colors",
+              title: "Restaurar",
+              children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Undo2, { size: 13 })
+            }
+          ),
+          /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-gray-500 truncate min-w-0 flex-1", children: row.label }),
+          row.deletionReason && /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-gray-400 italic truncate max-w-[160px]", title: row.deletionReason, children: row.deletionReason }),
+          row.deletedAt && /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs text-gray-300 shrink-0", children: formatDeletedDate(row.deletedAt) })
+        ]
+      },
+      row.id
+    )) })
+  ] });
+};
+var recyclebin_default = RecycleBin;
+var ContextMenu = ({ x, y, canGroup, selectedCount, onGroup, onDeleteSelected, onCancel, onClose }) => {
   const ref = React6.useRef(null);
   React6.useEffect(() => {
     const handle = (e) => {
@@ -634,6 +793,23 @@ var ContextMenu = ({ x, y, canGroup, selectedCount, onGroup, onCancel, onClose }
           "button",
           {
             onClick: () => {
+              onDeleteSelected();
+              onClose();
+            },
+            className: "w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 hover:bg-gray-50 text-red-600",
+            children: [
+              /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Trash2, { size: 14 }),
+              "Eliminar ",
+              selectedCount,
+              " fila",
+              selectedCount !== 1 ? "s" : ""
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsxs(
+          "button",
+          {
+            onClick: () => {
               onCancel();
               onClose();
             },
@@ -652,7 +828,7 @@ var ContextMenu = ({ x, y, canGroup, selectedCount, onGroup, onCancel, onClose }
   }
   return menu;
 };
-var HeaderSelectionBar = ({ selectedCount, canGroup, monthCount, naming, onNamingChange, onGroup, onCancel }) => {
+var HeaderSelectionBar = ({ selectedCount, canGroup, monthCount, naming, onNamingChange, onGroup, onDeleteSelected, onCancel }) => {
   const [groupName, setGroupName] = React6.useState("");
   const inputRef = React6.useRef(null);
   React6.useEffect(() => {
@@ -673,83 +849,93 @@ var HeaderSelectionBar = ({ selectedCount, canGroup, monthCount, naming, onNamin
       setGroupName("");
     }
   };
-  return /* @__PURE__ */ jsxRuntime.jsx(jsxRuntime.Fragment, { children: /* @__PURE__ */ jsxRuntime.jsx(
+  return /* @__PURE__ */ jsxRuntime.jsx(
     "td",
     {
-      colSpan: monthCount + 1,
-      className: "px-4 py-2.5 text-right",
+      colSpan: monthCount + 2,
+      className: "px-4 py-2.5",
       onClick: (e) => e.stopPropagation(),
-      children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center justify-end gap-2", children: [
-        /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "text-xs text-gray-500 mr-1", children: [
+      children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex items-center gap-2", children: naming ? /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-1.5", children: [
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "input",
+          {
+            ref: inputRef,
+            type: "text",
+            value: groupName,
+            onChange: (e) => setGroupName(e.target.value),
+            placeholder: "Nombre del grupo...",
+            className: "text-xs border border-gray-300 bg-white text-gray-800 placeholder-gray-400 rounded px-2 py-1 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-44",
+            onKeyDown: (e) => {
+              e.stopPropagation();
+              if (e.key === "Enter") handleSubmit();
+              if (e.key === "Escape") {
+                onNamingChange(false);
+                setGroupName("");
+              }
+            }
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            onClick: handleSubmit,
+            disabled: !groupName.trim(),
+            className: "p-1 rounded text-emerald-700 hover:bg-emerald-100 disabled:text-gray-300 disabled:hover:bg-transparent",
+            title: "Confirmar",
+            children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Check, { size: 14 })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            onClick: () => {
+              onNamingChange(false);
+              setGroupName("");
+            },
+            className: "p-1 rounded text-gray-400 hover:bg-gray-200",
+            title: "Cancelar",
+            children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.X, { size: 14 })
+          }
+        )
+      ] }) : /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "text-xs text-gray-500", children: [
           selectedCount,
           " fila",
           selectedCount !== 1 ? "s" : ""
         ] }),
-        naming ? /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-1.5", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "input",
-            {
-              ref: inputRef,
-              type: "text",
-              value: groupName,
-              onChange: (e) => setGroupName(e.target.value),
-              placeholder: "Nombre del grupo...",
-              className: "text-xs border border-gray-300 bg-white text-gray-800 placeholder-gray-400 rounded px-2 py-1 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-44",
-              onKeyDown: (e) => {
-                e.stopPropagation();
-                if (e.key === "Enter") handleSubmit();
-                if (e.key === "Escape") {
-                  onNamingChange(false);
-                  setGroupName("");
-                }
-              }
-            }
-          ),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              onClick: handleSubmit,
-              disabled: !groupName.trim(),
-              className: "p-1 rounded text-emerald-700 hover:bg-emerald-100 disabled:text-gray-300 disabled:hover:bg-transparent",
-              title: "Confirmar",
-              children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Check, { size: 14 })
-            }
-          ),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              onClick: () => {
-                onNamingChange(false);
-                setGroupName("");
-              },
-              className: "p-1 rounded text-gray-400 hover:bg-gray-200",
-              title: "Cancelar",
-              children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.X, { size: 14 })
-            }
-          )
-        ] }) : /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              onClick: () => onNamingChange(true),
-              disabled: !canGroup,
-              className: "text-xs px-3 py-1 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors",
-              title: !canGroup && selectedCount < 2 ? "Selecciona al menos 2 filas" : !canGroup ? "Solo puedes agrupar filas del mismo tipo" : "Agrupar filas seleccionadas",
-              children: "Agrupar"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              onClick: onCancel,
-              className: "text-xs px-2 py-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors",
-              children: "Cancelar"
-            }
-          )
-        ] })
-      ] })
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            onClick: () => onNamingChange(true),
+            disabled: !canGroup,
+            className: "text-xs px-3 py-1 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors",
+            title: !canGroup && selectedCount < 2 ? "Selecciona al menos 2 filas" : !canGroup ? "Solo puedes agrupar filas del mismo tipo" : "Agrupar filas seleccionadas",
+            children: "Agrupar"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsxs(
+          "button",
+          {
+            onClick: onDeleteSelected,
+            className: "text-xs px-3 py-1 rounded-full text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1",
+            title: "Eliminar filas seleccionadas",
+            children: [
+              /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Trash2, { size: 12 }),
+              "Eliminar"
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            onClick: onCancel,
+            className: "text-xs px-2 py-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors",
+            children: "Cancelar"
+          }
+        )
+      ] }) })
     }
-  ) });
+  );
 };
 var useKeyboard = ({ visibleRowIds, monthCount }) => {
   const [focusedCell, setFocusedCell] = React6.useState(null);
@@ -885,10 +1071,14 @@ var useDragReorder = () => {
       resetState();
       return;
     }
-    const targetGroupId = targetRow.groupId ?? null;
+    const targetGroupId = targetRow.isGroup ? targetRow.id : targetRow.groupId ?? null;
+    const sourceGroupId = sourceRow.groupId ?? null;
     let workingRows = rows;
-    if (targetGroupId !== null && sourceRow.groupId !== targetGroupId) {
-      workingRows = workingRows.map((r) => r.id === sourceId ? { ...r, groupId: targetGroupId } : r);
+    if (targetGroupId !== sourceGroupId) {
+      workingRows = workingRows.map((r) => {
+        if (r.id !== sourceId) return r;
+        return targetGroupId !== null ? { ...r, groupId: targetGroupId } : { ...r, groupId: void 0 };
+      });
       workingRows = autoUngroup(workingRows);
     }
     const idsToMove = /* @__PURE__ */ new Set();
@@ -1604,6 +1794,7 @@ var MonthlyTable = ({
   const [selectedRows, setSelectedRows] = React6.useState(/* @__PURE__ */ new Set());
   const [contextMenu, setContextMenu] = React6.useState(null);
   const [naming, setNaming] = React6.useState(false);
+  const [deleteTarget, setDeleteTarget] = React6.useState(null);
   const monthsArray = React6.useMemo(() => {
     if (typeof months === "number") return generateLastNMonths(months);
     return months;
@@ -1673,7 +1864,7 @@ var MonthlyTable = ({
   const canGroup = React6.useMemo(() => {
     if (selectedRows.size < 2) return false;
     const selected = rows.filter((r) => selectedRows.has(r.id));
-    if (selected.some((r) => r.isGroup || r.groupId)) return false;
+    if (selected.some((r) => r.isGroup)) return false;
     const types = new Set(selected.map((r) => isAddType(r.type) ? "add" : "subtract"));
     return types.size === 1;
   }, [selectedRows, rows]);
@@ -1701,24 +1892,32 @@ var MonthlyTable = ({
       return { ...r, values: { ...r.values, [monthId]: value } };
     }));
   }, [rows, onRowsChange]);
-  const removeRow = React6.useCallback((rowId) => {
+  const requestDelete = React6.useCallback((rowId) => {
     const row = rows.find((r) => r.id === rowId);
     if (!row) return;
-    let newRows;
     if (row.isGroup) {
-      newRows = ungroupRows(rows, rowId);
-    } else {
-      newRows = rows.filter((r) => r.id !== rowId);
-      newRows = autoUngroup(newRows);
+      onRowsChange(ungroupRows(rows, rowId));
+      return;
     }
-    setSelectedRows((prev) => {
-      if (!prev.has(rowId)) return prev;
-      const next = new Set(prev);
-      next.delete(rowId);
-      return next;
-    });
-    onRowsChange(newRows);
+    setDeleteTarget(/* @__PURE__ */ new Set([rowId]));
   }, [rows, onRowsChange]);
+  const requestDeleteSelected = React6.useCallback(() => {
+    setDeleteTarget(new Set(selectedRows));
+  }, [selectedRows]);
+  const confirmDelete = React6.useCallback((reason) => {
+    if (!deleteTarget) return;
+    const newRows = softDeleteRows(rows, deleteTarget, reason);
+    onRowsChange(newRows);
+    clearSelection();
+    setDeleteTarget(null);
+  }, [rows, deleteTarget, onRowsChange, clearSelection]);
+  const handleRestore = React6.useCallback((rowId) => {
+    onRowsChange(restoreRows(rows, /* @__PURE__ */ new Set([rowId])));
+  }, [rows, onRowsChange]);
+  const deletedRows = React6.useMemo(
+    () => rows.filter((r) => r.deletedAt && !r.isGroup),
+    [rows]
+  );
   const toggleGroupCollapse = React6.useCallback((groupId) => {
     onRowsChange(rows.map((r) => r.id === groupId ? { ...r, collapsed: !r.collapsed } : r));
   }, [rows, onRowsChange]);
@@ -1761,6 +1960,37 @@ var MonthlyTable = ({
       onRowsChange([...rows, newRow]);
     }
   }, [rows, onRowsChange, newRowLabels]);
+  const renderDataRow = (r) => /* @__PURE__ */ jsxRuntime.jsx(
+    datarow_default,
+    {
+      row: r,
+      months: monthsArray,
+      isHovered: hoveredRow === r.id,
+      selected: selectedRows.has(r.id),
+      anySelected,
+      selectable: !r.isGroup,
+      onMouseEnter: () => setHoveredRow(r.id),
+      onMouseLeave: () => setHoveredRow(null),
+      onRemove: () => requestDelete(r.id),
+      onToggleSelect: () => toggleSelect(r.id),
+      onContextMenu: (e) => handleContextMenu(e, r.id),
+      onLabelChange: (label) => updateRowLabel(r.id, label),
+      onValueChange: (monthId, value) => updateRowValue(r.id, monthId, value),
+      onViewSource,
+      isCellFocused: (mi) => keyboard.isFocused(r.id, mi),
+      onCellFocus: (mi) => keyboard.focus(r.id, mi),
+      onNavigate: keyboard.navigateAndEdit,
+      editTrigger: keyboard.editTrigger,
+      isDragging: drag.dragRowId === r.id,
+      dropIndicator: drag.dropTargetId === r.id ? drag.dropPosition : null,
+      onDragStart: drag.handleDragStart(r.id),
+      onDragOver: drag.handleDragOver(r.id),
+      onDragLeave: drag.handleDragLeave,
+      onDrop: drag.handleDrop(rows, onRowsChange),
+      onDragEnd: drag.handleDragEnd
+    },
+    r.id
+  );
   return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `rounded-xl overflow-hidden ${!isExpanded ? "" : "border border-gray-200"}`, children: [
     /* @__PURE__ */ jsxRuntime.jsx(
       "div",
@@ -1768,10 +1998,25 @@ var MonthlyTable = ({
         role: anySelected ? void 0 : "button",
         onClick: () => !forceExpanded && !anySelected && setIsCollapsed(!isCollapsed),
         className: `w-full ${headerBg} hover:brightness-95 transition-all ${forceExpanded || anySelected ? "cursor-default" : "cursor-pointer"} ${!isExpanded ? "rounded-xl" : "rounded-t-xl"}`,
-        children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxRuntime.jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsxRuntime.jsx("tbody", { children: /* @__PURE__ */ jsxRuntime.jsxs("tr", { children: [
+        children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxRuntime.jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsxRuntime.jsx("tbody", { children: /* @__PURE__ */ jsxRuntime.jsx("tr", { children: anySelected ? /* @__PURE__ */ jsxRuntime.jsx(
+          HeaderSelectionBar,
+          {
+            selectedCount: selectedRows.size,
+            canGroup,
+            monthCount: monthsArray.length,
+            naming,
+            onNamingChange: setNaming,
+            onGroup: handleGroup,
+            onDeleteSelected: requestDeleteSelected,
+            onCancel: () => {
+              clearSelection();
+              setNaming(false);
+            }
+          }
+        ) : /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
           /* @__PURE__ */ jsxRuntime.jsx("td", { className: "px-4 py-2.5 text-left", style: { width: "180px" }, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2", children: [
             /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} ${T.headerTitle}`, children: title }),
-            !anySelected && sourceFileIds && sourceFileIds.length > 0 && onViewSource && /* @__PURE__ */ jsxRuntime.jsx(
+            sourceFileIds && sourceFileIds.length > 0 && onViewSource && /* @__PURE__ */ jsxRuntime.jsx(
               "button",
               {
                 onClick: (e) => {
@@ -1784,35 +2029,19 @@ var MonthlyTable = ({
               }
             )
           ] }) }),
-          anySelected ? /* @__PURE__ */ jsxRuntime.jsx(
-            HeaderSelectionBar,
-            {
-              selectedCount: selectedRows.size,
-              canGroup,
-              monthCount: monthsArray.length,
-              naming,
-              onNamingChange: setNaming,
-              onGroup: handleGroup,
-              onCancel: () => {
-                clearSelection();
-                setNaming(false);
-              }
-            }
-          ) : /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-            monthsArray.map((p) => {
-              const total = calculateTotal(p.id, rows);
-              const hasValue = total !== 0;
-              return /* @__PURE__ */ jsxRuntime.jsxs("td", { className: "px-2 py-2.5 text-right", style: { width: "110px" }, children: [
-                /* @__PURE__ */ jsxRuntime.jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
-                  p.label,
-                  ": "
-                ] }),
-                /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? formatValue(total) : "\u2014" })
-              ] }, p.id);
-            }),
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: "px-2 py-2.5 text-right", style: { width: "40px" }, children: !forceExpanded && (isExpanded ? /* @__PURE__ */ jsxRuntime.jsx(lucideReact.ChevronUp, { size: 20, className: headerText }) : /* @__PURE__ */ jsxRuntime.jsx(lucideReact.ChevronDown, { size: 20, className: headerText })) })
-          ] })
-        ] }) }) }) })
+          monthsArray.map((p) => {
+            const total = calculateTotal(p.id, rows);
+            const hasValue = total !== 0;
+            return /* @__PURE__ */ jsxRuntime.jsxs("td", { className: "px-2 py-2.5 text-right", style: { width: "110px" }, children: [
+              /* @__PURE__ */ jsxRuntime.jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
+                p.label,
+                ": "
+              ] }),
+              /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? formatValue(total) : "\u2014" })
+            ] }, p.id);
+          }),
+          /* @__PURE__ */ jsxRuntime.jsx("td", { className: "px-2 py-2.5 text-right", style: { width: "40px" }, children: !forceExpanded && (isExpanded ? /* @__PURE__ */ jsxRuntime.jsx(lucideReact.ChevronUp, { size: 20, className: headerText }) : /* @__PURE__ */ jsxRuntime.jsx(lucideReact.ChevronDown, { size: 20, className: headerText })) })
+        ] }) }) }) }) })
       }
     ),
     /* @__PURE__ */ jsxRuntime.jsx(
@@ -1852,65 +2081,10 @@ var MonthlyTable = ({
                       onDragEnd: drag.handleDragEnd
                     }
                   ),
-                  showChildren && groupChildren.map((child) => /* @__PURE__ */ jsxRuntime.jsx(
-                    datarow_default,
-                    {
-                      row: child,
-                      months: monthsArray,
-                      isHovered: hoveredRow === child.id,
-                      indented: true,
-                      onMouseEnter: () => setHoveredRow(child.id),
-                      onMouseLeave: () => setHoveredRow(null),
-                      onRemove: () => removeRow(child.id),
-                      onLabelChange: (label) => updateRowLabel(child.id, label),
-                      onValueChange: (monthId, value) => updateRowValue(child.id, monthId, value),
-                      onViewSource,
-                      isCellFocused: (mi) => keyboard.isFocused(child.id, mi),
-                      onCellFocus: (mi) => keyboard.focus(child.id, mi),
-                      onNavigate: keyboard.navigateAndEdit,
-                      editTrigger: keyboard.editTrigger,
-                      dropIndicator: drag.dropTargetId === child.id ? drag.dropPosition : null,
-                      onDragOver: drag.handleDragOver(child.id),
-                      onDragLeave: drag.handleDragLeave,
-                      onDrop: drag.handleDrop(rows, onRowsChange)
-                    },
-                    child.id
-                  ))
+                  showChildren && groupChildren.map((child) => renderDataRow(child))
                 ] }, group.id);
               }
-              const { row } = item;
-              const selectable = !row.isGroup && !row.groupId;
-              return /* @__PURE__ */ jsxRuntime.jsx(
-                datarow_default,
-                {
-                  row,
-                  months: monthsArray,
-                  isHovered: hoveredRow === row.id,
-                  selected: selectedRows.has(row.id),
-                  anySelected,
-                  selectable,
-                  onMouseEnter: () => setHoveredRow(row.id),
-                  onMouseLeave: () => setHoveredRow(null),
-                  onRemove: () => removeRow(row.id),
-                  onToggleSelect: () => toggleSelect(row.id),
-                  onContextMenu: (e) => handleContextMenu(e, row.id),
-                  onLabelChange: (label) => updateRowLabel(row.id, label),
-                  onValueChange: (monthId, value) => updateRowValue(row.id, monthId, value),
-                  onViewSource,
-                  isCellFocused: (mi) => keyboard.isFocused(row.id, mi),
-                  onCellFocus: (mi) => keyboard.focus(row.id, mi),
-                  onNavigate: keyboard.navigateAndEdit,
-                  editTrigger: keyboard.editTrigger,
-                  isDragging: drag.dragRowId === row.id,
-                  dropIndicator: drag.dropTargetId === row.id ? drag.dropPosition : null,
-                  onDragStart: drag.handleDragStart(row.id),
-                  onDragOver: drag.handleDragOver(row.id),
-                  onDragLeave: drag.handleDragLeave,
-                  onDrop: drag.handleDrop(rows, onRowsChange),
-                  onDragEnd: drag.handleDragEnd
-                },
-                row.id
-              );
+              return renderDataRow(item.row);
             }),
             /* @__PURE__ */ jsxRuntime.jsx(
               addrow_default,
@@ -1941,6 +2115,15 @@ var MonthlyTable = ({
         }) }) }) })
       }
     ),
+    isExpanded && /* @__PURE__ */ jsxRuntime.jsx(recyclebin_default, { deletedRows, onRestore: handleRestore }),
+    deleteTarget && /* @__PURE__ */ jsxRuntime.jsx(
+      deletedialog_default,
+      {
+        count: deleteTarget.size,
+        onConfirm: confirmDelete,
+        onCancel: () => setDeleteTarget(null)
+      }
+    ),
     contextMenu && anySelected && /* @__PURE__ */ jsxRuntime.jsx(
       ContextMenu,
       {
@@ -1949,6 +2132,7 @@ var MonthlyTable = ({
         canGroup,
         selectedCount: selectedRows.size,
         onGroup: startGroupNaming,
+        onDeleteSelected: requestDeleteSelected,
         onCancel: clearSelection,
         onClose: () => setContextMenu(null)
       }

@@ -9,7 +9,6 @@ interface DataRowProps {
     row: RowData
     months: Month[]
     isHovered: boolean
-    indented?: boolean
     selected?: boolean
     anySelected?: boolean
     selectable?: boolean
@@ -49,7 +48,6 @@ const DataRow = ({
     row,
     months,
     isHovered,
-    indented = false,
     selected = false,
     anySelected = false,
     selectable = false,
@@ -73,6 +71,7 @@ const DataRow = ({
     onDrop,
     onDragEnd,
 }: DataRowProps) => {
+    const indented = !!row.groupId
     const subtract = isSubtractType(row.type)
     const rowBg = selected
         ? 'bg-emerald-50/60'
@@ -111,19 +110,14 @@ const DataRow = ({
                             onChange={onToggleSelect}
                             className="shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                         />
-                    ) : isHovered ? (
-                        <button
-                            onClick={onRemove}
-                            className="p-0.5 rounded shrink-0 text-red-400 hover:text-red-600 hover:bg-red-100"
-                            title="Eliminar fila"
-                        >
-                            <X size={14} />
-                        </button>
                     ) : null}
                     <input
                         type="text"
                         value={row.label}
                         onChange={(e) => onLabelChange(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                        }}
                         className={`flex-1 min-w-0 ${T.rowLabel} ${isHovered || showCheckbox ? '' : 'pl-1'}`}
                         title={row.label}
                     />
@@ -157,7 +151,17 @@ const DataRow = ({
                     />
                 )
             })}
-            <td style={{ width: '40px' }}></td>
+            <td style={{ width: '40px' }} className="text-center">
+                {isHovered && !anySelected && (
+                    <button
+                        onClick={onRemove}
+                        className="p-0.5 rounded text-red-400 hover:text-red-600 hover:bg-red-100"
+                        title="Eliminar fila"
+                    >
+                        <X size={14} />
+                    </button>
+                )}
+            </td>
         </tr>
     )
 }

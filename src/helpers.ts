@@ -50,7 +50,7 @@ export const rowMatchesSection = (row: RowData, sectionType: RowType): boolean =
 export const defaultCalculateTotal = (monthId: string, rows: RowData[]): number => {
     let total = 0
     for (const row of rows) {
-        if (row.isGroup) continue // Skip group headers — they're computed sums
+        if (row.isGroup || row.deletedAt) continue // Skip group headers and deleted rows
         const value = row.values[monthId]
         if (value !== null && value !== undefined) {
             if (isAddType(row.type)) {
@@ -73,7 +73,7 @@ export type RenderItem =
 
 /** Get ordered items for a section, collecting grouped rows under their group headers */
 export const getOrderedItems = (rows: RowData[], sectionType: RowType): RenderItem[] => {
-    const sectionRows = rows.filter(r => rowMatchesSection(r, sectionType))
+    const sectionRows = rows.filter(r => rowMatchesSection(r, sectionType) && !r.deletedAt)
 
     const groups = sectionRows.filter(r => r.isGroup)
     const groupedChildren = sectionRows.filter(r => r.groupId && !r.isGroup)
@@ -102,7 +102,7 @@ export const getOrderedItems = (rows: RowData[], sectionType: RowType): RenderIt
 
 /** Compute section subtotal (sum of all non-group rows matching a section type) */
 export const computeSectionSubtotal = (rows: RowData[], sectionType: RowType, months: Month[]): Record<string, number> => {
-    const sectionRows = rows.filter(r => rowMatchesSection(r, sectionType) && !r.isGroup)
+    const sectionRows = rows.filter(r => rowMatchesSection(r, sectionType) && !r.isGroup && !r.deletedAt)
     const result: Record<string, number> = {}
     for (const month of months) {
         let sum = 0
@@ -135,29 +135,31 @@ export const createGroup = (rows: RowData[], selectedIds: Set<string>, groupName
     const groupType = selected[0].type
     const groupId = `group_${Date.now()}`
 
-    // Find the position of the first selected row
+    // Assign order to all rows based on current array position
     const firstIdx = rows.findIndex(r => selectedIds.has(r.id))
 
     const newRows = rows.map((r, idx) => {
         if (selectedIds.has(r.id)) {
             return { ...r, groupId, order: idx }
         }
-        return r
+        return { ...r, order: idx }
     })
 
     // Insert group header at the position of the first selected row
-    const groupHeader: RowData = {
+    const groupHeader = {
         id: groupId,
         label: groupName,
         type: groupType,
         values: {},
         isGroup: true,
-        collapsed: false,
+        collapsed: true,
         order: firstIdx,
     }
 
     newRows.splice(firstIdx, 0, groupHeader)
-    return newRows
+
+    // Auto-ungroup any old groups that lost too many children
+    return autoUngroup(newRows)
 }
 
 /** Remove a group, restoring children to ungrouped */
@@ -173,15 +175,38 @@ export const ungroupRows = (rows: RowData[], groupId: string): RowData[] => {
         })
 }
 
-/** Auto-ungroup if a group has fewer than 2 children */
+/** Auto-ungroup if a group has fewer than 2 non-deleted children */
 export const autoUngroup = (rows: RowData[]): RowData[] => {
-    const groups = rows.filter(r => r.isGroup)
+    const groups = rows.filter(r => r.isGroup && !r.deletedAt)
     let result = rows
     for (const group of groups) {
-        const children = result.filter(r => r.groupId === group.id)
+        const children = result.filter(r => r.groupId === group.id && !r.deletedAt)
         if (children.length < 2) {
             result = ungroupRows(result, group.id)
         }
     }
     return result
+}
+
+// ============================================================================
+// Soft-delete & restore
+// ============================================================================
+
+/** Soft-delete rows by setting deletedAt timestamp and optional reason */
+export const softDeleteRows = (rows: RowData[], ids: Set<string>, reason: string): RowData[] => {
+    const now = new Date().toISOString()
+    let result = rows.map(r => {
+        if (!ids.has(r.id)) return r
+        return { ...r, deletedAt: now, deletionReason: reason || undefined }
+    })
+    return autoUngroup(result)
+}
+
+/** Restore soft-deleted rows by clearing deletedAt and deletionReason */
+export const restoreRows = (rows: RowData[], ids: Set<string>): RowData[] => {
+    return rows.map(r => {
+        if (!ids.has(r.id)) return r
+        const { deletedAt: _, deletionReason: __, ...rest } = r
+        return rest
+    })
 }

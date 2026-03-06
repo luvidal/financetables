@@ -35,21 +35,57 @@ const INITIAL_ROWS: RowData[] = [
     },
     {
         id: 'r4',
+        label: 'Horas Extra',
+        type: 'income',
+        values: { '2026-01': 85_000, '2026-02': 120_000, '2026-03': null },
+    },
+    {
+        id: 'r5',
+        label: 'Comisiones',
+        type: 'income',
+        values: { '2026-01': 200_000, '2026-02': 150_000, '2026-03': 310_000 },
+    },
+    {
+        id: 'r6',
+        label: 'Asignación Colación',
+        type: 'income',
+        values: { '2026-01': 60_000, '2026-02': 60_000, '2026-03': 60_000 },
+    },
+    {
+        id: 'r7',
         label: 'AFP',
         type: 'deduction',
         values: { '2026-01': 187_500, '2026-02': 187_500, '2026-03': 193_750 },
     },
     {
-        id: 'r5',
+        id: 'r8',
         label: 'Salud',
         type: 'deduction',
         values: { '2026-01': 105_000, '2026-02': 105_000, '2026-03': 108_500 },
     },
     {
-        id: 'r6',
+        id: 'r9',
         label: 'Impuesto Único',
         type: 'deduction',
         values: { '2026-01': 45_000, '2026-02': 42_000, '2026-03': 48_000 },
+    },
+    {
+        id: 'r10',
+        label: 'Seguro Cesantía',
+        type: 'deduction',
+        values: { '2026-01': 9_000, '2026-02': 9_000, '2026-03': 9_300 },
+    },
+    {
+        id: 'r11',
+        label: 'Anticipo',
+        type: 'deduction',
+        values: { '2026-01': null, '2026-02': 200_000, '2026-03': null },
+    },
+    {
+        id: 'r12',
+        label: 'Préstamo Empresa',
+        type: 'deduction',
+        values: { '2026-01': 50_000, '2026-02': 50_000, '2026-03': 50_000 },
     },
 ]
 

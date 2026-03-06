@@ -72,11 +72,16 @@ export const useDragReorder = (): UseDragReorderReturn => {
             return
         }
 
-        // When dropping onto a group child (not the header), assign group membership
-        const targetGroupId = targetRow.groupId ?? null
+        // Match source row's group membership to the target's
+        // Group headers own the group (children point to header's id), so use header's id as the group
+        const targetGroupId = targetRow.isGroup ? targetRow.id : (targetRow.groupId ?? null)
+        const sourceGroupId = sourceRow.groupId ?? null
         let workingRows = rows
-        if (targetGroupId !== null && sourceRow.groupId !== targetGroupId) {
-            workingRows = workingRows.map(r => r.id === sourceId ? { ...r, groupId: targetGroupId } : r)
+        if (targetGroupId !== sourceGroupId) {
+            workingRows = workingRows.map(r => {
+                if (r.id !== sourceId) return r
+                return targetGroupId !== null ? { ...r, groupId: targetGroupId } : { ...r, groupId: undefined }
+            })
             workingRows = autoUngroup(workingRows)
         }
 

@@ -12,11 +12,15 @@ import {
     createGroup,
     ungroupRows,
     autoUngroup,
+    softDeleteRows,
+    restoreRows,
     computeSectionSubtotal,
 } from './helpers'
 import DataRow from './datarow'
 import AddRow from './addrow'
 import GroupRow from './grouprow'
+import DeleteDialog from './deletedialog'
+import RecycleBin from './recyclebin'
 import { HeaderSelectionBar, ContextMenu } from './floatingaction'
 import { useKeyboard } from './usekeyboard'
 import { useDragReorder } from './usedragreorder'
@@ -53,6 +57,7 @@ const MonthlyTable = ({
     const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
     const [naming, setNaming] = useState(false)
+    const [deleteTarget, setDeleteTarget] = useState<Set<string> | null>(null)
 
     const monthsArray = useMemo(() => {
         if (typeof months === 'number') return generateLastNMonths(months)
@@ -128,11 +133,11 @@ const MonthlyTable = ({
 
     const clearSelection = useCallback(() => setSelectedRows(new Set()), [])
 
-    // Can group: 2+ selected, all same type, none are groups or already grouped
+    // Can group: 2+ selected, all same type family, none are group headers
     const canGroup = useMemo(() => {
         if (selectedRows.size < 2) return false
         const selected = rows.filter(r => selectedRows.has(r.id))
-        if (selected.some(r => r.isGroup || r.groupId)) return false
+        if (selected.some(r => r.isGroup)) return false
         const types = new Set(selected.map(r => isAddType(r.type) ? 'add' : 'subtract'))
         return types.size === 1
     }, [selectedRows, rows])
@@ -170,30 +175,36 @@ const MonthlyTable = ({
         }))
     }, [rows, onRowsChange])
 
-    const removeRow = useCallback((rowId: string) => {
+    const requestDelete = useCallback((rowId: string) => {
         const row = rows.find(r => r.id === rowId)
         if (!row) return
-
-        let newRows: RowData[]
         if (row.isGroup) {
-            // Ungrouping: remove header, clear children's groupId
-            newRows = ungroupRows(rows, rowId)
-        } else {
-            newRows = rows.filter(r => r.id !== rowId)
-            // Auto-ungroup if group has <2 children remaining
-            newRows = autoUngroup(newRows)
+            // Group headers ungroup immediately (no recycle bin)
+            onRowsChange(ungroupRows(rows, rowId))
+            return
         }
-
-        // Clear from selection
-        setSelectedRows(prev => {
-            if (!prev.has(rowId)) return prev
-            const next = new Set(prev)
-            next.delete(rowId)
-            return next
-        })
-
-        onRowsChange(newRows)
+        setDeleteTarget(new Set([rowId]))
     }, [rows, onRowsChange])
+
+    const requestDeleteSelected = useCallback(() => {
+        setDeleteTarget(new Set(selectedRows))
+    }, [selectedRows])
+
+    const confirmDelete = useCallback((reason: string) => {
+        if (!deleteTarget) return
+        const newRows = softDeleteRows(rows, deleteTarget, reason)
+        onRowsChange(newRows)
+        clearSelection()
+        setDeleteTarget(null)
+    }, [rows, deleteTarget, onRowsChange, clearSelection])
+
+    const handleRestore = useCallback((rowId: string) => {
+        onRowsChange(restoreRows(rows, new Set([rowId])))
+    }, [rows, onRowsChange])
+
+    const deletedRows = useMemo(() =>
+        rows.filter(r => r.deletedAt && !r.isGroup),
+    [rows])
 
     const toggleGroupCollapse = useCallback((groupId: string) => {
         onRowsChange(rows.map(r => r.id === groupId ? { ...r, collapsed: !r.collapsed } : r))
@@ -247,6 +258,37 @@ const MonthlyTable = ({
     // Render
     // ========================================================================
 
+    const renderDataRow = (r: RowData) => (
+        <DataRow
+            key={r.id}
+            row={r}
+            months={monthsArray}
+            isHovered={hoveredRow === r.id}
+            selected={selectedRows.has(r.id)}
+            anySelected={anySelected}
+            selectable={!r.isGroup}
+            onMouseEnter={() => setHoveredRow(r.id)}
+            onMouseLeave={() => setHoveredRow(null)}
+            onRemove={() => requestDelete(r.id)}
+            onToggleSelect={() => toggleSelect(r.id)}
+            onContextMenu={(e) => handleContextMenu(e, r.id)}
+            onLabelChange={(label) => updateRowLabel(r.id, label)}
+            onValueChange={(monthId, value) => updateRowValue(r.id, monthId, value)}
+            onViewSource={onViewSource}
+            isCellFocused={(mi) => keyboard.isFocused(r.id, mi)}
+            onCellFocus={(mi) => keyboard.focus(r.id, mi)}
+            onNavigate={keyboard.navigateAndEdit}
+            editTrigger={keyboard.editTrigger}
+            isDragging={drag.dragRowId === r.id}
+            dropIndicator={drag.dropTargetId === r.id ? drag.dropPosition : null}
+            onDragStart={drag.handleDragStart(r.id)}
+            onDragOver={drag.handleDragOver(r.id)}
+            onDragLeave={drag.handleDragLeave}
+            onDrop={drag.handleDrop(rows, onRowsChange)}
+            onDragEnd={drag.handleDragEnd}
+        />
+    )
+
     return (
         <div className={`rounded-xl overflow-hidden ${!isExpanded ? '' : 'border border-gray-200'}`}>
             {/* Accordion Header — uses div (not button) to allow nested interactive elements during selection */}
@@ -259,20 +301,6 @@ const MonthlyTable = ({
                     <table className={T.table} style={{ tableLayout: 'fixed' }}>
                         <tbody>
                             <tr>
-                                <td className="px-4 py-2.5 text-left" style={{ width: '180px' }}>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`${headerText} ${T.headerTitle}`}>{title}</span>
-                                        {!anySelected && sourceFileIds && sourceFileIds.length > 0 && onViewSource && (
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); onViewSource(sourceFileIds) }}
-                                                className="p-1 rounded hover:bg-white/50 transition-colors"
-                                                title="Ver documento fuente"
-                                            >
-                                                <Eye size={14} className={headerText} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
                                 {anySelected ? (
                                     <HeaderSelectionBar
                                         selectedCount={selectedRows.size}
@@ -281,10 +309,25 @@ const MonthlyTable = ({
                                         naming={naming}
                                         onNamingChange={setNaming}
                                         onGroup={handleGroup}
+                                        onDeleteSelected={requestDeleteSelected}
                                         onCancel={() => { clearSelection(); setNaming(false) }}
                                     />
                                 ) : (
                                     <>
+                                        <td className="px-4 py-2.5 text-left" style={{ width: '180px' }}>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`${headerText} ${T.headerTitle}`}>{title}</span>
+                                                {sourceFileIds && sourceFileIds.length > 0 && onViewSource && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); onViewSource(sourceFileIds) }}
+                                                        className="p-1 rounded hover:bg-white/50 transition-colors"
+                                                        title="Ver documento fuente"
+                                                    >
+                                                        <Eye size={14} className={headerText} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
                                         {monthsArray.map((p) => {
                                             const total = calculateTotal(p.id, rows)
                                             const hasValue = total !== 0
@@ -349,64 +392,11 @@ const MonthlyTable = ({
                                                             onDrop={drag.handleDrop(rows, onRowsChange)}
                                                             onDragEnd={drag.handleDragEnd}
                                                         />
-                                                        {showChildren && groupChildren.map(child => (
-                                                            <DataRow
-                                                                key={child.id}
-                                                                row={child}
-                                                                months={monthsArray}
-                                                                isHovered={hoveredRow === child.id}
-                                                                indented
-                                                                onMouseEnter={() => setHoveredRow(child.id)}
-                                                                onMouseLeave={() => setHoveredRow(null)}
-                                                                onRemove={() => removeRow(child.id)}
-                                                                onLabelChange={(label) => updateRowLabel(child.id, label)}
-                                                                onValueChange={(monthId, value) => updateRowValue(child.id, monthId, value)}
-                                                                onViewSource={onViewSource}
-                                                                isCellFocused={(mi) => keyboard.isFocused(child.id, mi)}
-                                                                onCellFocus={(mi) => keyboard.focus(child.id, mi)}
-                                                                onNavigate={keyboard.navigateAndEdit}
-                                                                editTrigger={keyboard.editTrigger}
-                                                                dropIndicator={drag.dropTargetId === child.id ? drag.dropPosition : null}
-                                                                onDragOver={drag.handleDragOver(child.id)}
-                                                                onDragLeave={drag.handleDragLeave}
-                                                                onDrop={drag.handleDrop(rows, onRowsChange)}
-                                                            />
-                                                        ))}
+                                                        {showChildren && groupChildren.map(child => renderDataRow(child))}
                                                     </React.Fragment>
                                                 )
                                             }
-                                            const { row } = item
-                                            const selectable = !row.isGroup && !row.groupId
-                                            return (
-                                                <DataRow
-                                                    key={row.id}
-                                                    row={row}
-                                                    months={monthsArray}
-                                                    isHovered={hoveredRow === row.id}
-                                                    selected={selectedRows.has(row.id)}
-                                                    anySelected={anySelected}
-                                                    selectable={selectable}
-                                                    onMouseEnter={() => setHoveredRow(row.id)}
-                                                    onMouseLeave={() => setHoveredRow(null)}
-                                                    onRemove={() => removeRow(row.id)}
-                                                    onToggleSelect={() => toggleSelect(row.id)}
-                                                    onContextMenu={(e) => handleContextMenu(e, row.id)}
-                                                    onLabelChange={(label) => updateRowLabel(row.id, label)}
-                                                    onValueChange={(monthId, value) => updateRowValue(row.id, monthId, value)}
-                                                    onViewSource={onViewSource}
-                                                    isCellFocused={(mi) => keyboard.isFocused(row.id, mi)}
-                                                    onCellFocus={(mi) => keyboard.focus(row.id, mi)}
-                                                    onNavigate={keyboard.navigateAndEdit}
-                                                    editTrigger={keyboard.editTrigger}
-                                                    isDragging={drag.dragRowId === row.id}
-                                                    dropIndicator={drag.dropTargetId === row.id ? drag.dropPosition : null}
-                                                    onDragStart={drag.handleDragStart(row.id)}
-                                                    onDragOver={drag.handleDragOver(row.id)}
-                                                    onDragLeave={drag.handleDragLeave}
-                                                    onDrop={drag.handleDrop(rows, onRowsChange)}
-                                                    onDragEnd={drag.handleDragEnd}
-                                                />
-                                            )
+                                            return renderDataRow(item.row)
                                         })}
                                         <AddRow
                                             section={section}
@@ -450,6 +440,20 @@ const MonthlyTable = ({
 
             </div>
 
+            {/* Recycle bin footer */}
+            {isExpanded && (
+                <RecycleBin deletedRows={deletedRows} onRestore={handleRestore} />
+            )}
+
+            {/* Delete confirmation dialog */}
+            {deleteTarget && (
+                <DeleteDialog
+                    count={deleteTarget.size}
+                    onConfirm={confirmDelete}
+                    onCancel={() => setDeleteTarget(null)}
+                />
+            )}
+
             {/* Right-click context menu */}
             {contextMenu && anySelected && (
                 <ContextMenu
@@ -458,6 +462,7 @@ const MonthlyTable = ({
                     canGroup={canGroup}
                     selectedCount={selectedRows.size}
                     onGroup={startGroupNaming}
+                    onDeleteSelected={requestDeleteSelected}
                     onCancel={clearSelection}
                     onClose={() => setContextMenu(null)}
                 />

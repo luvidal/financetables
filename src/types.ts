@@ -15,6 +15,9 @@ export type RowData = {
     collapsed?: boolean    // group headers only: whether children are hidden
     // Ordering
     order?: number         // explicit sort position within its type section
+    // Soft-delete
+    deletedAt?: string     // ISO timestamp — presence means row is in recycle bin
+    deletionReason?: string // User-provided reason for deletion
 }
 
 export type Month = {

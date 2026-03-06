@@ -85,18 +85,12 @@ const GroupRow = ({
                         type="text"
                         value={group.label}
                         onChange={(e) => onLabelChange(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                        }}
                         className="flex-1 min-w-0 bg-transparent border-none outline-none text-xs font-semibold text-gray-700 truncate"
                         title={group.label}
                     />
-                    {isHovered && (
-                        <button
-                            onClick={onUngroup}
-                            className="p-0.5 rounded shrink-0 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                            title="Desagrupar"
-                        >
-                            <Ungroup size={14} />
-                        </button>
-                    )}
                 </div>
             </td>
             {months.map((p) => {
@@ -116,7 +110,17 @@ const GroupRow = ({
                     </td>
                 )
             })}
-            <td style={{ width: '40px' }}></td>
+            <td style={{ width: '40px' }} className="text-center">
+                {isHovered && (
+                    <button
+                        onClick={onUngroup}
+                        className="p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                        title="Desagrupar"
+                    >
+                        <Ungroup size={14} />
+                    </button>
+                )}
+            </td>
         </tr>
     )
 }

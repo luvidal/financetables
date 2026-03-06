@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { FoldVertical, X, Check } from 'lucide-react'
+import { FoldVertical, X, Check, Trash2 } from 'lucide-react'
 
 // ============================================================================
 // Context menu (right-click on rows)
@@ -12,11 +12,12 @@ interface ContextMenuProps {
     canGroup: boolean
     selectedCount: number
     onGroup: () => void
+    onDeleteSelected: () => void
     onCancel: () => void
     onClose: () => void
 }
 
-export const ContextMenu = ({ x, y, canGroup, selectedCount, onGroup, onCancel, onClose }: ContextMenuProps) => {
+export const ContextMenu = ({ x, y, canGroup, selectedCount, onGroup, onDeleteSelected, onCancel, onClose }: ContextMenuProps) => {
     const ref = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -61,6 +62,13 @@ export const ContextMenu = ({ x, y, canGroup, selectedCount, onGroup, onCancel, 
                 Agrupar {selectedCount} filas
             </button>
             <button
+                onClick={() => { onDeleteSelected(); onClose() }}
+                className="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 hover:bg-gray-50 text-red-600"
+            >
+                <Trash2 size={14} />
+                Eliminar {selectedCount} fila{selectedCount !== 1 ? 's' : ''}
+            </button>
+            <button
                 onClick={() => { onCancel(); onClose() }}
                 className="w-full px-3 py-1.5 text-left text-xs flex items-center gap-2 hover:bg-gray-50 text-gray-600"
             >
@@ -87,10 +95,11 @@ interface HeaderSelectionBarProps {
     naming: boolean
     onNamingChange: (v: boolean) => void
     onGroup: (name: string) => void
+    onDeleteSelected: () => void
     onCancel: () => void
 }
 
-export const HeaderSelectionBar = ({ selectedCount, canGroup, monthCount, naming, onNamingChange, onGroup, onCancel }: HeaderSelectionBarProps) => {
+export const HeaderSelectionBar = ({ selectedCount, canGroup, monthCount, naming, onNamingChange, onGroup, onDeleteSelected, onCancel }: HeaderSelectionBarProps) => {
     const [groupName, setGroupName] = useState('')
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -117,69 +126,73 @@ export const HeaderSelectionBar = ({ selectedCount, canGroup, monthCount, naming
     }
 
     return (
-        <>
-            {/* Span all month columns + chevron column */}
-            <td
-                colSpan={monthCount + 1}
-                className="px-4 py-2.5 text-right"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex items-center justify-end gap-2">
-                    <span className="text-xs text-gray-500 mr-1">
-                        {selectedCount} fila{selectedCount !== 1 ? 's' : ''}
-                    </span>
-
-                    {naming ? (
-                        <div className="flex items-center gap-1.5">
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                value={groupName}
-                                onChange={(e) => setGroupName(e.target.value)}
-                                placeholder="Nombre del grupo..."
-                                className="text-xs border border-gray-300 bg-white text-gray-800 placeholder-gray-400 rounded px-2 py-1 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-44"
-                                onKeyDown={(e) => {
-                                    e.stopPropagation()
-                                    if (e.key === 'Enter') handleSubmit()
-                                    if (e.key === 'Escape') { onNamingChange(false); setGroupName('') }
-                                }}
-                            />
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!groupName.trim()}
-                                className="p-1 rounded text-emerald-700 hover:bg-emerald-100 disabled:text-gray-300 disabled:hover:bg-transparent"
-                                title="Confirmar"
-                            >
-                                <Check size={14} />
-                            </button>
-                            <button
-                                onClick={() => { onNamingChange(false); setGroupName('') }}
-                                className="p-1 rounded text-gray-400 hover:bg-gray-200"
-                                title="Cancelar"
-                            >
-                                <X size={14} />
-                            </button>
-                        </div>
-                    ) : (
-                        <>
-                            <button
-                                onClick={() => onNamingChange(true)}
-                                disabled={!canGroup}
-                                className="text-xs px-3 py-1 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
-                                title={!canGroup && selectedCount < 2 ? 'Selecciona al menos 2 filas' : !canGroup ? 'Solo puedes agrupar filas del mismo tipo' : 'Agrupar filas seleccionadas'}
-                            >
-                                Agrupar
-                            </button>
-                            <button
-                                onClick={onCancel}
-                                className="text-xs px-2 py-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
-                            >
-                                Cancelar
-                            </button>
-                        </>
-                    )}
-                </div>
-            </td>
-        </>
+        <td
+            colSpan={monthCount + 2}
+            className="px-4 py-2.5"
+            onClick={(e) => e.stopPropagation()}
+        >
+            <div className="flex items-center gap-2">
+                {naming ? (
+                    <div className="flex items-center gap-1.5">
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={groupName}
+                            onChange={(e) => setGroupName(e.target.value)}
+                            placeholder="Nombre del grupo..."
+                            className="text-xs border border-gray-300 bg-white text-gray-800 placeholder-gray-400 rounded px-2 py-1 outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 w-44"
+                            onKeyDown={(e) => {
+                                e.stopPropagation()
+                                if (e.key === 'Enter') handleSubmit()
+                                if (e.key === 'Escape') { onNamingChange(false); setGroupName('') }
+                            }}
+                        />
+                        <button
+                            onClick={handleSubmit}
+                            disabled={!groupName.trim()}
+                            className="p-1 rounded text-emerald-700 hover:bg-emerald-100 disabled:text-gray-300 disabled:hover:bg-transparent"
+                            title="Confirmar"
+                        >
+                            <Check size={14} />
+                        </button>
+                        <button
+                            onClick={() => { onNamingChange(false); setGroupName('') }}
+                            className="p-1 rounded text-gray-400 hover:bg-gray-200"
+                            title="Cancelar"
+                        >
+                            <X size={14} />
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        <span className="text-xs text-gray-500">
+                            {selectedCount} fila{selectedCount !== 1 ? 's' : ''}
+                        </span>
+                        <button
+                            onClick={() => onNamingChange(true)}
+                            disabled={!canGroup}
+                            className="text-xs px-3 py-1 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                            title={!canGroup && selectedCount < 2 ? 'Selecciona al menos 2 filas' : !canGroup ? 'Solo puedes agrupar filas del mismo tipo' : 'Agrupar filas seleccionadas'}
+                        >
+                            Agrupar
+                        </button>
+                        <button
+                            onClick={onDeleteSelected}
+                            className="text-xs px-3 py-1 rounded-full text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1"
+                            title="Eliminar filas seleccionadas"
+                        >
+                            <Trash2 size={12} />
+                            Eliminar
+                        </button>
+                        <button
+                            onClick={onCancel}
+                            className="text-xs px-2 py-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                    </>
+                )}
+            </div>
+        </td>
     )
 }

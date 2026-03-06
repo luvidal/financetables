@@ -12,6 +12,8 @@ type RowData = {
     isGroup?: boolean;
     collapsed?: boolean;
     order?: number;
+    deletedAt?: string;
+    deletionReason?: string;
 };
 type Month = {
     id: string;
