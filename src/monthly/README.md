@@ -10,8 +10,8 @@ Editable monthly spreadsheet with CRUD, grouping, drag-reorder, keyboard navigat
 - **Drag reorder**: Rows reorder within their type family. Groups drag as a unit. 600ms hover on collapsed group auto-expands
 - **Keyboard**: Arrow keys navigate cells, Enter edits, Tab moves right, Escape clears focus
 - **Totals**: Header shows per-month totals. Multi-section tables show subtotal rows per section
-- **Soft-delete**: Rows go to recycle bin with reason. Can be restored
-- **Selection**: Checkbox per row, right-click context menu for bulk actions
+- **Soft-delete**: Rows go to recycle bin with reason and preserved monthly values. Can be restored
+- **Selection**: Checkbox per row, Cmd/Ctrl+click anywhere on row to toggle selection, right-click context menu for bulk actions
 
 ## Files
 
@@ -27,7 +27,7 @@ Editable monthly spreadsheet with CRUD, grouping, drag-reorder, keyboard navigat
 | `usekeyboard.ts` | Grid keyboard navigation hook |
 | `usedragreorder.ts` | HTML5 drag-and-drop reorder hook |
 | `deletedialog.tsx` | Soft-delete confirmation modal with reason input |
-| `recyclebin.tsx` | Footer showing soft-deleted rows with restore buttons |
+| `recyclebin.tsx` | Footer showing soft-deleted rows with monthly values and restore buttons |
 
 ## Dependencies
 

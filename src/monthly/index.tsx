@@ -437,7 +437,7 @@ const MonthlyTable = ({
 
             {/* Recycle bin footer */}
             {isExpanded && (
-                <RecycleBin deletedRows={deletedRows} onRestore={handleRestore} />
+                <RecycleBin deletedRows={deletedRows} months={monthsArray} onRestore={handleRestore} />
             )}
 
             {/* Delete confirmation dialog */}

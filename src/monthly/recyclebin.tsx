@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Undo2, Trash2 } from 'lucide-react'
-import type { RowData } from './types'
+import { displayCurrencyCompact } from '../common/utils'
+import { isSubtractType } from './helpers'
+import type { RowData, Month } from './types'
 
 interface RecycleBinProps {
     deletedRows: RowData[]
+    months: Month[]
     onRestore: (id: string) => void
 }
 
@@ -21,7 +24,7 @@ const formatDeletedDate = (iso: string): string => {
     return d.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
 }
 
-const RecycleBin = ({ deletedRows, onRestore }: RecycleBinProps) => {
+const RecycleBin = ({ deletedRows, months, onRestore }: RecycleBinProps) => {
     const [expanded, setExpanded] = useState(false)
 
     if (deletedRows.length === 0) return null
@@ -53,9 +56,25 @@ const RecycleBin = ({ deletedRows, onRestore }: RecycleBinProps) => {
                             >
                                 <Undo2 size={13} />
                             </button>
-                            <span className="text-xs text-gray-500 truncate min-w-0 flex-1">
-                                {row.label}
-                            </span>
+                            <div className="truncate min-w-0 flex-1">
+                                <span className="text-xs text-gray-500 truncate block">
+                                    {row.label}
+                                </span>
+                                {months.some(m => row.values[m.id] != null) && (
+                                    <span className="text-[10px] text-gray-400 tabular-nums">
+                                        {months.map((m, i) => {
+                                            const v = row.values[m.id]
+                                            if (v == null) return null
+                                            return (
+                                                <span key={m.id}>
+                                                    {i > 0 && months.slice(0, i).some(prev => row.values[prev.id] != null) && ' · '}
+                                                    {displayCurrencyCompact(v, isSubtractType(row.type))}
+                                                </span>
+                                            )
+                                        })}
+                                    </span>
+                                )}
+                            </div>
                             {row.deletionReason && (
                                 <span className="text-xs text-gray-400 italic truncate max-w-[160px]" title={row.deletionReason}>
                                     {row.deletionReason}

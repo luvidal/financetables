@@ -80,9 +80,19 @@ const DataRow = ({
     const dropBorder = dropIndicator === 'above' ? 'border-t-2 border-t-blue-400'
         : dropIndicator === 'below' ? 'border-b-2 border-b-blue-400' : ''
 
+    const handleRowClick = (e: React.MouseEvent) => {
+        if (!selectable || !onToggleSelect) return
+        if (!(e.metaKey || e.ctrlKey)) return
+        const target = e.target as HTMLElement
+        if (target.closest('input, button, [role="button"]')) return
+        e.preventDefault()
+        onToggleSelect()
+    }
+
     return (
         <tr
             className={`border-b border-gray-100 ${rowBg} ${isDragging ? 'opacity-40' : ''} ${dropBorder} group`}
+            onClick={handleRowClick}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             onContextMenu={onContextMenu}
