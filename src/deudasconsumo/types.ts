@@ -7,6 +7,7 @@ export type DeudaConsumoRow = {
   monto_cuota: number | null
   cuotas_pagadas: number | null
   cuotas_total: number | null
+  sourceFileId?: string
 }
 
 export interface DeudasConsumoTableProps {
@@ -17,4 +18,5 @@ export interface DeudasConsumoTableProps {
   castigo?: number
   headerBg?: string
   headerText?: string
+  onViewSource?: (fileIds: string[]) => void
 }

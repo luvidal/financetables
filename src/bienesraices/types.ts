@@ -13,6 +13,7 @@ export type BienRaizRow = {
   monto_cuota: number | null
   cuotas_pagadas: number | null
   cuotas_total: number | null
+  sourceFileId?: string
 }
 
 export interface BienesRaicesTableProps {
@@ -24,4 +25,5 @@ export interface BienesRaicesTableProps {
   factorDescuento?: number
   headerBg?: string
   headerText?: string
+  onViewSource?: (fileIds: string[]) => void
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, Eye } from 'lucide-react'
 import EditableCell from '../common/editablecell'
 import { T } from '../common/styles'
 import { applyAutoConversions, applyAutoCompute } from '../common/autoconvert'
@@ -20,6 +20,7 @@ const BienesRaicesTable = ({
     factorDescuento = 0.10,
     headerBg = 'bg-teal-50',
     headerText = 'text-teal-700',
+    onViewSource,
 }: BienesRaicesTableProps) => {
     const [hoveredRow, setHoveredRow] = useState<string | null>(null)
 
@@ -187,13 +188,24 @@ const BienesRaicesTable = ({
                                 />
                                 {/* Deuda Hipotecaria columns */}
                                 <td className="px-2 py-2.5" style={{ width: '120px' }}>
-                                    <input
-                                        type="text"
-                                        value={row.institucion}
-                                        onChange={e => updateField(row.id, 'institucion', e.target.value)}
-                                        className={`w-full ${T.input} pl-1`}
-                                        placeholder="Institución"
-                                    />
+                                    <div className="flex items-center gap-1 min-w-0">
+                                        {row.sourceFileId && onViewSource && (
+                                            <button
+                                                onClick={() => onViewSource([row.sourceFileId!])}
+                                                className={`p-0.5 rounded transition-all shrink-0 ${isHovered ? 'opacity-100 text-teal-400 hover:text-teal-600 hover:bg-teal-100' : 'opacity-0'}`}
+                                                title="Ver documento fuente"
+                                            >
+                                                <Eye size={14} />
+                                            </button>
+                                        )}
+                                        <input
+                                            type="text"
+                                            value={row.institucion}
+                                            onChange={e => updateField(row.id, 'institucion', e.target.value)}
+                                            className={`flex-1 min-w-0 ${T.input} pl-1`}
+                                            placeholder="Institución"
+                                        />
+                                    </div>
                                 </td>
                                 <td className="px-2 py-2.5" style={{ width: '90px' }}>
                                     <input

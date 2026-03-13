@@ -2867,7 +2867,8 @@ var DeudasConsumoTable = ({
   ufValue,
   castigo = 0.05,
   headerBg = "bg-rose-50",
-  headerText = "text-rose-700"
+  headerText = "text-rose-700",
+  onViewSource
 }) => {
   const [hoveredRow, setHoveredRow] = React4.useState(null);
   const [newRow, setNewRow] = React4.useState({ institucion: "", tipo_deuda: "" });
@@ -2950,6 +2951,15 @@ var DeudasConsumoTable = ({
                       className: `p-0.5 rounded transition-all shrink-0 ${isHovered ? "opacity-100 text-red-400 hover:text-red-600 hover:bg-red-100" : "opacity-0"}`,
                       title: "Eliminar",
                       children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.X, { size: 14 })
+                    }
+                  ),
+                  row.sourceFileId && onViewSource && /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      onClick: () => onViewSource([row.sourceFileId]),
+                      className: `p-0.5 rounded transition-all shrink-0 ${isHovered ? "opacity-100 text-rose-400 hover:text-rose-600 hover:bg-rose-100" : "opacity-0"}`,
+                      title: "Ver documento fuente",
+                      children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Eye, { size: 14 })
                     }
                   ),
                   /* @__PURE__ */ jsxRuntime.jsx(
@@ -3092,7 +3102,8 @@ var BienesRaicesTable = ({
   capRate = 0.05,
   factorDescuento = 0.1,
   headerBg = "bg-teal-50",
-  headerText = "text-teal-700"
+  headerText = "text-teal-700",
+  onViewSource
 }) => {
   const [hoveredRow, setHoveredRow] = React4.useState(null);
   const conversionRules = ufValue ? [
@@ -3262,16 +3273,27 @@ var BienesRaicesTable = ({
                     className: `border-r border-teal-200 ${isAutoComputed(row, "arriendo_futuro") ? "italic text-teal-500" : ""}`
                   }
                 ),
-                /* @__PURE__ */ jsxRuntime.jsx("td", { className: "px-2 py-2.5", style: { width: "120px" }, children: /* @__PURE__ */ jsxRuntime.jsx(
-                  "input",
-                  {
-                    type: "text",
-                    value: row.institucion,
-                    onChange: (e) => updateField(row.id, "institucion", e.target.value),
-                    className: `w-full ${T.input} pl-1`,
-                    placeholder: "Instituci\xF3n"
-                  }
-                ) }),
+                /* @__PURE__ */ jsxRuntime.jsx("td", { className: "px-2 py-2.5", style: { width: "120px" }, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-1 min-w-0", children: [
+                  row.sourceFileId && onViewSource && /* @__PURE__ */ jsxRuntime.jsx(
+                    "button",
+                    {
+                      onClick: () => onViewSource([row.sourceFileId]),
+                      className: `p-0.5 rounded transition-all shrink-0 ${isHovered ? "opacity-100 text-teal-400 hover:text-teal-600 hover:bg-teal-100" : "opacity-0"}`,
+                      title: "Ver documento fuente",
+                      children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Eye, { size: 14 })
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntime.jsx(
+                    "input",
+                    {
+                      type: "text",
+                      value: row.institucion,
+                      onChange: (e) => updateField(row.id, "institucion", e.target.value),
+                      className: `flex-1 min-w-0 ${T.input} pl-1`,
+                      placeholder: "Instituci\xF3n"
+                    }
+                  )
+                ] }) }),
                 /* @__PURE__ */ jsxRuntime.jsx("td", { className: "px-2 py-2.5", style: { width: "90px" }, children: /* @__PURE__ */ jsxRuntime.jsx(
                   "input",
                   {

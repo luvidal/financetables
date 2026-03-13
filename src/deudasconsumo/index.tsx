@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X } from 'lucide-react'
+import { X, Eye } from 'lucide-react'
 import EditableCell from '../common/editablecell'
 import { T } from '../common/styles'
 import { applyAutoConversions, applyAutoCompute } from '../common/autoconvert'
@@ -21,6 +21,7 @@ const DeudasConsumoTable = ({
     castigo = 0.05,
     headerBg = 'bg-rose-50',
     headerText = 'text-rose-700',
+    onViewSource,
 }: DeudasConsumoTableProps) => {
     const [hoveredRow, setHoveredRow] = useState<string | null>(null)
     const [newRow, setNewRow] = useState({ institucion: '', tipo_deuda: '' })
@@ -115,6 +116,15 @@ const DeudasConsumoTable = ({
                                         >
                                             <X size={14} />
                                         </button>
+                                        {row.sourceFileId && onViewSource && (
+                                            <button
+                                                onClick={() => onViewSource([row.sourceFileId!])}
+                                                className={`p-0.5 rounded transition-all shrink-0 ${isHovered ? 'opacity-100 text-rose-400 hover:text-rose-600 hover:bg-rose-100' : 'opacity-0'}`}
+                                                title="Ver documento fuente"
+                                            >
+                                                <Eye size={14} />
+                                            </button>
+                                        )}
                                         <input
                                             type="text"
                                             value={row.institucion}

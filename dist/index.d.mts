@@ -249,6 +249,7 @@ type DeudaConsumoRow = {
     monto_cuota: number | null;
     cuotas_pagadas: number | null;
     cuotas_total: number | null;
+    sourceFileId?: string;
 };
 interface DeudasConsumoTableProps {
     rows: DeudaConsumoRow[];
@@ -258,9 +259,10 @@ interface DeudasConsumoTableProps {
     castigo?: number;
     headerBg?: string;
     headerText?: string;
+    onViewSource?: (fileIds: string[]) => void;
 }
 
-declare const DeudasConsumoTable: ({ rows, onRowsChange, formatCurrency, ufValue, castigo, headerBg, headerText, }: DeudasConsumoTableProps) => react_jsx_runtime.JSX.Element;
+declare const DeudasConsumoTable: ({ rows, onRowsChange, formatCurrency, ufValue, castigo, headerBg, headerText, onViewSource, }: DeudasConsumoTableProps) => react_jsx_runtime.JSX.Element;
 
 type BienRaizRow = {
     id: string;
@@ -277,6 +279,7 @@ type BienRaizRow = {
     monto_cuota: number | null;
     cuotas_pagadas: number | null;
     cuotas_total: number | null;
+    sourceFileId?: string;
 };
 interface BienesRaicesTableProps {
     rows: BienRaizRow[];
@@ -287,9 +290,10 @@ interface BienesRaicesTableProps {
     factorDescuento?: number;
     headerBg?: string;
     headerText?: string;
+    onViewSource?: (fileIds: string[]) => void;
 }
 
-declare const BienesRaicesTable: ({ rows, onRowsChange, formatCurrency, ufValue, capRate, factorDescuento, headerBg, headerText, }: BienesRaicesTableProps) => react_jsx_runtime.JSX.Element;
+declare const BienesRaicesTable: ({ rows, onRowsChange, formatCurrency, ufValue, capRate, factorDescuento, headerBg, headerText, onViewSource, }: BienesRaicesTableProps) => react_jsx_runtime.JSX.Element;
 
 interface ActivosSummaryItem {
     label: string;
