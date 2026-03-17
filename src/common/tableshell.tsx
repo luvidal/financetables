@@ -82,7 +82,7 @@ const TableShell = ({
         : isExpanded ? 'rounded-t-xl' : 'rounded-xl'
 
     return (
-        <div className={`${outerRadius} ${outerBorder}`}>
+        <div className={`${outerRadius} ${outerBorder} overflow-x-auto`}>
             {/* Accordion Header */}
             <div
                 role={canToggle ? 'button' : undefined}

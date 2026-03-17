@@ -109,7 +109,6 @@ const BoletasTable = ({
                 </div>
             )}
         >
-            <div className="overflow-x-auto">
                 <table className={T.table} style={{ tableLayout: 'fixed' }}>
                     <thead>
                         <tr className="border-b border-gray-200 bg-gray-50/50">
@@ -162,7 +161,6 @@ const BoletasTable = ({
                         </tr>
                     </tfoot>
                 </table>
-            </div>
         </TableShell>
     )
 }

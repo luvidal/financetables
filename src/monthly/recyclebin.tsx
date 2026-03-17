@@ -45,7 +45,6 @@ const RecycleBin = ({ deletedRows, months, onRestore, formatValue, showVariableC
             </button>
 
             {expanded && (
-                <div className="overflow-x-auto">
                     <table className={T.table} style={{ tableLayout: 'fixed' }}>
                         <tbody>
                             {deletedRows.map(row => {
@@ -99,7 +98,6 @@ const RecycleBin = ({ deletedRows, months, onRestore, formatValue, showVariableC
                             })}
                         </tbody>
                     </table>
-                </div>
             )}
         </div>
     )

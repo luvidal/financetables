@@ -65,7 +65,7 @@ var TableShell = ({
   const outerBorder = flush ? "" : isExpanded ? "border border-gray-200" : "";
   const outerRadius = flush ? "overflow-hidden" : `rounded-xl overflow-hidden`;
   const headerRadius = flush ? "" : isExpanded ? "rounded-t-xl" : "rounded-xl";
-  return /* @__PURE__ */ jsxs("div", { className: `${outerRadius} ${outerBorder}`, children: [
+  return /* @__PURE__ */ jsxs("div", { className: `${outerRadius} ${outerBorder} overflow-x-auto`, children: [
     /* @__PURE__ */ jsx(
       "div",
       {
@@ -816,7 +816,7 @@ var RecycleBin = ({ deletedRows, months, onRestore, formatValue, showVariableCol
         ]
       }
     ),
-    expanded && /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: deletedRows.map((row) => {
+    expanded && /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: deletedRows.map((row) => {
       const subtract = isSubtractType(row.type);
       return /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-100 opacity-75 group", children: [
         /* @__PURE__ */ jsx("td", { className: `pl-1 pr-2 py-1.5 text-gray-500 ${T.cellLabel}`, style: { width: "180px" }, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1 min-w-0", children: [
@@ -859,7 +859,7 @@ var RecycleBin = ({ deletedRows, months, onRestore, formatValue, showVariableCol
         }),
         /* @__PURE__ */ jsx("td", { style: { width: "40px" } })
       ] }, row.id);
-    }) }) }) })
+    }) }) })
   ] });
 };
 var recyclebin_default = RecycleBin;
@@ -1486,7 +1486,7 @@ var MonthlyTable = ({
         tabIndex: 0,
         onKeyDown: keyboard.handleContainerKeyDown
       },
-      renderHeader: ({ isExpanded }) => /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: /* @__PURE__ */ jsx("tr", { children: anySelected ? /* @__PURE__ */ jsx(
+      renderHeader: ({ isExpanded }) => /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: /* @__PURE__ */ jsx("tr", { children: anySelected ? /* @__PURE__ */ jsx(
         HeaderSelectionBar,
         {
           selectedCount: selectedRows.size,
@@ -1520,7 +1520,7 @@ var MonthlyTable = ({
           ] }, p.id);
         }),
         /* @__PURE__ */ jsx("td", { style: { width: "40px" } })
-      ] }) }) }) }) }),
+      ] }) }) }) }),
       renderAfterContent: ({ isExpanded }) => /* @__PURE__ */ jsxs(Fragment, { children: [
         isExpanded && /* @__PURE__ */ jsx(recyclebin_default, { deletedRows, months: monthsArray, onRestore: handleRestore, formatValue, showVariableColumn }),
         deleteTarget && /* @__PURE__ */ jsx(
@@ -1545,7 +1545,7 @@ var MonthlyTable = ({
           }
         )
       ] }),
-      children: /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsxs("tbody", { children: [
+      children: /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsxs("tbody", { children: [
         effectiveSections.map((section) => {
           const items = getOrderedItems(rows, section.type);
           return /* @__PURE__ */ jsxs(React4.Fragment, { children: [
@@ -1647,7 +1647,7 @@ var MonthlyTable = ({
             ] })
           ] });
         })()
-      ] }) }) })
+      ] }) })
     }
   );
 };
@@ -1853,7 +1853,7 @@ var DebtsTable = ({
       defaultCollapsed,
       forceExpanded,
       flush,
-      renderHeader: ({ isExpanded }) => /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: /* @__PURE__ */ jsxs("tr", { children: [
+      renderHeader: ({ isExpanded }) => /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: /* @__PURE__ */ jsxs("tr", { children: [
         /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-left", style: { width: "180px" }, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
           /* @__PURE__ */ jsx("span", { className: `${headerText} ${T.headerTitle}`, children: title }),
           /* @__PURE__ */ jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
@@ -1876,8 +1876,8 @@ var DebtsTable = ({
           /* @__PURE__ */ jsx("span", { className: `${T.headerStat} text-red-600`, children: formatCurrency4(totalAtraso) })
         ] }),
         /* @__PURE__ */ jsx("td", { className: "px-2 py-3 text-right", style: { width: "40px" }, children: !forceExpanded && (isExpanded ? /* @__PURE__ */ jsx(ChevronUp, { size: 20, className: headerText }) : /* @__PURE__ */ jsx(ChevronDown, { size: 20, className: headerText })) })
-      ] }) }) }) }),
-      children: /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: T.table, style: { tableLayout: "fixed" }, children: [
+      ] }) }) }),
+      children: /* @__PURE__ */ jsxs("table", { className: T.table, style: { tableLayout: "fixed" }, children: [
         /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-200 bg-gray-50/50", children: [
           /* @__PURE__ */ jsx("th", { className: `px-4 py-2 text-left ${T.th}`, style: { width: "180px" }, children: "Instituci\xF3n" }),
           /* @__PURE__ */ jsx("th", { className: `px-2 py-2 text-left ${T.th}`, style: { width: "100px" }, children: "Tipo" }),
@@ -1890,7 +1890,7 @@ var DebtsTable = ({
           entries.map((entry) => renderDataRow(entry)),
           renderAddRow()
         ] })
-      ] }) })
+      ] })
     }
   );
 };
@@ -1959,7 +1959,7 @@ var BoletasTable = ({
           !forceExpanded && (isExpanded ? /* @__PURE__ */ jsx(ChevronUp, { size: 20, className: headerText }) : /* @__PURE__ */ jsx(ChevronDown, { size: 20, className: headerText }))
         ] })
       ] }),
-      children: /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: T.table, style: { tableLayout: "fixed" }, children: [
+      children: /* @__PURE__ */ jsxs("table", { className: T.table, style: { tableLayout: "fixed" }, children: [
         /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-200 bg-gray-50/50", children: [
           /* @__PURE__ */ jsx("th", { className: `px-4 py-2 text-left ${T.th}`, style: { width: "140px" }, children: "Mes" }),
           /* @__PURE__ */ jsx("th", { className: `px-3 py-2 text-center ${T.th}`, style: { width: "80px" }, children: "Boletas" }),
@@ -1983,7 +1983,7 @@ var BoletasTable = ({
           ) }),
           /* @__PURE__ */ jsx("td", { className: `px-4 py-3 text-right ${T.footerValue} text-emerald-700`, style: { width: "130px" }, children: formatCurrency(totalLiquido) })
         ] }) })
-      ] }) })
+      ] })
     }
   );
 };
@@ -2015,7 +2015,7 @@ var TributarioTable = ({
       defaultCollapsed,
       forceExpanded,
       flush,
-      renderHeader: ({ isExpanded }) => /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: /* @__PURE__ */ jsxs("tr", { children: [
+      renderHeader: ({ isExpanded }) => /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: /* @__PURE__ */ jsxs("tr", { children: [
         /* @__PURE__ */ jsx("td", { className: "px-4 py-3 text-left", style: { width: "200px" }, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
           /* @__PURE__ */ jsx("span", { className: `${headerText} ${T.headerTitle}`, children: title }),
           /* @__PURE__ */ jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
@@ -2040,8 +2040,8 @@ var TributarioTable = ({
           /* @__PURE__ */ jsx("td", { className: "px-3 py-3 text-right", style: { width: "140px" } })
         ] }),
         /* @__PURE__ */ jsx("td", { className: "px-2 py-3 text-right", style: { width: "40px" }, children: !forceExpanded && (isExpanded ? /* @__PURE__ */ jsx(ChevronUp, { size: 20, className: headerText }) : /* @__PURE__ */ jsx(ChevronDown, { size: 20, className: headerText })) })
-      ] }) }) }) }),
-      children: /* @__PURE__ */ jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxs("table", { className: T.table, style: { tableLayout: "fixed" }, children: [
+      ] }) }) }),
+      children: /* @__PURE__ */ jsxs("table", { className: T.table, style: { tableLayout: "fixed" }, children: [
         /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-200 bg-gray-50/50", children: [
           /* @__PURE__ */ jsx("th", { className: `px-4 py-2 text-left ${T.th}`, style: { width: "200px" }, children: "Documento" }),
           /* @__PURE__ */ jsx("th", { className: `px-2 py-2 text-left ${T.th}`, style: { width: "120px" }, children: "Detalle" }),
@@ -2104,7 +2104,7 @@ var TributarioTable = ({
           )),
           entries.length === 0 && /* @__PURE__ */ jsx("tr", { className: "border-b border-gray-100", children: /* @__PURE__ */ jsx("td", { className: `px-4 py-3 ${T.empty}`, colSpan: 5, children: "Sin informaci\xF3n tributaria" }) })
         ] })
-      ] }) })
+      ] })
     }
   );
 };

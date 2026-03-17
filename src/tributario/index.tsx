@@ -76,7 +76,6 @@ const TributarioTable = ({
             forceExpanded={forceExpanded}
             flush={flush}
             renderHeader={({ isExpanded }) => (
-                <div className="overflow-x-auto">
                     <table className={T.table} style={{ tableLayout: 'fixed' }}>
                         <tbody>
                             <tr>
@@ -123,10 +122,8 @@ const TributarioTable = ({
                             </tr>
                         </tbody>
                     </table>
-                </div>
             )}
         >
-            <div className="overflow-x-auto">
                 <table className={T.table} style={{ tableLayout: 'fixed' }}>
                     <thead>
                         <tr className="border-b border-gray-200 bg-gray-50/50">
@@ -212,7 +209,6 @@ const TributarioTable = ({
                         )}
                     </tbody>
                 </table>
-            </div>
         </TableShell>
     )
 }

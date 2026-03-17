@@ -306,7 +306,6 @@ const MonthlyTable = ({
                 onKeyDown: keyboard.handleContainerKeyDown,
             }}
             renderHeader={({ isExpanded }) => (
-                <div className="overflow-x-auto">
                     <table className={T.table} style={{ tableLayout: 'fixed' }}>
                         <tbody>
                             <tr>
@@ -352,7 +351,6 @@ const MonthlyTable = ({
                             </tr>
                         </tbody>
                     </table>
-                </div>
             )}
             renderAfterContent={({ isExpanded }) => (
                 <>
@@ -386,7 +384,6 @@ const MonthlyTable = ({
                 </>
             )}
         >
-            <div className="overflow-x-auto">
                 <table className={T.table} style={{ tableLayout: 'fixed' }}>
                     <tbody>
                         {effectiveSections.map((section) => {
@@ -533,7 +530,6 @@ const MonthlyTable = ({
                         })()}
                     </tbody>
                 </table>
-            </div>
         </TableShell>
     )
 }
