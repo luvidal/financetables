@@ -193,12 +193,14 @@ const DeudasConsumoTable = ({
                                         asDiv
                                     />
                                     {isHovered && row.cuota_estimated && row.saldo_deuda_pesos != null && (
-                                        <button
-                                            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                                            title={`Estimado: 5% de ${formatCurrency(row.saldo_deuda_pesos)}`}
-                                        >
-                                            <Info size={13} />
-                                        </button>
+                                        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] group/info">
+                                            <button className="p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100">
+                                                <Info size={13} />
+                                            </button>
+                                            <div className="hidden group-hover/info:block absolute bottom-full right-0 mb-1 px-2 py-1 rounded bg-gray-800 text-white text-[10px] whitespace-nowrap z-50 shadow-lg">
+                                                Estimado: 5% de {formatCurrency(row.saldo_deuda_pesos)}
+                                            </div>
+                                        </div>
                                     )}
                                     {isHovered && row.cuota_source_file_id && onViewSource && (
                                         <button

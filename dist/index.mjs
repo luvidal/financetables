@@ -3000,14 +3000,13 @@ var DeudasConsumoTable = ({
                         asDiv: true
                       }
                     ),
-                    isHovered && row.cuota_estimated && row.saldo_deuda_pesos != null && /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        className: "absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100",
-                        title: `Estimado: 5% de ${formatCurrency4(row.saldo_deuda_pesos)}`,
-                        children: /* @__PURE__ */ jsx(Info, { size: 13 })
-                      }
-                    ),
+                    isHovered && row.cuota_estimated && row.saldo_deuda_pesos != null && /* @__PURE__ */ jsxs("div", { className: "absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] group/info", children: [
+                      /* @__PURE__ */ jsx("button", { className: "p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100", children: /* @__PURE__ */ jsx(Info, { size: 13 }) }),
+                      /* @__PURE__ */ jsxs("div", { className: "hidden group-hover/info:block absolute bottom-full right-0 mb-1 px-2 py-1 rounded bg-gray-800 text-white text-[10px] whitespace-nowrap z-50 shadow-lg", children: [
+                        "Estimado: 5% de ",
+                        formatCurrency4(row.saldo_deuda_pesos)
+                      ] })
+                    ] }),
                     isHovered && row.cuota_source_file_id && onViewSource && /* @__PURE__ */ jsx(
                       "button",
                       {
