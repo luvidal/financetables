@@ -33,7 +33,7 @@ export type { DeudaConsumoRow, DeudasConsumoTableProps } from './deudasconsumo/t
 
 // BienesRaicesTable
 export { default as BienesRaicesTable } from './bienesraices'
-export type { BienRaizRow, BienesRaicesTableProps } from './bienesraices/types'
+export type { BienRaizRow, BienesRaicesTableProps, HipotecarioOption } from './bienesraices/types'
 
 // ActivosSummary
 export { default as ActivosSummary } from './activossummary'

@@ -11,7 +11,7 @@ import { defaultFormatCurrency } from '../common/utils'
 import { useSoftDelete } from '../common/usesoftdelete'
 import DeleteDialog from '../common/deletedialog'
 import RecycleBin from '../common/recyclebin'
-import type { BienRaizRow, BienesRaicesTableProps } from './types'
+import type { BienRaizRow, BienesRaicesTableProps, HipotecarioOption } from './types'
 
 const CurrencyToggle = ({ value, onChange, headerText }: { value: 'uf' | 'clp', onChange: (v: 'uf' | 'clp') => void, headerText: string }) => (
     <span className="inline-flex rounded-md overflow-hidden border border-amber-200 ml-2 text-[10px] leading-none align-middle">
@@ -37,6 +37,7 @@ const BienesRaicesTable = ({
     headerText = 'text-amber-700',
     onViewSource,
     title,
+    hipotecarioOptions,
 }: BienesRaicesTableProps) => {
     const { getHoverProps, isHovered: isRowHovered } = useRowHover()
     const [newRow, setNewRow] = useState({ direccion: '', comuna: '' })
@@ -106,6 +107,32 @@ const BienesRaicesTable = ({
     const totalSaldoDeudaUf = activeRows.reduce((s, r) => s + (r.saldo_deuda_uf || 0), 0)
     const totalSaldoDeudaPesos = activeRows.reduce((s, r) => s + (r.saldo_deuda_pesos || 0), 0)
     const totalMontoCuota = activeRows.reduce((s, r) => s + (r.monto_cuota || 0), 0)
+
+    // Track which hipotecario options are already matched to rows (1:1)
+    const usedEntidades = useMemo(() => {
+        if (!hipotecarioOptions?.length) return new Set<string>()
+        return new Set(activeRows.map(r => r.institucion).filter(Boolean))
+    }, [activeRows, hipotecarioOptions])
+
+    const selectHipotecario = (rowId: string, entidad: string) => {
+        const option = hipotecarioOptions?.find(o => o.entidad === entidad)
+        onRowsChange(rows.map(r => {
+            if (r.id !== rowId) return r
+            if (!entidad) {
+                // Clear debt columns
+                return { ...r, institucion: '', tipo_deuda: '', saldo_deuda_uf: null, saldo_deuda_pesos: null, monto_cuota: null }
+            }
+            if (!option) return r
+            return {
+                ...r,
+                institucion: option.entidad,
+                tipo_deuda: 'Hipotecaria',
+                saldo_deuda_uf: option.saldo_uf,
+                saldo_deuda_pesos: option.saldo_pesos,
+                monto_cuota: option.monto_cuota ?? r.monto_cuota,
+            }
+        }))
+    }
 
     const isAutoComputed = (row: BienRaizRow, field: string): boolean => {
         if (!ufValue) return false
@@ -245,23 +272,44 @@ const BienesRaicesTable = ({
                                                 <Eye size={14} />
                                             </button>
                                         )}
-                                        <input
-                                            type="text"
-                                            value={row.institucion}
-                                            onChange={e => updateField(row.id, 'institucion', e.target.value)}
-                                            className={`flex-1 min-w-0 ${T.input} pl-1`}
-                                            placeholder="Institución"
-                                        />
+                                        {hipotecarioOptions?.length ? (
+                                            <select
+                                                value={row.institucion}
+                                                onChange={e => selectHipotecario(row.id, e.target.value)}
+                                                className={`flex-1 min-w-0 ${T.input} pl-0.5 bg-transparent cursor-pointer`}
+                                            >
+                                                <option value="">—</option>
+                                                {hipotecarioOptions.map(opt => (
+                                                    <option
+                                                        key={opt.entidad}
+                                                        value={opt.entidad}
+                                                        disabled={usedEntidades.has(opt.entidad) && row.institucion !== opt.entidad}
+                                                    >{opt.entidad}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                value={row.institucion}
+                                                onChange={e => updateField(row.id, 'institucion', e.target.value)}
+                                                className={`flex-1 min-w-0 ${T.input} pl-1`}
+                                                placeholder="Institución"
+                                            />
+                                        )}
                                     </div>
                                 </td>
                                 <td className="px-2 py-2.5" style={{ width: '90px' }}>
-                                    <input
-                                        type="text"
-                                        value={row.tipo_deuda}
-                                        onChange={e => updateField(row.id, 'tipo_deuda', e.target.value)}
-                                        className={`w-full ${T.input} pl-1`}
-                                        placeholder="Tipo"
-                                    />
+                                    {hipotecarioOptions?.length && row.institucion ? (
+                                        <span className="text-xs text-gray-500 pl-1">Hipotecaria</span>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            value={row.tipo_deuda}
+                                            onChange={e => updateField(row.id, 'tipo_deuda', e.target.value)}
+                                            className={`w-full ${T.input} pl-1`}
+                                            placeholder="Tipo"
+                                        />
+                                    )}
                                 </td>
                                 {isUf ? (
                                     <EditableCell

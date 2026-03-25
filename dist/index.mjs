@@ -3103,7 +3103,8 @@ var BienesRaicesTable = ({
   headerBg = "bg-amber-50",
   headerText = "text-amber-700",
   onViewSource,
-  title
+  title,
+  hipotecarioOptions
 }) => {
   const { getHoverProps, isHovered: isRowHovered } = useRowHover();
   const [newRow, setNewRow] = useState({ direccion: "", comuna: "" });
@@ -3166,6 +3167,28 @@ var BienesRaicesTable = ({
   const totalSaldoDeudaUf = activeRows.reduce((s, r) => s + (r.saldo_deuda_uf || 0), 0);
   const totalSaldoDeudaPesos = activeRows.reduce((s, r) => s + (r.saldo_deuda_pesos || 0), 0);
   const totalMontoCuota = activeRows.reduce((s, r) => s + (r.monto_cuota || 0), 0);
+  const usedEntidades = useMemo(() => {
+    if (!hipotecarioOptions?.length) return /* @__PURE__ */ new Set();
+    return new Set(activeRows.map((r) => r.institucion).filter(Boolean));
+  }, [activeRows, hipotecarioOptions]);
+  const selectHipotecario = (rowId, entidad) => {
+    const option = hipotecarioOptions?.find((o) => o.entidad === entidad);
+    onRowsChange(rows.map((r) => {
+      if (r.id !== rowId) return r;
+      if (!entidad) {
+        return { ...r, institucion: "", tipo_deuda: "", saldo_deuda_uf: null, saldo_deuda_pesos: null, monto_cuota: null };
+      }
+      if (!option) return r;
+      return {
+        ...r,
+        institucion: option.entidad,
+        tipo_deuda: "Hipotecaria",
+        saldo_deuda_uf: option.saldo_uf,
+        saldo_deuda_pesos: option.saldo_pesos,
+        monto_cuota: option.monto_cuota ?? r.monto_cuota
+      };
+    }));
+  };
   const isAutoComputed = (row, field) => {
     if (!ufValue) return false;
     if (field === "valor_pesos" && row.valor_uf != null) return true;
@@ -3304,7 +3327,26 @@ var BienesRaicesTable = ({
                         children: /* @__PURE__ */ jsx(Eye, { size: 14 })
                       }
                     ),
-                    /* @__PURE__ */ jsx(
+                    hipotecarioOptions?.length ? /* @__PURE__ */ jsxs(
+                      "select",
+                      {
+                        value: row.institucion,
+                        onChange: (e) => selectHipotecario(row.id, e.target.value),
+                        className: `flex-1 min-w-0 ${T.input} pl-0.5 bg-transparent cursor-pointer`,
+                        children: [
+                          /* @__PURE__ */ jsx("option", { value: "", children: "\u2014" }),
+                          hipotecarioOptions.map((opt) => /* @__PURE__ */ jsx(
+                            "option",
+                            {
+                              value: opt.entidad,
+                              disabled: usedEntidades.has(opt.entidad) && row.institucion !== opt.entidad,
+                              children: opt.entidad
+                            },
+                            opt.entidad
+                          ))
+                        ]
+                      }
+                    ) : /* @__PURE__ */ jsx(
                       "input",
                       {
                         type: "text",
@@ -3315,7 +3357,7 @@ var BienesRaicesTable = ({
                       }
                     )
                   ] }) }),
-                  /* @__PURE__ */ jsx("td", { className: "px-2 py-2.5", style: { width: "90px" }, children: /* @__PURE__ */ jsx(
+                  /* @__PURE__ */ jsx("td", { className: "px-2 py-2.5", style: { width: "90px" }, children: hipotecarioOptions?.length && row.institucion ? /* @__PURE__ */ jsx("span", { className: "text-xs text-gray-500 pl-1", children: "Hipotecaria" }) : /* @__PURE__ */ jsx(
                     "input",
                     {
                       type: "text",

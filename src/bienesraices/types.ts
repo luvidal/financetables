@@ -18,6 +18,13 @@ export type BienRaizRow = {
   sourceFileId?: string
 } & SoftDeletable
 
+export interface HipotecarioOption {
+  entidad: string
+  saldo_pesos: number | null
+  saldo_uf: number | null
+  monto_cuota: number | null
+}
+
 export interface BienesRaicesTableProps {
   rows: BienRaizRow[]
   onRowsChange: (rows: BienRaizRow[]) => void
@@ -29,4 +36,6 @@ export interface BienesRaicesTableProps {
   headerText?: string
   onViewSource?: (fileIds: string[]) => void
   title?: React.ReactNode
+  /** CMF hipotecario entries available for matching to properties via dropdown */
+  hipotecarioOptions?: HipotecarioOption[]
 }

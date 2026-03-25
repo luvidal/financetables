@@ -252,6 +252,12 @@ type BienRaizRow = {
     cuotas_total: number | null;
     sourceFileId?: string;
 } & SoftDeletable;
+interface HipotecarioOption {
+    entidad: string;
+    saldo_pesos: number | null;
+    saldo_uf: number | null;
+    monto_cuota: number | null;
+}
 interface BienesRaicesTableProps {
     rows: BienRaizRow[];
     onRowsChange: (rows: BienRaizRow[]) => void;
@@ -263,9 +269,11 @@ interface BienesRaicesTableProps {
     headerText?: string;
     onViewSource?: (fileIds: string[]) => void;
     title?: React.ReactNode;
+    /** CMF hipotecario entries available for matching to properties via dropdown */
+    hipotecarioOptions?: HipotecarioOption[];
 }
 
-declare const BienesRaicesTable: ({ rows, onRowsChange, formatCurrency, ufValue, capRate, factorDescuento, headerBg, headerText, onViewSource, title, }: BienesRaicesTableProps) => react_jsx_runtime.JSX.Element;
+declare const BienesRaicesTable: ({ rows, onRowsChange, formatCurrency, ufValue, capRate, factorDescuento, headerBg, headerText, onViewSource, title, hipotecarioOptions, }: BienesRaicesTableProps) => react_jsx_runtime.JSX.Element;
 
 interface ActivosSummaryItem {
     label: string;
@@ -375,4 +383,4 @@ declare const displayCurrency: (value: number | undefined | null) => string;
 declare const defaultFormatCurrency: (value: number | null | undefined) => string;
 declare const displayCurrencyCompact: (value: number | undefined | null, isDeduction?: boolean) => string;
 
-export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, type AutoComputeRule, type AutoConvertRule, type BienRaizRow, BienesRaicesTable, type BienesRaicesTableProps, type BoletaMonth, BoletasTable, type BoletasTableProps, type CodeudorIncomeInfo, type DebtEntry, DeleteDialog, type DeudaConsumoRow, DeudasConsumoTable, type DeudasConsumoTableProps, DeudasTable, type DeudasTableProps, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type InversionRow, InversionesTable, type InversionesTableProps, type Month, type PromptOptions, RecycleBin, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, TableShell, type TableShellProps, type TributarioEntry, TributarioTable, type TributarioTableProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
+export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, type AutoComputeRule, type AutoConvertRule, type BienRaizRow, BienesRaicesTable, type BienesRaicesTableProps, type BoletaMonth, BoletasTable, type BoletasTableProps, type CodeudorIncomeInfo, type DebtEntry, DeleteDialog, type DeudaConsumoRow, DeudasConsumoTable, type DeudasConsumoTableProps, DeudasTable, type DeudasTableProps, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type HipotecarioOption, type InversionRow, InversionesTable, type InversionesTableProps, type Month, type PromptOptions, RecycleBin, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, TableShell, type TableShellProps, type TributarioEntry, TributarioTable, type TributarioTableProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
