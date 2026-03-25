@@ -2851,6 +2851,12 @@ var DeudasConsumoTable = ({
       depends: ["saldo_deuda_uf", "saldo_deuda_pesos", "tipo_deuda"],
       condition: (row) => LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null,
       formula: (row) => Math.round((row.saldo_deuda_pesos ?? 0) * castigo)
+    },
+    {
+      target: "monto_cuota",
+      depends: ["saldo_deuda_uf", "saldo_deuda_pesos"],
+      condition: (row) => row.cuota_estimated === true && !LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null,
+      formula: (row) => Math.round((row.saldo_deuda_pesos ?? 0) * castigo)
     }
   ];
   const updateField = (id, field, value) => {
@@ -2858,6 +2864,7 @@ var DeudasConsumoTable = ({
       if (r.id !== id) return r;
       let next = applyAutoConversions(r, field, value, conversionRules, {});
       next = applyAutoCompute(next, field, computeRules, {});
+      if (field === "monto_cuota") next = { ...next, cuota_estimated: false };
       return next;
     }));
   };
@@ -2882,6 +2889,11 @@ var DeudasConsumoTable = ({
     if (field === "saldo_deuda_pesos" && row.saldo_deuda_uf != null && ufValue) return true;
     if (field === "monto_cuota" && LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null) return true;
     return false;
+  };
+  const cuotaClassName = (row) => {
+    if (isAutoComputed(row, "monto_cuota")) return "italic text-rose-400";
+    if (row.cuota_estimated) return "italic text-gray-400";
+    return "";
   };
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs("div", { className: "overflow-x-auto", onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, children: [
@@ -2977,7 +2989,7 @@ var DeudasConsumoTable = ({
                       type: "currency",
                       hasData: row.monto_cuota !== null,
                       width: "110px",
-                      className: isAutoComputed(row, "monto_cuota") ? "italic text-rose-400" : "",
+                      className: cuotaClassName(row),
                       focused: keyboard.isFocused(row.id, 2),
                       onCellFocus: () => keyboard.focus(row.id, 2),
                       onNavigate: keyboard.navigate,

@@ -37,12 +37,18 @@ const DeudasConsumoTable = ({
         { source: 'saldo_deuda_pesos', target: 'saldo_deuda_uf', formula: (v) => v / ufValue, precision: 2 },
     ] : []
 
-    // Auto-compute: 5% castigo for líneas/TC
+    // Auto-compute: 5% castigo for líneas/TC, and 5% fallback for estimated cuotas
     const computeRules: AutoComputeRule[] = [
         {
             target: 'monto_cuota',
             depends: ['saldo_deuda_uf', 'saldo_deuda_pesos', 'tipo_deuda'],
             condition: (row) => LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null,
+            formula: (row) => Math.round((row.saldo_deuda_pesos ?? 0) * castigo),
+        },
+        {
+            target: 'monto_cuota',
+            depends: ['saldo_deuda_uf', 'saldo_deuda_pesos'],
+            condition: (row) => row.cuota_estimated === true && !LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null,
             formula: (row) => Math.round((row.saldo_deuda_pesos ?? 0) * castigo),
         },
     ]
@@ -52,6 +58,8 @@ const DeudasConsumoTable = ({
             if (r.id !== id) return r
             let next = applyAutoConversions(r, field, value, conversionRules, {})
             next = applyAutoCompute(next, field, computeRules, {})
+            // Clear estimated flag when user manually edits cuota
+            if (field === 'monto_cuota') next = { ...next, cuota_estimated: false }
             return next
         }))
     }
@@ -79,6 +87,13 @@ const DeudasConsumoTable = ({
         if (field === 'saldo_deuda_pesos' && row.saldo_deuda_uf != null && ufValue) return true
         if (field === 'monto_cuota' && LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null) return true
         return false
+    }
+
+    /** Cuota className: rose for línea/TC auto-compute, gray for 5% fallback estimate */
+    const cuotaClassName = (row: DeudaConsumoRow): string => {
+        if (isAutoComputed(row, 'monto_cuota')) return 'italic text-rose-400'
+        if (row.cuota_estimated) return 'italic text-gray-400'
+        return ''
     }
 
     return (<>
@@ -167,7 +182,7 @@ const DeudasConsumoTable = ({
                                     type="currency"
                                     hasData={row.monto_cuota !== null}
                                     width="110px"
-                                    className={isAutoComputed(row, 'monto_cuota') ? 'italic text-rose-400' : ''}
+                                    className={cuotaClassName(row)}
                                     focused={keyboard.isFocused(row.id, 2)}
                                     onCellFocus={() => keyboard.focus(row.id, 2)}
                                     onNavigate={keyboard.navigate}

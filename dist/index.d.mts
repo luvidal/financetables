@@ -218,6 +218,7 @@ type DeudaConsumoRow = {
     saldo_deuda_uf: number | null;
     saldo_deuda_pesos: number | null;
     monto_cuota: number | null;
+    cuota_estimated?: boolean;
     cuotas_pagadas: number | null;
     cuotas_total: number | null;
     sourceFileId?: string;
