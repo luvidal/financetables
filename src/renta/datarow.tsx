@@ -1,7 +1,8 @@
 import React from 'react'
-import { GripVertical, X, Eye } from 'lucide-react'
+import { GripVertical, Eye } from 'lucide-react'
 import EditableCell from '../common/editablecell'
 import { T } from '../common/styles'
+import DeleteRowButton from '../common/deletebutton'
 import { isSubtractType } from './helpers'
 import type { RowData, Month } from './types'
 
@@ -234,17 +235,7 @@ const DataRow = ({
                 )
             })}
             <td style={{ width: '40px' }} className="text-center">
-                {isHovered && !anySelected && (
-                    <div className="flex items-center justify-center gap-0.5">
-                        <button
-                            onClick={onRemove}
-                            className="p-0.5 rounded text-red-400 hover:text-red-600 hover:bg-red-100"
-                            title="Eliminar fila"
-                        >
-                            <X size={14} />
-                        </button>
-                    </div>
-                )}
+                <DeleteRowButton onClick={onRemove} isVisible={isHovered && !anySelected} title="Eliminar fila" />
             </td>
         </tr>
     )

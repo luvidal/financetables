@@ -5,7 +5,7 @@ export { generateLastNMonths } from './renta/helpers'
 
 // DeudasTable
 export { default as DeudasTable } from './deudas'
-export type { DebtEntry, DeudasTableProps } from './deudas'
+export type { DeudaRow, DeudasTableProps } from './deudas/types'
 
 // BoletasTable
 export { default as BoletasTable } from './boletas'
@@ -26,10 +26,6 @@ export type { VehiculoRow, VehiculosTableProps } from './vehiculos/types'
 // InversionesTable
 export { default as InversionesTable } from './inversiones'
 export type { InversionRow, InversionesTableProps } from './inversiones/types'
-
-// DeudasConsumoTable
-export { default as DeudasConsumoTable } from './deudasconsumo'
-export type { DeudaConsumoRow, DeudasConsumoTableProps } from './deudasconsumo/types'
 
 // PropiedadesTable
 export { default as PropiedadesTable } from './propiedades'

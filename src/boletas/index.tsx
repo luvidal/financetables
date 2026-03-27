@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 import { displayCurrencyCompact } from '../common/utils'
 import { T } from '../common/styles'
 import TableShell, { SourceIcon } from '../common/tableshell'
+import DeleteRowButton from '../common/deletebutton'
 
 // ============================================================================
 // Types
@@ -35,6 +36,7 @@ export interface BoletasTableProps {
     flush?: boolean
     sourceFileIds?: string[]
     onViewSource?: (fileIds: string[]) => void
+    onRemoveMonth?: (periodo: string) => void
 }
 
 // ============================================================================
@@ -66,7 +68,9 @@ const BoletasTable = ({
     flush = false,
     sourceFileIds,
     onViewSource,
+    onRemoveMonth,
 }: BoletasTableProps) => {
+    const [hoveredRow, setHoveredRow] = useState<number | null>(null)
     const monthsWithData = months.filter(m => m.hasData)
     const totalLiquido = totales?.total_liquido ?? monthsWithData.reduce((s, m) => s + (m.liquido || 0), 0)
     const totalBoletas = totales?.boletas_vigentes ?? monthsWithData.reduce((s, m) => s + (m.boletas || 0), 0)
@@ -116,11 +120,17 @@ const BoletasTable = ({
                             <th className={`px-3 py-2 text-right ${T.th}`} style={{ width: '130px' }}>Bruto</th>
                             <th className={`px-3 py-2 text-right ${T.th}`} style={{ width: '130px' }}>Retención</th>
                             <th className={`px-4 py-2 text-right ${T.th}`} style={{ width: '130px' }}>Líquido</th>
+                            {onRemoveMonth && <th style={{ width: '36px' }} />}
                         </tr>
                     </thead>
                     <tbody>
                         {months.map((m, i) => (
-                            <tr key={i} className={`border-b border-gray-100 ${m.hasData ? 'hover:bg-emerald-50/30' : ''}`}>
+                            <tr
+                                key={i}
+                                className={`border-b border-gray-100 ${m.hasData ? 'hover:bg-emerald-50/30' : ''}`}
+                                onMouseEnter={() => setHoveredRow(i)}
+                                onMouseLeave={() => setHoveredRow(null)}
+                            >
                                 <td className={`px-4 py-2.5 font-medium ${T.cellLabel} ${m.hasData ? 'text-gray-700' : 'text-gray-300'}`} style={{ width: '140px' }}>
                                     <span className="truncate block">{MONTH_LABELS[m.mes] || m.mes}</span>
                                 </td>
@@ -136,6 +146,16 @@ const BoletasTable = ({
                                 <td className="px-4 py-2.5 text-right font-medium text-emerald-700" style={{ width: '130px' }}>
                                     {m.hasData ? formatCurrency(m.liquido) : ''}
                                 </td>
+                                {onRemoveMonth && (
+                                    <td style={{ width: '36px' }} className="text-center">
+                                        {m.hasData && (
+                                            <DeleteRowButton
+                                                onClick={() => onRemoveMonth(m.periodo)}
+                                                isVisible={hoveredRow === i}
+                                            />
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>
@@ -157,6 +177,7 @@ const BoletasTable = ({
                             <td className={`px-4 py-3 text-right ${T.footerValue} text-emerald-700`} style={{ width: '130px' }}>
                                 {formatCurrency(totalLiquido)}
                             </td>
+                            {onRemoveMonth && <td style={{ width: '36px' }} />}
                         </tr>
                     </tfoot>
                 </table>

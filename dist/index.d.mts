@@ -70,37 +70,32 @@ type SoftDeletable = {
     deletionReason?: string;
 };
 
-type DebtEntry = {
+type DeudaRow = {
     id: string;
-    entidad: string;
-    tipo: string;
-    deuda_total: number | null;
-    vigente: number | null;
-    atraso_30_59?: number | null;
-    atraso_60_89?: number | null;
-    atraso_90_mas?: number | null;
+    institucion: string;
+    tipo_deuda: string;
+    saldo_deuda_uf: number | null;
+    saldo_deuda_pesos: number | null;
+    monto_cuota: number | null;
+    cuota_estimated?: boolean;
+    castigo_pct?: number;
+    cuota_source_file_id?: string;
+    cuotas_pagadas: number | null;
+    cuotas_total: number | null;
     sourceFileId?: string;
 } & SoftDeletable;
 interface DeudasTableProps {
-    title: string;
-    entries: DebtEntry[];
-    onEntriesChange: (entries: DebtEntry[]) => void;
-    summary?: {
-        rut?: string;
-        nombre?: string;
-        deuda_total?: number;
-        fecha_informe?: string;
-    };
+    rows: DeudaRow[];
+    onRowsChange: (rows: DeudaRow[]) => void;
+    formatCurrency?: (value: number | null | undefined) => string;
+    ufValue?: number | null;
+    castigo?: number;
     headerBg?: string;
     headerText?: string;
-    defaultCollapsed?: boolean;
-    forceExpanded?: boolean;
-    flush?: boolean;
-    formatCurrency?: (value: number | null | undefined) => string;
-    sourceFileIds?: string[];
     onViewSource?: (fileIds: string[]) => void;
 }
-declare const DeudasTable: ({ title, entries, onEntriesChange, summary, headerBg, headerText, defaultCollapsed, forceExpanded, flush, formatCurrency, sourceFileIds, onViewSource, }: DeudasTableProps) => react_jsx_runtime.JSX.Element;
+
+declare const DeudasTable: ({ rows, onRowsChange, formatCurrency, ufValue, castigo, headerBg, headerText, onViewSource, }: DeudasTableProps) => react_jsx_runtime.JSX.Element;
 
 type BoletaMonth = {
     periodo: string;
@@ -128,8 +123,9 @@ interface BoletasTableProps {
     flush?: boolean;
     sourceFileIds?: string[];
     onViewSource?: (fileIds: string[]) => void;
+    onRemoveMonth?: (periodo: string) => void;
 }
-declare const BoletasTable: ({ title, months, totales, headerBg, headerText, defaultCollapsed, forceExpanded, flush, sourceFileIds, onViewSource, }: BoletasTableProps) => react_jsx_runtime.JSX.Element;
+declare const BoletasTable: ({ title, months, totales, headerBg, headerText, defaultCollapsed, forceExpanded, flush, sourceFileIds, onViewSource, onRemoveMonth, }: BoletasTableProps) => react_jsx_runtime.JSX.Element;
 
 type TributarioEntry = {
     id: string;
@@ -228,33 +224,6 @@ interface InversionesTableProps {
 }
 
 declare const InversionesTable: ({ rows, onRowsChange, formatCurrency, headerBg, headerText, title, }: InversionesTableProps) => react_jsx_runtime.JSX.Element;
-
-type DeudaConsumoRow = {
-    id: string;
-    institucion: string;
-    tipo_deuda: string;
-    saldo_deuda_uf: number | null;
-    saldo_deuda_pesos: number | null;
-    monto_cuota: number | null;
-    cuota_estimated?: boolean;
-    castigo_pct?: number;
-    cuota_source_file_id?: string;
-    cuotas_pagadas: number | null;
-    cuotas_total: number | null;
-    sourceFileId?: string;
-} & SoftDeletable;
-interface DeudasConsumoTableProps {
-    rows: DeudaConsumoRow[];
-    onRowsChange: (rows: DeudaConsumoRow[]) => void;
-    formatCurrency?: (value: number | null | undefined) => string;
-    ufValue?: number | null;
-    castigo?: number;
-    headerBg?: string;
-    headerText?: string;
-    onViewSource?: (fileIds: string[]) => void;
-}
-
-declare const DeudasConsumoTable: ({ rows, onRowsChange, formatCurrency, ufValue, castigo, headerBg, headerText, onViewSource, }: DeudasConsumoTableProps) => react_jsx_runtime.JSX.Element;
 
 type PropiedadRow = {
     id: string;
@@ -404,4 +373,4 @@ declare const displayCurrency: (value: number | undefined | null) => string;
 declare const defaultFormatCurrency: (value: number | null | undefined) => string;
 declare const displayCurrencyCompact: (value: number | undefined | null, isDeduction?: boolean) => string;
 
-export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, type AutoComputeRule, type AutoConvertRule, type BoletaMonth, BoletasTable, type BoletasTableProps, type CodeudorIncomeInfo, type DebtEntry, DeleteDialog, type DeudaConsumoRow, DeudasConsumoTable, type DeudasConsumoTableProps, DeudasTable, type DeudasTableProps, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type HipotecarioOption, type InversionRow, InversionesTable, type InversionesTableProps, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, TableShell, type TableShellProps, type TributarioEntry, TributarioTable, type TributarioTableProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
+export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, type AutoComputeRule, type AutoConvertRule, type BoletaMonth, BoletasTable, type BoletasTableProps, type CodeudorIncomeInfo, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type HipotecarioOption, type InversionRow, InversionesTable, type InversionesTableProps, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, TableShell, type TableShellProps, type TributarioEntry, TributarioTable, type TributarioTableProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
