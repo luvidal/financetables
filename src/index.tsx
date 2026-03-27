@@ -35,6 +35,10 @@ export type { PropiedadRow, PropiedadesTableProps, HipotecarioOption } from './p
 export { default as ActivosSummary } from './activossummary'
 export type { ActivosSummaryItem, ActivosSummaryProps } from './activossummary'
 
+// SummaryTable
+export { default as SummaryTable } from './summary'
+export type { SummaryRow, SummaryRowType, SummaryRowFormat, SummaryTableProps } from './summary/types'
+
 // Common
 export { default as DeleteDialog } from './common/deletedialog'
 export { default as RecycleBin } from './common/recyclebin'
