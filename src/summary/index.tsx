@@ -1,3 +1,4 @@
+import { T } from '../common/styles'
 import { displayCurrencyCompact, displayCurrency } from '../common/utils'
 import type { SummaryRow, SummaryRowFormat, SummaryTableProps } from './types'
 
@@ -18,52 +19,40 @@ function formatCell(v: number | null, format: SummaryRowFormat): { display: stri
   }
 }
 
+const ROW_STYLES = {
+  data:       { row: T.sumDataRow,       label: T.sumDataLabel,  value: T.sumDataValue },
+  total:      { row: T.sumTotalRow,      label: T.sumTotalLabel, value: T.sumTotalValue },
+  grandtotal: { row: T.sumGrandtotalRow, label: T.sumTotalLabel, value: T.sumTotalValue },
+} as const
+
 const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, columnWidth = 'w-[120px]' }: SummaryTableProps) => {
   const extraW = extraColumn?.width ?? 'w-[80px]'
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm border-collapse">
+      <table className={`${T.table} text-sm border-collapse`}>
         <tbody>
           {rows.map((row, idx) => {
             if (row.type === 'subheader') {
               return (
-                <tr key={idx} className="border-b-2 border-gray-300">
-                  <td className="py-2 px-3 text-xs font-bold text-gray-800 uppercase tracking-wider">
-                    {row.label}
-                  </td>
+                <tr key={idx} className={T.sumSubheaderRow}>
+                  <td className={T.sumSubheaderLabel}>{row.label}</td>
                   {extraColumn && (
-                    <td className={`py-2 px-3 text-right text-xs font-bold text-gray-600 ${extraW}`}>
-                      {extraColumn.header}
-                    </td>
+                    <td className={`${T.sumSubheaderCol} ${extraW}`}>{extraColumn.header}</td>
                   )}
                   {columnHeaders.map((col, i) => (
-                    <td key={i} className={`py-2 px-3 text-right text-xs font-bold text-gray-600 ${columnWidth}`}>
-                      {col}
-                    </td>
+                    <td key={i} className={`${T.sumSubheaderCol} ${columnWidth}`}>{col}</td>
                   ))}
                 </tr>
               )
             }
 
-            const isTotal = row.type === 'total'
-            const isFinal = row.type === 'grandtotal'
+            const s = ROW_STYLES[row.type] ?? ROW_STYLES.data
             const fmt = row.format ?? 'currency'
 
             return (
-              <tr
-                key={idx}
-                className={[
-                  'border-b',
-                  isFinal ? 'bg-gray-100 border-gray-300 border-b-2' : '',
-                  isTotal ? 'bg-gray-50/80 border-gray-200' : '',
-                  !isTotal && !isFinal ? 'border-gray-100' : '',
-                ].filter(Boolean).join(' ')}
-              >
-                <td className={[
-                  'py-1.5 px-3',
-                  isTotal || isFinal ? 'font-bold text-gray-800' : 'text-gray-600 pl-5',
-                ].join(' ')}>
+              <tr key={idx} className={s.row}>
+                <td className={s.label}>
                   {row.label}
                   {renderLabelSuffix?.(row, idx)}
                 </td>
@@ -78,11 +67,7 @@ const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, col
                     <td
                       key={i}
                       title={title}
-                      className={[
-                        `py-1.5 px-3 text-right tabular-nums ${columnWidth}`,
-                        isTotal || isFinal ? 'font-bold text-gray-800' : 'text-gray-700',
-                        title ? 'cursor-default' : '',
-                      ].join(' ')}
+                      className={`${s.value} ${columnWidth}${title ? ' cursor-default' : ''}`}
                     >
                       {display}
                     </td>
