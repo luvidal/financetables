@@ -3729,6 +3729,7 @@ exports.ActivosSummary = activossummary_default;
 exports.BoletasTable = boletas_default;
 exports.DeleteDialog = deletedialog_default;
 exports.DeudasTable = deudas_default;
+exports.EditableCell = editablecell_default;
 exports.FinalResultsCompact = finalresults_default;
 exports.InversionesTable = inversiones_default;
 exports.PropiedadesTable = propiedades_default;

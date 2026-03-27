@@ -3717,6 +3717,6 @@ var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colum
 };
 var summary_default = SummaryTable;
 
-export { activossummary_default as ActivosSummary, boletas_default as BoletasTable, deletedialog_default as DeleteDialog, deudas_default as DeudasTable, finalresults_default as FinalResultsCompact, inversiones_default as InversionesTable, propiedades_default as PropiedadesTable, recyclebin_default2 as RecycleBin, SourceIcon, summary_default as SummaryTable, tableshell_default as TableShell, tributario_default as TributarioTable, vehiculos_default as VehiculosTable, applyAutoCompute, applyAutoConversions, renta_default as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
+export { activossummary_default as ActivosSummary, boletas_default as BoletasTable, deletedialog_default as DeleteDialog, deudas_default as DeudasTable, editablecell_default as EditableCell, finalresults_default as FinalResultsCompact, inversiones_default as InversionesTable, propiedades_default as PropiedadesTable, recyclebin_default2 as RecycleBin, SourceIcon, summary_default as SummaryTable, tableshell_default as TableShell, tributario_default as TributarioTable, vehiculos_default as VehiculosTable, applyAutoCompute, applyAutoConversions, renta_default as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

@@ -309,6 +309,44 @@ interface SummaryTableProps {
 
 declare const SummaryTable: ({ columnHeaders, rows, extraColumn, renderLabelSuffix, columnWidth }: SummaryTableProps) => react_jsx_runtime.JSX.Element;
 
+interface EditableCellProps {
+    value: number | string | null | undefined;
+    onChange: (value: number | string | null) => void;
+    type?: 'text' | 'number' | 'currency' | 'percent';
+    isDeduction?: boolean;
+    hasData?: boolean;
+    className?: string;
+    width?: string;
+    align?: 'left' | 'center' | 'right';
+    placeholder?: string;
+    /** Callback to view source document - shows Eye icon on hover */
+    onViewSource?: () => void;
+    /** Render as div instead of td (for non-table contexts) */
+    asDiv?: boolean;
+    /** Show focus ring (keyboard navigation) */
+    focused?: boolean;
+    /** Called when cell is clicked (for focus tracking) */
+    onCellFocus?: () => void;
+    /** Called after edit commit to navigate to next cell (Tab→right, Enter→down) */
+    onNavigate?: (direction: 'up' | 'down' | 'left' | 'right') => void;
+    /** Increment to trigger edit externally (keyboard Enter/F2 on focused cell) */
+    requestEdit?: number;
+    /** Increment to clear the cell value (keyboard Delete/Backspace on focused cell) */
+    requestClear?: number;
+    /** Initial value for type-to-edit (the character pressed to start editing) */
+    editInitialValue?: string | null;
+}
+/**
+ * EditableCell - An inline-editable table cell
+ *
+ * Click to select (focus ring), double-click/Enter/F2/type to edit.
+ * IMPORTANT: This component uses a fixed-size container to prevent layout shifts
+ * when toggling between display and edit modes. The input is absolutely positioned
+ * within a fixed-height container so clicking to edit does NOT scramble/shift
+ * the table layout.
+ */
+declare const EditableCell: ({ value, onChange, type, isDeduction, hasData, className, width, align, placeholder, onViewSource, asDiv, focused, onCellFocus, onNavigate, requestEdit, requestClear, editInitialValue, }: EditableCellProps) => react_jsx_runtime.JSX.Element;
+
 interface DeleteDialogProps {
     count: number;
     onConfirm: (reason: string) => void;
@@ -399,4 +437,4 @@ declare const displayCurrency: (value: number | undefined | null) => string;
 declare const defaultFormatCurrency: (value: number | null | undefined) => string;
 declare const displayCurrencyCompact: (value: number | undefined | null, isDeduction?: boolean) => string;
 
-export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, type AutoComputeRule, type AutoConvertRule, type BoletaMonth, BoletasTable, type BoletasTableProps, type CodeudorIncomeInfo, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type HipotecarioOption, type InversionRow, InversionesTable, type InversionesTableProps, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, type SummaryRow, type SummaryRowFormat, type SummaryRowType, SummaryTable, type SummaryTableProps, TableShell, type TableShellProps, type TributarioEntry, TributarioTable, type TributarioTableProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
+export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, type AutoComputeRule, type AutoConvertRule, type BoletaMonth, BoletasTable, type BoletasTableProps, type CodeudorIncomeInfo, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, EditableCell, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type HipotecarioOption, type InversionRow, InversionesTable, type InversionesTableProps, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, type SummaryRow, type SummaryRowFormat, type SummaryRowType, SummaryTable, type SummaryTableProps, TableShell, type TableShellProps, type TributarioEntry, TributarioTable, type TributarioTableProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
