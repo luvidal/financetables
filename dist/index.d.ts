@@ -1,5 +1,5 @@
 import * as react_jsx_runtime from 'react/jsx-runtime';
-import React$1 from 'react';
+import React$1, { ReactNode } from 'react';
 
 type RowType = 'add' | 'subtract' | 'income' | 'deduction' | 'debt';
 type RowData = {
@@ -283,6 +283,32 @@ interface ActivosSummaryProps {
 }
 declare const ActivosSummary: ({ items, totalLabel, formatCurrency, colorScheme, }: ActivosSummaryProps) => react_jsx_runtime.JSX.Element;
 
+type SummaryRowType = 'subheader' | 'data' | 'total' | 'grandtotal';
+type SummaryRowFormat = 'currency' | 'percent' | 'integer';
+interface SummaryRow {
+    label: string;
+    values: (number | null)[];
+    type: SummaryRowType;
+    format?: SummaryRowFormat;
+    fieldKey?: string;
+}
+interface SummaryTableProps {
+    columnHeaders: string[];
+    rows: SummaryRow[];
+    /** Extra column rendered before data columns (e.g., castigo input) */
+    extraColumn?: {
+        header: string;
+        width?: string;
+        render: (row: SummaryRow, index: number) => ReactNode;
+    };
+    /** Rendered after the label text (e.g., warning icon) */
+    renderLabelSuffix?: (row: SummaryRow, index: number) => ReactNode;
+    /** Column width for data columns */
+    columnWidth?: string;
+}
+
+declare const SummaryTable: ({ columnHeaders, rows, extraColumn, renderLabelSuffix, columnWidth }: SummaryTableProps) => react_jsx_runtime.JSX.Element;
+
 interface DeleteDialogProps {
     count: number;
     onConfirm: (reason: string) => void;
@@ -373,4 +399,4 @@ declare const displayCurrency: (value: number | undefined | null) => string;
 declare const defaultFormatCurrency: (value: number | null | undefined) => string;
 declare const displayCurrencyCompact: (value: number | undefined | null, isDeduction?: boolean) => string;
 
-export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, type AutoComputeRule, type AutoConvertRule, type BoletaMonth, BoletasTable, type BoletasTableProps, type CodeudorIncomeInfo, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type HipotecarioOption, type InversionRow, InversionesTable, type InversionesTableProps, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, TableShell, type TableShellProps, type TributarioEntry, TributarioTable, type TributarioTableProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };
+export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, type AutoComputeRule, type AutoConvertRule, type BoletaMonth, BoletasTable, type BoletasTableProps, type CodeudorIncomeInfo, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type HipotecarioOption, type InversionRow, InversionesTable, type InversionesTableProps, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, type SummaryRow, type SummaryRowFormat, type SummaryRowType, SummaryTable, type SummaryTableProps, TableShell, type TableShellProps, type TributarioEntry, TributarioTable, type TributarioTableProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateLastNMonths, useSoftDelete };

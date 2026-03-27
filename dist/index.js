@@ -3666,6 +3666,75 @@ var ActivosSummary = ({
   ] });
 };
 var activossummary_default = ActivosSummary;
+function formatCell(v, format) {
+  if (v == null) return { display: "\u2014", title: void 0 };
+  switch (format) {
+    case "percent": {
+      const pct = v * 100;
+      const display = pct.toFixed(2).replace(".", ",") + " %";
+      const full = pct.toFixed(4).replace(".", ",") + " %";
+      return { display, title: full !== display ? full : void 0 };
+    }
+    case "integer":
+      return { display: String(Math.round(v)), title: void 0 };
+    default:
+      return { display: displayCurrencyCompact(v), title: displayCurrency(v) || void 0 };
+  }
+}
+var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, columnWidth = "w-[120px]" }) => {
+  const extraW = extraColumn?.width ?? "w-[80px]";
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxRuntime.jsx("table", { className: "w-full text-sm border-collapse", children: /* @__PURE__ */ jsxRuntime.jsx("tbody", { children: rows.map((row, idx) => {
+    if (row.type === "subheader") {
+      return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "border-b-2 border-gray-300", children: [
+        /* @__PURE__ */ jsxRuntime.jsx("td", { className: "py-2 px-3 text-xs font-bold text-gray-800 uppercase tracking-wider", children: row.label }),
+        extraColumn && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `py-2 px-3 text-right text-xs font-bold text-gray-600 ${extraW}`, children: extraColumn.header }),
+        columnHeaders.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("td", { className: `py-2 px-3 text-right text-xs font-bold text-gray-600 ${columnWidth}`, children: col }, i))
+      ] }, idx);
+    }
+    const isTotal = row.type === "total";
+    const isFinal = row.type === "grandtotal";
+    const fmt = row.format ?? "currency";
+    return /* @__PURE__ */ jsxRuntime.jsxs(
+      "tr",
+      {
+        className: [
+          "border-b",
+          isFinal ? "bg-gray-100 border-gray-300 border-b-2" : "",
+          isTotal ? "bg-gray-50/80 border-gray-200" : "",
+          !isTotal && !isFinal ? "border-gray-100" : ""
+        ].filter(Boolean).join(" "),
+        children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("td", { className: [
+            "py-1.5 px-3",
+            isTotal || isFinal ? "font-bold text-gray-800" : "text-gray-600 pl-5"
+          ].join(" "), children: [
+            row.label,
+            renderLabelSuffix?.(row, idx)
+          ] }),
+          extraColumn && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `py-1.5 px-1 ${extraW}`, children: extraColumn.render(row, idx) }),
+          row.values.map((v, i) => {
+            const { display, title } = formatCell(v, fmt);
+            return /* @__PURE__ */ jsxRuntime.jsx(
+              "td",
+              {
+                title,
+                className: [
+                  `py-1.5 px-3 text-right tabular-nums ${columnWidth}`,
+                  isTotal || isFinal ? "font-bold text-gray-800" : "text-gray-700",
+                  title ? "cursor-default" : ""
+                ].join(" "),
+                children: display
+              },
+              i
+            );
+          })
+        ]
+      },
+      idx
+    );
+  }) }) }) });
+};
+var summary_default = SummaryTable;
 
 exports.ActivosSummary = activossummary_default;
 exports.BoletasTable = boletas_default;
@@ -3676,6 +3745,7 @@ exports.InversionesTable = inversiones_default;
 exports.PropiedadesTable = propiedades_default;
 exports.RecycleBin = recyclebin_default2;
 exports.SourceIcon = SourceIcon;
+exports.SummaryTable = summary_default;
 exports.TableShell = tableshell_default;
 exports.TributarioTable = tributario_default;
 exports.VehiculosTable = vehiculos_default;
