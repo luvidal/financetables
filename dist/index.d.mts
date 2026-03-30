@@ -125,8 +125,11 @@ interface BoletasTableProps {
     sourceFileIds?: string[];
     onViewSource?: (fileIds: string[]) => void;
     onRemoveMonth?: (periodo: string) => void;
+    /** Periodos excluded from summary calculations — columns are dimmed and clickable to toggle */
+    excludedMonths?: string[];
+    onToggleMonth?: (periodo: string) => void;
 }
-declare const BoletasTable: ({ title, months, totales, headerBg, headerText, defaultCollapsed, forceExpanded, flush, sourceFileIds, onViewSource, onRemoveMonth, }: BoletasTableProps) => react_jsx_runtime.JSX.Element;
+declare const BoletasTable: ({ title, months, headerBg, headerText, defaultCollapsed, forceExpanded, flush, sourceFileIds, onViewSource, excludedMonths, onToggleMonth, }: BoletasTableProps) => react_jsx_runtime.JSX.Element;
 
 type TributarioEntry = {
     id: string;

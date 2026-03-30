@@ -2391,10 +2391,28 @@ var DeudasTable = ({
   ] });
 };
 var deudas_default = DeudasTable;
+var SHORT_MONTHS = {
+  enero: "ENE",
+  febrero: "FEB",
+  marzo: "MAR",
+  abril: "ABR",
+  mayo: "MAY",
+  junio: "JUN",
+  julio: "JUL",
+  agosto: "AGO",
+  septiembre: "SEP",
+  octubre: "OCT",
+  noviembre: "NOV",
+  diciembre: "DIC"
+};
+var METRICS = [
+  { key: "bruto", label: "Honor. Bruto", color: "text-gray-800", format: (v) => displayCurrencyCompact(v) },
+  { key: "retencion", label: "Retenci\xF3n", color: "text-red-700", format: (v) => displayCurrencyCompact(v) },
+  { key: "boletas", label: "Boletas Vig.", color: "text-gray-800", format: (v) => v != null ? String(v) : "\u2014" }
+];
 var BoletasTable = ({
   title,
   months,
-  totales,
   headerBg = "bg-emerald-50",
   headerText = "text-emerald-700",
   defaultCollapsed = false,
@@ -2402,13 +2420,10 @@ var BoletasTable = ({
   flush = false,
   sourceFileIds,
   onViewSource,
-  onRemoveMonth
+  excludedMonths,
+  onToggleMonth
 }) => {
-  const { getHoverProps, isHovered } = useRowHover();
-  const monthsWithData = months.filter((m) => m.hasData);
-  const totalLiquido = totales?.total_liquido ?? monthsWithData.reduce((s, m) => s + (m.liquido || 0), 0);
-  const totalBoletas = totales?.boletas_vigentes ?? monthsWithData.reduce((s, m) => s + (m.boletas || 0), 0);
-  const promedioMensual = monthsWithData.length > 0 ? totalLiquido / monthsWithData.length : 0;
+  const excluded = excludedMonths ?? [];
   return /* @__PURE__ */ jsx(
     tableshell_default,
     {
@@ -2416,71 +2431,53 @@ var BoletasTable = ({
       defaultCollapsed,
       forceExpanded,
       flush,
-      renderHeader: ({ isExpanded }) => /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between px-4 py-3", children: [
-        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+      renderHeader: ({ isExpanded }) => /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: /* @__PURE__ */ jsxs("tr", { children: [
+        /* @__PURE__ */ jsx("td", { className: "px-4 py-2.5 text-left", style: { width: "180px" }, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+          !forceExpanded && (isExpanded ? /* @__PURE__ */ jsx(ChevronUp, { size: 16, className: headerText }) : /* @__PURE__ */ jsx(ChevronDown, { size: 16, className: headerText })),
           /* @__PURE__ */ jsx("span", { className: `${headerText} ${T.headerTitle}`, children: title }),
           /* @__PURE__ */ jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
-        ] }),
-        /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-4", children: [
-          /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-3 text-xs", children: [
-            /* @__PURE__ */ jsxs("span", { className: headerText, children: [
-              /* @__PURE__ */ jsx("span", { className: `${T.headerStatLabel}`, children: "Boletas: " }),
-              /* @__PURE__ */ jsx("span", { className: T.headerStat, children: totalBoletas })
-            ] }),
-            /* @__PURE__ */ jsxs("span", { className: headerText, children: [
-              /* @__PURE__ */ jsx("span", { className: `${T.headerStatLabel}`, children: "L\xEDquido: " }),
-              /* @__PURE__ */ jsx("span", { className: T.headerStat, children: displayCurrencyCompact(totalLiquido) })
-            ] }),
-            /* @__PURE__ */ jsxs("span", { className: headerText, children: [
-              /* @__PURE__ */ jsx("span", { className: `${T.headerStatLabel}`, children: "Promedio: " }),
-              /* @__PURE__ */ jsx("span", { className: T.headerStat, children: displayCurrencyCompact(Math.round(promedioMensual)) })
-            ] })
-          ] }),
-          !forceExpanded && (isExpanded ? /* @__PURE__ */ jsx(ChevronUp, { size: 20, className: headerText }) : /* @__PURE__ */ jsx(ChevronDown, { size: 20, className: headerText }))
-        ] })
-      ] }),
-      children: /* @__PURE__ */ jsxs("table", { className: T.table, style: { tableLayout: "fixed" }, children: [
-        /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-200 bg-gray-50/50", children: [
-          /* @__PURE__ */ jsx("th", { className: `px-4 py-2 text-left ${T.th}`, style: { width: "140px" }, children: "Mes" }),
-          /* @__PURE__ */ jsx("th", { className: `px-3 py-2 text-center ${T.th}`, style: { width: "80px" }, children: "Boletas" }),
-          /* @__PURE__ */ jsx("th", { className: `px-3 py-2 text-right ${T.th}`, style: { width: "130px" }, children: "Bruto" }),
-          /* @__PURE__ */ jsx("th", { className: `px-3 py-2 text-right ${T.th}`, style: { width: "130px" }, children: "Retenci\xF3n" }),
-          /* @__PURE__ */ jsx("th", { className: `px-4 py-2 text-right ${T.th}`, style: { width: "130px" }, children: "L\xEDquido" }),
-          onRemoveMonth && /* @__PURE__ */ jsx("th", { style: { width: "36px" } })
         ] }) }),
-        /* @__PURE__ */ jsx("tbody", { children: months.map((m, i) => /* @__PURE__ */ jsxs(
-          "tr",
-          {
-            className: `${T.rowBorder} ${m.hasData ? "hover:bg-emerald-50/30" : ""}`,
-            ...getHoverProps(i),
-            children: [
-              /* @__PURE__ */ jsx("td", { className: `px-4 py-2.5 font-medium ${T.cellLabel} ${m.hasData ? "text-gray-700" : "text-gray-300"}`, style: { width: "140px" }, children: /* @__PURE__ */ jsx("span", { className: "truncate block", children: MONTH_LABELS[m.mes] || m.mes }) }),
-              /* @__PURE__ */ jsx("td", { className: "px-3 py-2.5 text-center text-gray-800", style: { width: "80px" }, children: m.hasData ? m.boletas ?? "" : "" }),
-              /* @__PURE__ */ jsx("td", { className: "px-3 py-2.5 text-right text-gray-800", style: { width: "130px" }, children: m.hasData ? displayCurrencyCompact(m.bruto) : "" }),
-              /* @__PURE__ */ jsx("td", { className: "px-3 py-2.5 text-right text-red-700", style: { width: "130px" }, children: m.hasData ? displayCurrencyCompact(m.retencion) : "" }),
-              /* @__PURE__ */ jsx("td", { className: "px-4 py-2.5 text-right font-medium text-emerald-700", style: { width: "130px" }, children: m.hasData ? displayCurrencyCompact(m.liquido) : "" }),
-              onRemoveMonth && /* @__PURE__ */ jsx("td", { style: { width: "36px" }, className: "text-center", children: m.hasData && /* @__PURE__ */ jsx(
-                deletebutton_default,
-                {
-                  onClick: () => onRemoveMonth(m.periodo),
-                  isVisible: isHovered(i)
-                }
-              ) })
-            ]
-          },
-          i
-        )) }),
-        /* @__PURE__ */ jsx("tfoot", { children: /* @__PURE__ */ jsxs("tr", { className: "border-t-2 border-emerald-200 bg-emerald-50/50", children: [
-          /* @__PURE__ */ jsx("td", { className: `px-4 py-3 ${T.footerLabel} text-emerald-700`, style: { width: "140px" }, children: "TOTALES" }),
-          /* @__PURE__ */ jsx("td", { className: `px-3 py-3 text-center ${T.footerValue} text-emerald-700`, style: { width: "80px" }, children: totalBoletas }),
-          /* @__PURE__ */ jsx("td", { className: `px-3 py-3 text-right ${T.footerValue} text-emerald-700`, style: { width: "130px" }, children: displayCurrencyCompact(totales?.honorario_bruto ?? monthsWithData.reduce((s, m) => s + (m.bruto || 0), 0)) }),
-          /* @__PURE__ */ jsx("td", { className: `px-3 py-3 text-right ${T.footerValue} text-red-700`, style: { width: "130px" }, children: displayCurrencyCompact(
-            (totales?.retencion_terceros ?? 0) + (totales?.retencion_contribuyente ?? 0) || monthsWithData.reduce((s, m) => s + (m.retencion || 0), 0)
-          ) }),
-          /* @__PURE__ */ jsx("td", { className: `px-4 py-3 text-right ${T.footerValue} text-emerald-700`, style: { width: "130px" }, children: displayCurrencyCompact(totalLiquido) }),
-          onRemoveMonth && /* @__PURE__ */ jsx("td", { style: { width: "36px" } })
-        ] }) })
-      ] })
+        months.map((m) => {
+          const isExcluded = excluded.includes(m.periodo);
+          const canToggle = m.hasData && !!onToggleMonth;
+          const hasValue = m.hasData && m.liquido != null;
+          const label = SHORT_MONTHS[m.mes] || m.mes.slice(0, 3).toUpperCase();
+          return /* @__PURE__ */ jsx(
+            "td",
+            {
+              className: `px-2 py-2.5 text-right ${canToggle ? "cursor-pointer select-none" : ""} ${isExcluded ? "opacity-35 line-through" : ""}`,
+              style: { width: "110px" },
+              onClick: canToggle ? (e) => {
+                e.stopPropagation();
+                onToggleMonth(m.periodo);
+              } : void 0,
+              children: /* @__PURE__ */ jsxs("span", { className: "whitespace-nowrap", children: [
+                /* @__PURE__ */ jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
+                  label,
+                  ": "
+                ] }),
+                /* @__PURE__ */ jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? displayCurrencyCompact(m.liquido) : "\u2014" })
+              ] })
+            },
+            m.periodo
+          );
+        })
+      ] }) }) }),
+      children: /* @__PURE__ */ jsx("table", { className: T.table, style: { tableLayout: "fixed" }, children: /* @__PURE__ */ jsx("tbody", { children: METRICS.map((metric) => /* @__PURE__ */ jsxs("tr", { className: T.rowBorder, children: [
+        /* @__PURE__ */ jsx("td", { className: `px-4 py-1.5 font-medium ${T.cellLabel} text-gray-600`, style: { width: "180px" }, children: metric.label }),
+        months.map((m) => {
+          const isExcluded = excluded.includes(m.periodo);
+          return /* @__PURE__ */ jsx(
+            "td",
+            {
+              className: `px-2 py-1.5 text-right ${m.hasData ? metric.color : "text-gray-300"} ${isExcluded ? "opacity-35" : ""}`,
+              style: { width: "110px" },
+              children: m.hasData ? metric.format(m[metric.key]) : "\u2014"
+            },
+            m.periodo
+          );
+        })
+      ] }, metric.key)) }) })
     }
   );
 };

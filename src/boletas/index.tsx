@@ -1,10 +1,8 @@
 import React from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
-import { displayCurrencyCompact, MONTH_LABELS } from '../common/utils'
+import { displayCurrencyCompact } from '../common/utils'
 import { T } from '../common/styles'
 import TableShell, { SourceIcon } from '../common/tableshell'
-import DeleteRowButton from '../common/deletebutton'
-import { useRowHover } from '../common/userowhover'
 
 // ============================================================================
 // Types
@@ -38,12 +36,32 @@ export interface BoletasTableProps {
     sourceFileIds?: string[]
     onViewSource?: (fileIds: string[]) => void
     onRemoveMonth?: (periodo: string) => void
+    /** Periodos excluded from summary calculations — columns are dimmed and clickable to toggle */
+    excludedMonths?: string[]
+    onToggleMonth?: (periodo: string) => void
 }
 
 // ============================================================================
-// Helpers
+// Short month labels for column headers
 // ============================================================================
 
+const SHORT_MONTHS: Record<string, string> = {
+    enero: 'ENE', febrero: 'FEB', marzo: 'MAR', abril: 'ABR',
+    mayo: 'MAY', junio: 'JUN', julio: 'JUL', agosto: 'AGO',
+    septiembre: 'SEP', octubre: 'OCT', noviembre: 'NOV', diciembre: 'DIC',
+}
+
+// ============================================================================
+// Detail rows (collapsible body)
+// ============================================================================
+
+type MetricKey = 'boletas' | 'bruto' | 'retencion'
+
+const METRICS: { key: MetricKey; label: string; color: string; format: (v: number | null) => string }[] = [
+    { key: 'bruto',     label: 'Honor. Bruto', color: 'text-gray-800',  format: v => displayCurrencyCompact(v) },
+    { key: 'retencion', label: 'Retención',    color: 'text-red-700',   format: v => displayCurrencyCompact(v) },
+    { key: 'boletas',   label: 'Boletas Vig.', color: 'text-gray-800',  format: v => v != null ? String(v) : '—' },
+]
 
 // ============================================================================
 // Component
@@ -52,7 +70,6 @@ export interface BoletasTableProps {
 const BoletasTable = ({
     title,
     months,
-    totales,
     headerBg = 'bg-emerald-50',
     headerText = 'text-emerald-700',
     defaultCollapsed = false,
@@ -60,13 +77,10 @@ const BoletasTable = ({
     flush = false,
     sourceFileIds,
     onViewSource,
-    onRemoveMonth,
+    excludedMonths,
+    onToggleMonth,
 }: BoletasTableProps) => {
-    const { getHoverProps, isHovered } = useRowHover()
-    const monthsWithData = months.filter(m => m.hasData)
-    const totalLiquido = totales?.total_liquido ?? monthsWithData.reduce((s, m) => s + (m.liquido || 0), 0)
-    const totalBoletas = totales?.boletas_vigentes ?? monthsWithData.reduce((s, m) => s + (m.boletas || 0), 0)
-    const promedioMensual = monthsWithData.length > 0 ? totalLiquido / monthsWithData.length : 0
+    const excluded = excludedMonths ?? []
 
     return (
         <TableShell
@@ -75,103 +89,67 @@ const BoletasTable = ({
             forceExpanded={forceExpanded}
             flush={flush}
             renderHeader={({ isExpanded }) => (
-                <div className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-2">
-                        <span className={`${headerText} ${T.headerTitle}`}>
-                            {title}
-                        </span>
-                        <SourceIcon fileIds={sourceFileIds} onViewSource={onViewSource} className={headerText} />
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-3 text-xs">
-                            <span className={headerText}>
-                                <span className={`${T.headerStatLabel}`}>Boletas: </span>
-                                <span className={T.headerStat}>{totalBoletas}</span>
-                            </span>
-                            <span className={headerText}>
-                                <span className={`${T.headerStatLabel}`}>Líquido: </span>
-                                <span className={T.headerStat}>{displayCurrencyCompact(totalLiquido)}</span>
-                            </span>
-                            <span className={headerText}>
-                                <span className={`${T.headerStatLabel}`}>Promedio: </span>
-                                <span className={T.headerStat}>{displayCurrencyCompact(Math.round(promedioMensual))}</span>
-                            </span>
-                        </div>
-                        {!forceExpanded && (
-                            isExpanded ? <ChevronUp size={20} className={headerText} /> : <ChevronDown size={20} className={headerText} />
-                        )}
-                    </div>
-                </div>
+                <table className={T.table} style={{ tableLayout: 'fixed' }}>
+                    <tbody>
+                        <tr>
+                            <td className="px-4 py-2.5 text-left" style={{ width: '180px' }}>
+                                <div className="flex items-center gap-2">
+                                    {!forceExpanded && (
+                                        isExpanded ? <ChevronUp size={16} className={headerText} /> : <ChevronDown size={16} className={headerText} />
+                                    )}
+                                    <span className={`${headerText} ${T.headerTitle}`}>{title}</span>
+                                    <SourceIcon fileIds={sourceFileIds} onViewSource={onViewSource} className={headerText} />
+                                </div>
+                            </td>
+                            {months.map(m => {
+                                const isExcluded = excluded.includes(m.periodo)
+                                const canToggle = m.hasData && !!onToggleMonth
+                                const hasValue = m.hasData && m.liquido != null
+                                const label = SHORT_MONTHS[m.mes] || m.mes.slice(0, 3).toUpperCase()
+                                return (
+                                    <td
+                                        key={m.periodo}
+                                        className={`px-2 py-2.5 text-right ${canToggle ? 'cursor-pointer select-none' : ''} ${isExcluded ? 'opacity-35 line-through' : ''}`}
+                                        style={{ width: '110px' }}
+                                        onClick={canToggle ? (e) => { e.stopPropagation(); onToggleMonth!(m.periodo) } : undefined}
+                                    >
+                                        <span className="whitespace-nowrap">
+                                            <span className={`${headerText} ${T.headerStatLabel}`}>{label}: </span>
+                                            <span className={`${T.headerStat} ${hasValue ? headerText : 'text-gray-400'}`}>
+                                                {hasValue ? displayCurrencyCompact(m.liquido) : '—'}
+                                            </span>
+                                        </span>
+                                    </td>
+                                )
+                            })}
+                        </tr>
+                    </tbody>
+                </table>
             )}
         >
-                <table className={T.table} style={{ tableLayout: 'fixed' }}>
-                    <thead>
-                        <tr className="border-b border-gray-200 bg-gray-50/50">
-                            <th className={`px-4 py-2 text-left ${T.th}`} style={{ width: '140px' }}>Mes</th>
-                            <th className={`px-3 py-2 text-center ${T.th}`} style={{ width: '80px' }}>Boletas</th>
-                            <th className={`px-3 py-2 text-right ${T.th}`} style={{ width: '130px' }}>Bruto</th>
-                            <th className={`px-3 py-2 text-right ${T.th}`} style={{ width: '130px' }}>Retención</th>
-                            <th className={`px-4 py-2 text-right ${T.th}`} style={{ width: '130px' }}>Líquido</th>
-                            {onRemoveMonth && <th style={{ width: '36px' }} />}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {months.map((m, i) => (
-                            <tr
-                                key={i}
-                                className={`${T.rowBorder} ${m.hasData ? 'hover:bg-emerald-50/30' : ''}`}
-                                {...getHoverProps(i)}
-                            >
-                                <td className={`px-4 py-2.5 font-medium ${T.cellLabel} ${m.hasData ? 'text-gray-700' : 'text-gray-300'}`} style={{ width: '140px' }}>
-                                    <span className="truncate block">{MONTH_LABELS[m.mes] || m.mes}</span>
-                                </td>
-                                <td className="px-3 py-2.5 text-center text-gray-800" style={{ width: '80px' }}>
-                                    {m.hasData ? (m.boletas ?? '') : ''}
-                                </td>
-                                <td className="px-3 py-2.5 text-right text-gray-800" style={{ width: '130px' }}>
-                                    {m.hasData ? displayCurrencyCompact(m.bruto) : ''}
-                                </td>
-                                <td className="px-3 py-2.5 text-right text-red-700" style={{ width: '130px' }}>
-                                    {m.hasData ? displayCurrencyCompact(m.retencion) : ''}
-                                </td>
-                                <td className="px-4 py-2.5 text-right font-medium text-emerald-700" style={{ width: '130px' }}>
-                                    {m.hasData ? displayCurrencyCompact(m.liquido) : ''}
-                                </td>
-                                {onRemoveMonth && (
-                                    <td style={{ width: '36px' }} className="text-center">
-                                        {m.hasData && (
-                                            <DeleteRowButton
-                                                onClick={() => onRemoveMonth(m.periodo)}
-                                                isVisible={isHovered(i)}
-                                            />
-                                        )}
+            <table className={T.table} style={{ tableLayout: 'fixed' }}>
+                <tbody>
+                    {METRICS.map(metric => (
+                        <tr key={metric.key} className={T.rowBorder}>
+                            <td className={`px-4 py-1.5 font-medium ${T.cellLabel} text-gray-600`} style={{ width: '180px' }}>
+                                {metric.label}
+                            </td>
+                            {months.map(m => {
+                                const isExcluded = excluded.includes(m.periodo)
+                                return (
+                                    <td
+                                        key={m.periodo}
+                                        className={`px-2 py-1.5 text-right ${m.hasData ? metric.color : 'text-gray-300'} ${isExcluded ? 'opacity-35' : ''}`}
+                                        style={{ width: '110px' }}
+                                    >
+                                        {m.hasData ? metric.format(m[metric.key]) : '—'}
                                     </td>
-                                )}
-                            </tr>
-                        ))}
-                    </tbody>
-                    <tfoot>
-                        <tr className="border-t-2 border-emerald-200 bg-emerald-50/50">
-                            <td className={`px-4 py-3 ${T.footerLabel} text-emerald-700`} style={{ width: '140px' }}>TOTALES</td>
-                            <td className={`px-3 py-3 text-center ${T.footerValue} text-emerald-700`} style={{ width: '80px' }}>
-                                {totalBoletas}
-                            </td>
-                            <td className={`px-3 py-3 text-right ${T.footerValue} text-emerald-700`} style={{ width: '130px' }}>
-                                {displayCurrencyCompact(totales?.honorario_bruto ?? monthsWithData.reduce((s, m) => s + (m.bruto || 0), 0))}
-                            </td>
-                            <td className={`px-3 py-3 text-right ${T.footerValue} text-red-700`} style={{ width: '130px' }}>
-                                {displayCurrencyCompact(
-                                    (totales?.retencion_terceros ?? 0) + (totales?.retencion_contribuyente ?? 0)
-                                    || monthsWithData.reduce((s, m) => s + (m.retencion || 0), 0)
-                                )}
-                            </td>
-                            <td className={`px-4 py-3 text-right ${T.footerValue} text-emerald-700`} style={{ width: '130px' }}>
-                                {displayCurrencyCompact(totalLiquido)}
-                            </td>
-                            {onRemoveMonth && <td style={{ width: '36px' }} />}
+                                )
+                            })}
                         </tr>
-                    </tfoot>
-                </table>
+                    ))}
+                </tbody>
+            </table>
         </TableShell>
     )
 }
