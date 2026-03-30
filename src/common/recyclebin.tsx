@@ -36,7 +36,7 @@ function RecycleBin<T extends RecycleBinRow>({ deletedRows, getLabel, onRestore,
                     <tbody>
                         {deletedRows.map(row => (
                             <tr key={row.id} className={`${T.rowBorder} opacity-75`}>
-                                <td className={`pl-1 pr-2 py-1.5 text-gray-500 ${T.cellLabel}`}>
+                                <td className={`${T.cellEditLabel} text-gray-500 ${T.cellLabel}`}>
                                     <div className="flex items-center gap-1 min-w-0">
                                         <button
                                             onClick={() => onRestore(row.id)}

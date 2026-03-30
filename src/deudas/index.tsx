@@ -135,7 +135,7 @@ const DeudasTable = ({
                 <thead>
                     <tr className={`${headerBg} border-t ${borderColor} ${headerText}`}>
                         {anySelected ? (
-                            <th colSpan={8} className="px-4 py-1.5 text-left" onClick={e => e.stopPropagation()}>
+                            <th colSpan={8} className={`${T.headerCell} text-left`} onClick={e => e.stopPropagation()}>
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs text-rose-600">
                                         {selectedRows.size} fila{selectedRows.size !== 1 ? 's' : ''}
@@ -158,13 +158,13 @@ const DeudasTable = ({
                             </th>
                         ) : (
                             <>
-                                <th className={`px-2 py-1.5 text-left ${T.th} ${headerText}`} style={{ width: '160px' }}>Institución</th>
-                                <th className={`px-2 py-1.5 text-left ${T.th} ${headerText}`} style={{ width: '120px' }}>Tipo Deuda</th>
-                                <th className={`px-2 py-1.5 text-right ${T.th} ${headerText}`} style={{ width: '100px' }}>Saldo UF</th>
-                                <th className={`px-2 py-1.5 text-right ${T.th} ${headerText}`} style={{ width: '120px' }}>Saldo $</th>
-                                <th className={`px-2 py-1.5 text-right ${T.th} ${headerText}`} style={{ width: '110px' }}>Cuota $</th>
-                                <th className={`px-2 py-1.5 text-center ${T.th} ${headerText}`} style={{ width: '50px' }}>%</th>
-                                <th className={`px-2 py-1.5 text-center ${T.th} ${headerText}`} style={{ width: '90px' }}>Cuotas</th>
+                                <th className={`${T.headerCell} text-left ${T.th} ${headerText}`} style={{ width: '160px' }}>Institución</th>
+                                <th className={`${T.headerCell} text-left ${T.th} ${headerText}`} style={{ width: '120px' }}>Tipo Deuda</th>
+                                <th className={`${T.headerCell} text-right ${T.th} ${headerText}`} style={{ width: '100px' }}>Saldo UF</th>
+                                <th className={`${T.headerCell} text-right ${T.th} ${headerText}`} style={{ width: '120px' }}>Saldo $</th>
+                                <th className={`${T.headerCell} text-right ${T.th} ${headerText}`} style={{ width: '110px' }}>Cuota $</th>
+                                <th className={`${T.headerCell} text-center ${T.th} ${headerText}`} style={{ width: '50px' }}>%</th>
+                                <th className={`${T.headerCell} text-center ${T.th} ${headerText}`} style={{ width: '90px' }}>Cuotas</th>
                                 <th style={{ width: '40px' }}></th>
                             </>
                         )}
@@ -189,7 +189,7 @@ const DeudasTable = ({
                                 onDragLeave={drag.handleDragLeave}
                                 onDrop={drag.handleDrop(rows, onRowsChange)}
                             >
-                                <td className={`pl-1 pr-2 py-2.5 ${T.cellLabel} relative`} style={{ width: '160px' }}>
+                                <td className={`${T.cellEditLabel} ${T.cellLabel} relative`} style={{ width: '160px' }}>
                                     <div className="flex items-center gap-0.5 min-w-0">
                                         {hovered && !anySelected && (
                                             <span
@@ -228,7 +228,7 @@ const DeudasTable = ({
                                         </button>
                                     )}
                                 </td>
-                                <td className="px-2 py-2.5" style={{ width: '120px' }}>
+                                <td className={T.cellEdit} style={{ width: '120px' }}>
                                     <input
                                         type="text"
                                         value={row.tipo_deuda}
@@ -366,7 +366,7 @@ const DeudasTable = ({
 
                     {/* Add row */}
                     <tr className={`border-b border-dashed ${borderColor.replace('200', '100')} ${headerBg}/20`}>
-                        <td className="px-2 py-2.5" style={{ width: '160px' }}>
+                        <td className={T.cellEdit} style={{ width: '160px' }}>
                             <input
                                 type="text"
                                 placeholder="Agregar deuda..."
@@ -376,7 +376,7 @@ const DeudasTable = ({
                                 onKeyDown={e => { if (e.key === 'Enter' && newRow.institucion.trim()) addRow() }}
                             />
                         </td>
-                        <td className="px-2 py-2.5" style={{ width: '120px' }}>
+                        <td className={T.cellEdit} style={{ width: '120px' }}>
                             <input
                                 type="text"
                                 placeholder="Tipo"
@@ -395,11 +395,11 @@ const DeudasTable = ({
                 </tbody>
                 <tfoot>
                     <tr className={`${headerBg} font-semibold text-xs border-b ${borderColor}`}>
-                        <td colSpan={3} className={`px-2 py-1.5 ${headerText} ${T.totalLabel}`}>TOTAL</td>
-                        <td className={`px-2 py-1.5 text-right ${headerText} ${T.totalValue}`}>
+                        <td colSpan={3} className={`${T.totalCell} ${headerText} ${T.totalLabel}`}>TOTAL</td>
+                        <td className={`${T.totalCell} text-right ${headerText} ${T.totalValue}`}>
                             {totalSaldoPesos ? formatCurrency(totalSaldoPesos) : '—'}
                         </td>
-                        <td className={`px-2 py-1.5 text-right ${headerText} ${T.totalValue}`}>
+                        <td className={`${T.totalCell} text-right ${headerText} ${T.totalValue}`}>
                             {totalMontoCuota ? formatCurrency(totalMontoCuota) : '—'}
                         </td>
                         <td colSpan={3}></td>

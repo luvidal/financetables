@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { GripVertical, ChevronDown, ChevronRight, Ungroup } from 'lucide-react'
 import { computeGroupValues } from './helpers'
 import { isSubtractType } from './helpers'
+import { T } from '../common/styles'
 import type { RowData, Month } from './types'
 
 interface GroupRowProps {
@@ -63,7 +64,7 @@ const GroupRow = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
         >
-            <td className="pl-1 pr-2 py-1.5 text-gray-700 overflow-hidden" style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
+            <td className={`${T.cellEditLabel} text-gray-700 overflow-hidden`} style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
                 <div className="flex items-center gap-0.5 min-w-0">
                     {isHovered && onDragStart && (
                         <span
@@ -103,7 +104,7 @@ const GroupRow = ({
                 return (
                     <td
                         key={p.id}
-                        className="px-2 py-1.5 text-right"
+                        className={`${T.cellEdit} text-right`}
                         style={{ width: '110px', minWidth: '110px', maxWidth: '110px' }}
                     >
                         <div className="h-5 flex items-center justify-end">

@@ -159,7 +159,7 @@ function AssetTable<T extends AssetRow>({
                         {resolvedColumns.map(col => (
                             <th
                                 key={col.key}
-                                className={`px-2 py-1.5 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'} ${T.th} ${headerText}`}
+                                className={`${T.headerCell} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'} ${T.th} ${headerText}`}
                                 style={{ width: col.width }}
                             >
                                 {col === labelCol && title ? title : col.label}
@@ -180,7 +180,7 @@ function AssetTable<T extends AssetRow>({
                                 {resolvedColumns.map(col => {
                                     if (col.isLabel) {
                                         return (
-                                            <td key={col.key} className={`px-2 py-2.5 ${T.cellLabel}`} style={{ width: col.width }}>
+                                            <td key={col.key} className={`${T.cellEdit} ${T.cellLabel}`} style={{ width: col.width }}>
                                                 <div className="flex items-center gap-1 min-w-0">
                                                     <DeleteRowButton onClick={() => requestDelete(row.id)} isVisible={hovered} />
                                                     <input
@@ -196,7 +196,7 @@ function AssetTable<T extends AssetRow>({
                                     }
                                     if (col.type === 'text') {
                                         return (
-                                            <td key={col.key} className="px-2 py-2.5" style={{ width: col.width }}>
+                                            <td key={col.key} className={T.cellEdit} style={{ width: col.width }}>
                                                 <input
                                                     type="text"
                                                     value={(row[col.key] as string) || ''}
@@ -219,7 +219,7 @@ function AssetTable<T extends AssetRow>({
                         {resolvedColumns.map((col, i) => {
                             if (col.isLabel) {
                                 return (
-                                    <td key={col.key} className="px-2 py-2.5" style={{ width: col.width }}>
+                                    <td key={col.key} className={T.cellEdit} style={{ width: col.width }}>
                                         <input
                                             type="text"
                                             placeholder={addPlaceholder || `Agregar...`}
@@ -235,7 +235,7 @@ function AssetTable<T extends AssetRow>({
                             }
                             if (col.type === 'text') {
                                 return (
-                                    <td key={col.key} className="px-2 py-2.5" style={{ width: col.width }}>
+                                    <td key={col.key} className={T.cellEdit} style={{ width: col.width }}>
                                         <input
                                             type="text"
                                             placeholder={col.placeholder || col.label}
@@ -264,9 +264,9 @@ function AssetTable<T extends AssetRow>({
                 </tbody>
                 <tfoot>
                     <tr className={`${headerBg} font-semibold text-xs border-b ${borderColor}`}>
-                        <td colSpan={textCols.length} className={`px-2 py-1.5 ${headerText} ${T.totalLabel}`}>TOTAL</td>
+                        <td colSpan={textCols.length} className={`${T.totalCell} ${headerText} ${T.totalLabel}`}>TOTAL</td>
                         {editableCols.map(col => (
-                            <td key={col.key} className={`px-2 py-1.5 ${col.align === 'center' ? 'text-center' : 'text-right'} ${headerText} ${T.totalValue}`}>
+                            <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${headerText} ${T.totalValue}`}>
                                 {totals[col.key] ? (
                                     col.type === 'number'
                                         ? totals[col.key].toLocaleString('es-CL', { maximumFractionDigits: 2 })
@@ -287,7 +287,7 @@ function AssetTable<T extends AssetRow>({
                         {editableCols.map(col => {
                             const v = row[col.key] as number | null
                             return (
-                                <td key={col.key} className="px-2 py-1.5 text-right tabular-nums" style={{ width: col.width }}>
+                                <td key={col.key} className={`${T.totalCell} text-right tabular-nums`} style={{ width: col.width }}>
                                     <span className={`${T.totalValue} ${v != null ? 'text-gray-400' : 'text-gray-200'}`}>
                                         {v != null ? (col.type === 'number' ? String(v) : formatCurrency(v)) : '—'}
                                     </span>

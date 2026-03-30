@@ -137,7 +137,7 @@ const DataRow = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
         >
-            <td className={`pl-1 pr-2 py-1.5 text-gray-700 ${T.cellLabel}`} style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
+            <td className={`${T.cellEditLabel} text-gray-700 ${T.cellLabel}`} style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
                 <div className={`flex items-center gap-0.5 min-w-0 ${indented ? 'pl-4' : ''}`}>
                     {isHovered && onDragStart && !anySelected && (
                         <span

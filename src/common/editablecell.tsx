@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Eye } from 'lucide-react'
+import { T } from './styles'
 import { useIsMobile } from './usemobile'
 import { displayCurrencyCompact, displayCurrency } from './utils'
 
@@ -192,7 +193,7 @@ const EditableCell = ({
 
     return (
         <Wrapper
-            className={`px-2 py-1.5 cursor-pointer ${focusRing} ${className}`}
+            className={`${T.cellEdit} cursor-pointer ${focusRing} ${className}`}
             style={{ width, minWidth: width, maxWidth: width }}
             onClick={handleClick}
             onDoubleClick={handleDoubleClick}

@@ -410,7 +410,7 @@ const RentaTable = ({
                                     />
                                 ) : (
                                     <>
-                                        <td className="px-4 py-2.5 text-left" style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
+                                        <td className={`${T.headerAccordion} text-left`} style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
                                             <div className="flex items-center gap-2">
                                                 {!forceExpanded && (
                                                     isExpanded ? <ChevronUp size={16} className={headerText} /> : <ChevronDown size={16} className={headerText} />
@@ -425,7 +425,7 @@ const RentaTable = ({
                                             const total = calculateTotal(p.id, rows)
                                             const hasValue = total !== 0
                                             return (
-                                                <td key={p.id} className="px-2 py-2.5 text-right" style={{ width: '110px' }}>
+                                                <td key={p.id} className={`${T.headerAccordionStat}`} style={{ width: '110px' }}>
                                                     <span className={`${headerText} ${T.headerStatLabel}`}>{p.label}: </span>
                                                     <span className={`${T.headerStat} ${hasValue ? headerText : 'text-gray-400'}`}>
                                                         {hasValue ? formatValue(total) : '—'}
@@ -458,7 +458,7 @@ const RentaTable = ({
                                             const v = row.values[m.id]
                                             const hasValue = v != null
                                             return (
-                                                <td key={m.id} className="px-2 py-1.5 text-right tabular-nums" style={{ width: '110px' }}>
+                                                <td key={m.id} className={`${T.cellEdit} text-right tabular-nums`} style={{ width: '110px' }}>
                                                     <span className={`${T.totalValue} ${hasValue ? (subtract ? 'text-rose-300' : 'text-gray-400') : 'text-gray-200'}`}>
                                                         {hasValue ? formatValue(v) : '—'}
                                                     </span>
@@ -510,7 +510,7 @@ const RentaTable = ({
                                         const label = isSubtract ? 'Total descuentos' : 'Total haberes'
                                         return (
                                             <tr className={`border-b-2 ${isSubtract ? 'border-b-rose-200 bg-red-50/30' : 'border-b-emerald-200 bg-emerald-50/30'}`}>
-                                                <td className="pl-4 pr-2 py-2 text-gray-700" style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
+                                                <td className={`${T.totalCell} text-gray-700`} style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
                                                     <span className={`${T.totalLabel} ${isSubtract ? 'text-rose-700' : 'text-emerald-700'}`}>{label}</span>
                                                 </td>
                                                 {showClassificationColumns && <><td style={{ width: '44px' }} /><td style={{ width: '36px' }} /></>}
@@ -520,7 +520,7 @@ const RentaTable = ({
                                                     const hasValue = value !== 0
                                                     const display = isSubtract ? `-${formatValue(value)}` : formatValue(value)
                                                     return (
-                                                        <td key={p.id} className="px-2 py-2 text-right" style={{ width: '110px' }}>
+                                                        <td key={p.id} className={`${T.totalCell} text-right`} style={{ width: '110px' }}>
                                                             <span className={`${T.totalValue} tabular-nums ${isSubtract ? (hasValue ? 'text-rose-600' : 'text-gray-300') : (hasValue ? 'text-emerald-700' : 'text-gray-300')}`}>
                                                                 {hasValue ? display : '—'}
                                                             </span>
@@ -589,7 +589,7 @@ const RentaTable = ({
                                 <>
                                     {/* Renta Variable */}
                                     <tr className="border-t-2 border-t-gray-200 border-b border-gray-100 bg-amber-50/30">
-                                        <td className="pl-4 pr-2 py-2" style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
+                                        <td className={T.totalCell} style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
                                             <span className={`${T.totalLabel} text-amber-700`}>Renta Variable</span>
                                         </td>
                                         {showClassificationColumns && <><td style={{ width: '44px' }} /><td style={{ width: '36px' }} /></>}
@@ -599,7 +599,7 @@ const RentaTable = ({
                                             const value = rliq ? rliq.rentaVariable : (naiveVariable[p.id] ?? 0)
                                             const hasValue = value !== 0
                                             return (
-                                                <td key={p.id} className="py-2 pr-2 text-right relative" style={{ width: '110px' }}>
+                                                <td key={p.id} className={`${T.totalCell} text-right relative`} style={{ width: '110px' }}>
                                                     {rliq && hasValue && (
                                                         <span className="group/reliq absolute cursor-help" style={{ top: '9px', left: '30px' }}>
                                                             <Info size={12} className="text-amber-400 hover:text-amber-500" />
@@ -616,7 +616,7 @@ const RentaTable = ({
                                     </tr>
                                     {/* Renta Fija */}
                                     <tr className="border-b border-gray-200 bg-sky-50/30">
-                                        <td className="pl-4 pr-2 py-2" style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
+                                        <td className={T.totalCell} style={{ width: (showClassificationColumns || showVariableColumn) ? '140px' : '180px' }}>
                                             <span className={`${T.totalLabel} text-sky-700`}>Renta Fija</span>
                                         </td>
                                         {showClassificationColumns && <><td style={{ width: '44px' }} /><td style={{ width: '36px' }} /></>}
@@ -626,7 +626,7 @@ const RentaTable = ({
                                             const fija = rliq ? rliq.rentaFija : (calculateTotal(p.id, rows) - (naiveVariable[p.id] ?? 0))
                                             const hasValue = fija !== 0
                                             return (
-                                                <td key={p.id} className="py-2 pr-2 text-right relative" style={{ width: '110px' }}>
+                                                <td key={p.id} className={`${T.totalCell} text-right relative`} style={{ width: '110px' }}>
                                                     {rliq && hasValue && (
                                                         <span className="group/reliq absolute cursor-help" style={{ top: '9px', left: '30px' }}>
                                                             <Info size={12} className="text-sky-400 hover:text-sky-500" />

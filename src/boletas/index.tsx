@@ -98,7 +98,7 @@ const BoletasTable = ({
                 <table className={T.table} style={{ tableLayout: 'fixed' }}>
                     <tbody>
                         <tr>
-                            <td className="px-4 py-2.5 text-left" style={{ width: '180px' }}>
+                            <td className={`${T.headerAccordion} text-left`} style={{ width: '180px' }}>
                                 <div className="flex items-center gap-2">
                                     {!forceExpanded && (
                                         isExpanded ? <ChevronUp size={16} className={headerText} /> : <ChevronDown size={16} className={headerText} />
@@ -115,7 +115,7 @@ const BoletasTable = ({
                                 return (
                                     <td
                                         key={m.periodo}
-                                        className={`px-2 py-2.5 text-right ${canToggle ? 'cursor-pointer select-none' : ''} ${isExcluded ? 'opacity-35 line-through' : ''}`}
+                                        className={`${T.headerAccordionStat} ${canToggle ? 'cursor-pointer select-none' : ''} ${isExcluded ? 'opacity-35 line-through' : ''}`}
                                         style={{ width: '110px' }}
                                         onClick={canToggle ? (e) => { e.stopPropagation(); onToggleMonth!(m.periodo) } : undefined}
                                     >
@@ -137,7 +137,7 @@ const BoletasTable = ({
                 <tbody>
                     {METRICS.map(metric => (
                         <tr key={metric.key} className={T.rowBorder}>
-                            <td className={`px-4 py-1.5 font-medium ${T.cellLabel} text-gray-600`} style={{ width: '180px' }}>
+                            <td className={`${T.cell} font-medium ${T.cellLabel} text-gray-600`} style={{ width: '180px' }}>
                                 {metric.label}
                             </td>
                             {months.map(m => {
@@ -145,7 +145,7 @@ const BoletasTable = ({
                                 return (
                                     <td
                                         key={m.periodo}
-                                        className={`px-2 py-1.5 text-right ${m.hasData ? metric.color : 'text-gray-300'} ${isExcluded ? 'opacity-35' : ''}`}
+                                        className={`${T.cell} text-right ${m.hasData ? metric.color : 'text-gray-300'} ${isExcluded ? 'opacity-35' : ''}`}
                                         style={{ width: '110px' }}
                                     >
                                         {m.hasData ? metric.format(m[metric.key]) : '—'}
