@@ -109,7 +109,7 @@ const BoletasTable = ({
                             </td>
                             {months.map(m => {
                                 const isExcluded = excluded.includes(m.periodo)
-                                const canToggle = m.hasData && !!onToggleMonth
+                                const canToggle = !!onToggleMonth
                                 const hasValue = m.hasData && m.liquido != null
                                 const label = SHORT_MONTHS[m.mes] || m.mes.slice(0, 3).toUpperCase()
                                 return (
@@ -119,7 +119,7 @@ const BoletasTable = ({
                                         style={{ width: '110px' }}
                                     >
                                         <span
-                                            className={`whitespace-nowrap ${canToggle ? 'cursor-pointer select-none inline-flex items-center rounded-md px-1.5 py-0.5 -mx-1.5 -my-0.5 hover:bg-white/40 active:bg-white/60 transition-colors' : ''}`}
+                                            className={`whitespace-nowrap ${canToggle ? 'cursor-pointer select-none inline-flex items-center rounded-full border border-white/50 px-2 py-0.5 -mx-2 -my-0.5' : ''}`}
                                             onClick={canToggle ? (e) => { e.stopPropagation(); onToggleMonth!(m.periodo) } : undefined}
                                         >
                                             <span className={`${headerText} ${T.headerStatLabel}`}>{label}: </span>
