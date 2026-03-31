@@ -3099,7 +3099,7 @@ var assettable_default = AssetTable;
 var columns = [
   { key: "marca", label: "Marca", type: "text", width: "160px", isLabel: true, placeholder: "Marca" },
   { key: "modelo", label: "Modelo", type: "text", width: "140px", placeholder: "Modelo" },
-  { key: "monto", label: "Monto $", type: "currency", width: "120px" },
+  { key: "monto", label: "Monto $", type: "currency", width: "120px", align: "right" },
   { key: "anio", label: "A\xF1o", type: "number", width: "80px", align: "center" }
 ];
 var VehiculosTable = ({
@@ -3129,7 +3129,7 @@ var vehiculos_default = VehiculosTable;
 var columns2 = [
   { key: "institucion", label: "Instituci\xF3n", type: "text", width: "160px", isLabel: true, placeholder: "Instituci\xF3n" },
   { key: "tipo", label: "Tipo Inversi\xF3n", type: "text", width: "140px", placeholder: "Tipo" },
-  { key: "monto", label: "Monto $", type: "currency", width: "120px" },
+  { key: "monto", label: "Monto $", type: "currency", width: "120px", align: "right" },
   { key: "fecha", label: "Fecha", type: "text", width: "100px", placeholder: "Fecha" }
 ];
 var InversionesTable = ({
@@ -3179,12 +3179,13 @@ var PropiedadesTable = ({
       ufPair: "valor_pesos",
       autoComputedClass: (row) => ufValue && row.valor_uf != null && row.valor_pesos != null ? "italic text-amber-500" : ""
     },
-    { key: "arriendo_real", label: "Arr. Real $", type: "currency", width: "100px" },
+    { key: "arriendo_real", label: "Arr. Real $", type: "currency", width: "100px", align: "right" },
     {
       key: "arriendo_futuro",
       label: "Arr. Fut $",
       type: "currency",
       width: "100px",
+      align: "right",
       autoComputedClass: (row) => ufValue && row.valor_uf != null ? "italic text-amber-500" : ""
     }
   ];
