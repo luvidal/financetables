@@ -153,7 +153,7 @@ function AssetTable<T extends AssetRow>({
                     <CurrencyToggle value={currency} onChange={setCurrency} />
                 </div>
             )}
-            <table className={T.table} style={{ tableLayout: 'fixed' }}>
+            <table className={T.table}>
                 <thead>
                     <tr className={`${headerBg} border-t ${borderColor} ${headerText}`}>
                         {resolvedColumns.map(col => {
@@ -163,7 +163,7 @@ function AssetTable<T extends AssetRow>({
                             <th
                                 key={col.key}
                                 className={`${T.headerCell} ${effectiveAlign === 'right' ? 'text-right' : effectiveAlign === 'center' ? 'text-center' : 'text-left'} ${T.th} ${headerText}`}
-                                style={col.isLabel ? undefined : { width: col.width }}
+                                style={{ width: col.width }}
                             >
                                 {col === labelCol && title ? title : col.label}
                             </th>

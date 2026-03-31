@@ -194,7 +194,7 @@ const EditableCell = ({
     return (
         <Wrapper
             className={`${T.cellEdit} cursor-pointer ${focusRing} ${className}`}
-            style={{ width, minWidth: width, maxWidth: width }}
+            style={{ minWidth: width }}
             onClick={handleClick}
             onDoubleClick={handleDoubleClick}
             onMouseEnter={() => setIsHovered(true)}

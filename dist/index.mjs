@@ -462,7 +462,7 @@ var EditableCell = ({
     Wrapper,
     {
       className: `${T.cellEdit} cursor-pointer ${focusRing} ${className}`,
-      style: { width, minWidth: width, maxWidth: width },
+      style: { minWidth: width },
       onClick: handleClick,
       onDoubleClick: handleDoubleClick,
       onMouseEnter: () => setIsHovered(true),
@@ -2959,7 +2959,7 @@ function AssetTable({
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs("div", { className: "overflow-x-auto relative", onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, children: [
       hasUfToggle && /* @__PURE__ */ jsx("div", { className: "absolute top-1 right-1 z-10", children: /* @__PURE__ */ jsx(currencytoggle_default, { value: currency, onChange: setCurrency }) }),
-      /* @__PURE__ */ jsxs("table", { className: T.table, style: { tableLayout: "fixed" }, children: [
+      /* @__PURE__ */ jsxs("table", { className: T.table, children: [
         /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsxs("tr", { className: `${headerBg} border-t ${borderColor} ${headerText}`, children: [
           resolvedColumns.map((col) => {
             const effectiveAlign = col.align ?? (col.type === "currency" || col.type === "number" ? "right" : "left");
@@ -2967,7 +2967,7 @@ function AssetTable({
               "th",
               {
                 className: `${T.headerCell} ${effectiveAlign === "right" ? "text-right" : effectiveAlign === "center" ? "text-center" : "text-left"} ${T.th} ${headerText}`,
-                style: col.isLabel ? void 0 : { width: col.width },
+                style: { width: col.width },
                 children: col === labelCol && title ? title : col.label
               },
               col.key
