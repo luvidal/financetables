@@ -3276,7 +3276,7 @@ var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colum
         row.label,
         renderLabelSuffix?.(row, idx)
       ] }),
-      extraColumn && /* @__PURE__ */ jsx("td", { className: `${T.cell} ${extraW}`, children: extraColumn.render(row, idx) }),
+      extraColumn && /* @__PURE__ */ jsx("td", { className: extraW, children: extraColumn.render(row, idx) }),
       row.values.map((v, i) => {
         const { display, title } = formatCell(v, fmt);
         return /* @__PURE__ */ jsx(

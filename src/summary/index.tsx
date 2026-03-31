@@ -58,7 +58,7 @@ const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, col
                   {renderLabelSuffix?.(row, idx)}
                 </td>
                 {extraColumn && (
-                  <td className={`${T.cell} ${extraW}`}>
+                  <td className={extraW}>
                     {extraColumn.render(row, idx)}
                   </td>
                 )}
