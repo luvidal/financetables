@@ -49,8 +49,10 @@ Renders a single `<table>` with a colored `<thead>` header row and `<tbody>` for
 
 Key props:
 - `headerBg` / `colorScheme` — header row background color
-- `renderHeader` — returns `<td>` cells for the header `<tr>`
+- `headerClassName` — extra classes on the header `<tr>` (e.g. border-t, text color)
+- `renderHeader` — returns `<td>`/`<th>` cells for the header `<tr>`
 - `children` — `<tr>` elements placed inside `<tbody>`
+- `renderFooter` — optional `<tfoot>` content (e.g., totals row)
 - `renderAfterContent` — optional content after the `<table>` (e.g., recycle bin, dialogs)
 
 ### SourceIcon
@@ -127,13 +129,13 @@ const MyTable = ({
 
 - **Simple read-only**: `boletas/index.tsx` — header with stats, no editing, no row state
 - **Complex with extras**: `renta/index.tsx` — keyboard nav, drag-reorder, selection, `renderAfterContent`
-- **Column-driven CRUD**: `assets/assettable.tsx` — generic `AssetTable`, no TableShell. Used by `vehiculos/`, `inversiones/`, `propiedades/` as thin config wrappers
+- **Column-driven CRUD**: `assets/assettable.tsx` — generic `AssetTable` with `renderFooter` for totals. Used by `vehiculos/`, `inversiones/`, `propiedades/` as thin config wrappers
 
 ## Consumers
 
 - **styles.ts** — used by all tables (renta, deudas, boletas, assets)
 - **editablecell.tsx** — used by renta (datarow, addrow), deudas, assets
-- **tableshell.tsx** — used by renta, boletas
+- **tableshell.tsx** — used by renta, boletas, deudas, assets
 - **utils.ts** — used by renta (helpers), boletas, finalresults, assets, deudas, recyclebin
 - **currencytoggle.tsx** — used by assets (when UF columns present)
 - **recyclebin.tsx** — used by renta (with `renderCells` for month values), deudas, assets

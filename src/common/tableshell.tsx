@@ -37,12 +37,17 @@ export interface TableShellProps {
     colorScheme?: import('./colors').ColorScheme
     /** @deprecated Use colorScheme instead */
     headerBg?: string
+    /** Extra classes on the header <tr> (e.g. border-t, text color) */
+    headerClassName?: string
 
-    // Header content — render prop returns <td> cells for the header <tr>
+    // Header content — render prop returns <td>/<th> cells for the header <tr>
     renderHeader: () => React.ReactNode
 
     // Table body content — <tr> elements placed inside <tbody>
     children: React.ReactNode
+
+    // Optional <tfoot> content (e.g., totals row)
+    renderFooter?: () => React.ReactNode
 
     // Optional content after the table (e.g., recycle bin, dialogs)
     renderAfterContent?: () => React.ReactNode
@@ -51,8 +56,10 @@ export interface TableShellProps {
 const TableShell = ({
     colorScheme: colorSchemeProp,
     headerBg: headerBgProp = 'bg-gray-100',
+    headerClassName,
     renderHeader,
     children,
+    renderFooter,
     renderAfterContent,
 }: TableShellProps) => {
     const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp)
@@ -61,13 +68,18 @@ const TableShell = ({
         <>
             <table className={T.table}>
                 <thead>
-                    <tr className={headerBg}>
+                    <tr className={`${headerBg} ${headerClassName || ''}`}>
                         {renderHeader()}
                     </tr>
                 </thead>
                 <tbody>
                     {children}
                 </tbody>
+                {renderFooter && (
+                    <tfoot>
+                        {renderFooter()}
+                    </tfoot>
+                )}
             </table>
             {renderAfterContent?.()}
         </>

@@ -39,6 +39,7 @@ interface DeudasTableProps {
 
 ## Dependencies
 
+- `../common/tableshell` — `TableShell` single-table wrapper (with `renderFooter` for totals)
 - `../common/styles` — `T` object for Tailwind classes
 - `../common/editablecell` — inline-editable cells
 - `../common/userowhover` — `useRowHover()` for row hover state

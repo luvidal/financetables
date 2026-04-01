@@ -36,8 +36,10 @@ When `ufValue` is provided and at least one column has `ufPair`, a CurrencyToggl
 
 ## Features
 
+- Uses `TableShell` with `renderFooter` for totals row
 - Soft-delete with recycle bin (shows deleted row values)
 - Grid keyboard navigation (arrow keys, Tab, Enter, Escape)
 - Add row with Enter key or value entry
 - Auto-conversion and auto-compute rules (for UF/CLP)
 - Footer totals for all numeric columns
+- CurrencyToggle rendered in header action column when UF columns present

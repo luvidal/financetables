@@ -3,6 +3,7 @@ import EditableCell from '../common/editablecell'
 import DeleteRowButton from '../common/deletebutton'
 import { T } from '../common/styles'
 import { resolveColors } from '../common/colors'
+import TableShell from '../common/tableshell'
 import { useRowHover } from '../common/userowhover'
 import { useGridKeyboard } from '../common/usegridkeyboard'
 import { applyAutoConversions, applyAutoCompute } from '../common/autoconvert'
@@ -146,15 +147,12 @@ function AssetTable<T extends AssetRow>({
     }
 
     return (<>
-        <div className="overflow-x-auto relative" onKeyDown={keyboard.handleContainerKeyDown} tabIndex={0}>
-            {hasUfToggle && (
-                <div className="absolute top-1 right-1 z-10">
-                    <CurrencyToggle value={currency} onChange={setCurrency} />
-                </div>
-            )}
-            <table className={T.table}>
-                <thead>
-                    <tr className={`${headerBg} border-t ${borderColor} ${headerText}`}>
+        <div onKeyDown={keyboard.handleContainerKeyDown} tabIndex={0} className="outline-none">
+            <TableShell
+                colorScheme={colorSchemeProp}
+                headerClassName={`border-t ${borderColor} ${headerText}`}
+                renderHeader={() => (
+                    <>
                         {resolvedColumns.map((col, i) => {
                             const effectiveAlign = col.align ?? (col.type === 'currency' || col.type === 'number' ? 'right' : 'left')
                             const vline = i < resolvedColumns.length - 1 ? T.vline : ''
@@ -166,115 +164,16 @@ function AssetTable<T extends AssetRow>({
                                 {col === labelCol && title ? title : col.label}
                             </th>
                         )})}
-                        <th className={T.actionCol}></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {activeRows.map(row => {
-                        const hovered = isHovered(row.id)
-                        return (
-                            <tr
-                                key={row.id}
-                                className={`${T.rowBorder} ${T.rowHover}`}
-                                {...getHoverProps(row.id)}
-                            >
-                                {resolvedColumns.map((col, i) => {
-                                    const vline = i < resolvedColumns.length - 1 ? T.vline : ''
-                                    if (col.isLabel) {
-                                        return (
-                                            <td key={col.key} className={`${T.cellEdit} ${T.cellLabel} ${vline}`}>
-                                                <div className="flex items-center gap-1 min-w-0">
-                                                    <DeleteRowButton onClick={() => requestDelete(row.id)} isVisible={hovered} />
-                                                    <input
-                                                        type="text"
-                                                        value={(row[col.key] as string) || ''}
-                                                        onChange={e => updateField(row.id, col.key, e.target.value)}
-                                                        className={`flex-1 min-w-0 ${T.inputLabel} pl-1`}
-                                                        placeholder={col.placeholder || col.label}
-                                                    />
-                                                </div>
-                                            </td>
-                                        )
-                                    }
-                                    if (col.type === 'text') {
-                                        const isRight = col.align === 'right'
-                                        const textAlign = isRight ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
-                                        return (
-                                            <td key={col.key} className={`${T.cellEdit} ${vline}`}>
-                                                <input
-                                                    type="text"
-                                                    value={(row[col.key] as string) || ''}
-                                                    onChange={e => updateField(row.id, col.key, e.target.value)}
-                                                    className={`w-full ${T.input} ${textAlign} pl-1`}
-                                                    style={isRight ? { padding: 0 } : undefined}
-                                                    placeholder={col.placeholder || col.label}
-                                                />
-                                            </td>
-                                        )
-                                    }
-                                    return renderEditableCell(row, col, vline)
-                                })}
-                                <td className={T.actionCol}></td>
-                            </tr>
-                        )
-                    })}
-
-                    {/* Add row */}
-                    <tr className={`border-b border-dashed ${borderColor.replace('200', '100')} ${headerBg}/20`}>
-                        {resolvedColumns.map((col, i) => {
-                            const vline = i < resolvedColumns.length - 1 ? T.vline : ''
-                            if (col.isLabel) {
-                                return (
-                                    <td key={col.key} className={`${T.cellEdit} ${vline}`}>
-                                        <input
-                                            type="text"
-                                            placeholder={addPlaceholder || `Agregar...`}
-                                            value={newRowValues[col.key] || ''}
-                                            onChange={e => setNewRowValues(prev => ({ ...prev, [col.key]: e.target.value }))}
-                                            className={`w-full ${T.inputPlaceholder}`}
-                                            onKeyDown={e => {
-                                                if (e.key === 'Enter' && (newRowValues[col.key] || '').trim()) addRow()
-                                            }}
-                                        />
-                                    </td>
-                                )
-                            }
-                            if (col.type === 'text') {
-                                const isAddRight = col.align === 'right'
-                                const addTextAlign = isAddRight ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
-                                return (
-                                    <td key={col.key} className={`${T.cellEdit} ${vline}`}>
-                                        <input
-                                            type="text"
-                                            placeholder={col.placeholder || col.label}
-                                            value={newRowValues[col.key] || ''}
-                                            onChange={e => setNewRowValues(prev => ({ ...prev, [col.key]: e.target.value }))}
-                                            className={`w-full ${T.inputPlaceholder} ${addTextAlign}`}
-                                            style={isAddRight ? { padding: 0 } : undefined}
-                                        />
-                                    </td>
-                                )
-                            }
-                            return (
-                                <EditableCell
-                                    key={col.key}
-                                    value={null}
-                                    onChange={v => addRow({ [col.key]: v } as Partial<T>)}
-                                    type={col.type as 'currency' | 'number'}
-                                    hasData={false}
-                                    align={col.align}
-                                    className={vline}
-                                />
-                            )
-                        })}
-                        <td className={T.actionCol}></td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr className={`${headerBg} font-semibold text-xs border-b ${borderColor}`}>
-                        <td colSpan={textCols.length} className={`${T.totalCell} ${headerText} ${T.totalLabel} ${T.vline}`}>TOTAL</td>
+                        <th className={T.actionCol}>
+                            {hasUfToggle && <CurrencyToggle value={currency} onChange={setCurrency} />}
+                        </th>
+                    </>
+                )}
+                renderFooter={() => (
+                    <tr className="font-semibold text-xs">
+                        <td colSpan={textCols.length} className={`${T.totalCell} ${T.totalLabel} ${T.vline}`}>TOTAL</td>
                         {editableCols.map((col, i) => (
-                            <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${headerText} ${T.totalValue} ${i < editableCols.length - 1 ? T.vline : ''}`}>
+                            <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${T.totalValue} ${i < editableCols.length - 1 ? T.vline : ''}`}>
                                 {totals[col.key] ? (
                                     col.type === 'number'
                                         ? totals[col.key].toLocaleString('es-CL', { maximumFractionDigits: 2 })
@@ -284,28 +183,130 @@ function AssetTable<T extends AssetRow>({
                         ))}
                         <td></td>
                     </tr>
-                </tfoot>
-            </table>
-            <RecycleBin
-                deletedRows={deletedRows}
-                getLabel={(r) => (r[labelCol.key] as string) || ''}
-                onRestore={restoreRow}
-                renderCells={(row) => (
-                    <>
-                        {editableCols.map((col, i) => {
-                            const v = row[col.key] as number | null
+                )}
+                renderAfterContent={() => (
+                    <RecycleBin
+                        deletedRows={deletedRows}
+                        getLabel={(r) => (r[labelCol.key] as string) || ''}
+                        onRestore={restoreRow}
+                        renderCells={(row) => (
+                            <>
+                                {editableCols.map((col, i) => {
+                                    const v = row[col.key] as number | null
+                                    return (
+                                        <td key={col.key} className={`${T.totalCell} text-right tabular-nums ${i < editableCols.length - 1 ? T.vline : ''}`}>
+                                            <span className={`${T.totalValue} ${v != null ? 'text-gray-400' : 'text-gray-200'}`}>
+                                                {v != null ? (col.type === 'number' ? String(v) : formatCurrency(v)) : '—'}
+                                            </span>
+                                        </td>
+                                    )
+                                })}
+                                <td className={T.actionCol} />
+                            </>
+                        )}
+                    />
+                )}
+            >
+                {activeRows.map(row => {
+                    const hovered = isHovered(row.id)
+                    return (
+                        <tr
+                            key={row.id}
+                            className={`${T.rowBorder} ${T.rowHover}`}
+                            {...getHoverProps(row.id)}
+                        >
+                            {resolvedColumns.map((col, i) => {
+                                const vline = i < resolvedColumns.length - 1 ? T.vline : ''
+                                if (col.isLabel) {
+                                    return (
+                                        <td key={col.key} className={`${T.cellEdit} ${T.cellLabel} ${vline}`}>
+                                            <div className="flex items-center gap-1 min-w-0">
+                                                <DeleteRowButton onClick={() => requestDelete(row.id)} isVisible={hovered} />
+                                                <input
+                                                    type="text"
+                                                    value={(row[col.key] as string) || ''}
+                                                    onChange={e => updateField(row.id, col.key, e.target.value)}
+                                                    className={`flex-1 min-w-0 ${T.inputLabel} pl-1`}
+                                                    placeholder={col.placeholder || col.label}
+                                                />
+                                            </div>
+                                        </td>
+                                    )
+                                }
+                                if (col.type === 'text') {
+                                    const isRight = col.align === 'right'
+                                    const textAlign = isRight ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                                    return (
+                                        <td key={col.key} className={`${T.cellEdit} ${vline}`}>
+                                            <input
+                                                type="text"
+                                                value={(row[col.key] as string) || ''}
+                                                onChange={e => updateField(row.id, col.key, e.target.value)}
+                                                className={`w-full ${T.input} ${textAlign} pl-1`}
+                                                style={isRight ? { padding: 0 } : undefined}
+                                                placeholder={col.placeholder || col.label}
+                                            />
+                                        </td>
+                                    )
+                                }
+                                return renderEditableCell(row, col, vline)
+                            })}
+                            <td className={T.actionCol}></td>
+                        </tr>
+                    )
+                })}
+
+                {/* Add row */}
+                <tr className={`border-b border-dashed ${borderColor.replace('200', '100')} ${headerBg}/20`}>
+                    {resolvedColumns.map((col, i) => {
+                        const vline = i < resolvedColumns.length - 1 ? T.vline : ''
+                        if (col.isLabel) {
                             return (
-                                <td key={col.key} className={`${T.totalCell} text-right tabular-nums ${i < editableCols.length - 1 ? T.vline : ''}`}>
-                                    <span className={`${T.totalValue} ${v != null ? 'text-gray-400' : 'text-gray-200'}`}>
-                                        {v != null ? (col.type === 'number' ? String(v) : formatCurrency(v)) : '—'}
-                                    </span>
+                                <td key={col.key} className={`${T.cellEdit} ${vline}`}>
+                                    <input
+                                        type="text"
+                                        placeholder={addPlaceholder || `Agregar...`}
+                                        value={newRowValues[col.key] || ''}
+                                        onChange={e => setNewRowValues(prev => ({ ...prev, [col.key]: e.target.value }))}
+                                        className={`w-full ${T.inputPlaceholder}`}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter' && (newRowValues[col.key] || '').trim()) addRow()
+                                        }}
+                                    />
                                 </td>
                             )
-                        })}
-                        <td className={T.actionCol} />
-                    </>
-                )}
-            />
+                        }
+                        if (col.type === 'text') {
+                            const isAddRight = col.align === 'right'
+                            const addTextAlign = isAddRight ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                            return (
+                                <td key={col.key} className={`${T.cellEdit} ${vline}`}>
+                                    <input
+                                        type="text"
+                                        placeholder={col.placeholder || col.label}
+                                        value={newRowValues[col.key] || ''}
+                                        onChange={e => setNewRowValues(prev => ({ ...prev, [col.key]: e.target.value }))}
+                                        className={`w-full ${T.inputPlaceholder} ${addTextAlign}`}
+                                        style={isAddRight ? { padding: 0 } : undefined}
+                                    />
+                                </td>
+                            )
+                        }
+                        return (
+                            <EditableCell
+                                key={col.key}
+                                value={null}
+                                onChange={v => addRow({ [col.key]: v } as Partial<T>)}
+                                type={col.type as 'currency' | 'number'}
+                                hasData={false}
+                                align={col.align}
+                                className={vline}
+                            />
+                        )
+                    })}
+                    <td className={T.actionCol}></td>
+                </tr>
+            </TableShell>
         </div>
         {deleteTargetId && <DeleteDialog count={1} onConfirm={confirmDelete} onCancel={cancelDelete} />}
     </>)

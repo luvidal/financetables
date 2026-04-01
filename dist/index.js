@@ -100,15 +100,18 @@ var SourceIcon = ({
 var TableShell = ({
   colorScheme: colorSchemeProp,
   headerBg: headerBgProp = "bg-gray-100",
+  headerClassName,
   renderHeader,
   children,
+  renderFooter,
   renderAfterContent
 }) => {
   const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp);
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
     /* @__PURE__ */ jsxRuntime.jsxs("table", { className: T.table, children: [
-      /* @__PURE__ */ jsxRuntime.jsx("thead", { children: /* @__PURE__ */ jsxRuntime.jsx("tr", { className: headerBg, children: renderHeader() }) }),
-      /* @__PURE__ */ jsxRuntime.jsx("tbody", { children })
+      /* @__PURE__ */ jsxRuntime.jsx("thead", { children: /* @__PURE__ */ jsxRuntime.jsx("tr", { className: `${headerBg} ${headerClassName || ""}`, children: renderHeader() }) }),
+      /* @__PURE__ */ jsxRuntime.jsx("tbody", { children }),
+      renderFooter && /* @__PURE__ */ jsxRuntime.jsx("tfoot", { children: renderFooter() })
     ] }),
     renderAfterContent?.()
   ] });
@@ -2117,9 +2120,12 @@ var DeudasTable = ({
     return "";
   };
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "overflow-x-auto", onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, children: [
-      /* @__PURE__ */ jsxRuntime.jsxs("table", { className: T.table, children: [
-        /* @__PURE__ */ jsxRuntime.jsx("thead", { children: /* @__PURE__ */ jsxRuntime.jsx("tr", { className: `${headerBg} border-t ${borderColor} ${headerText}`, children: anySelected ? /* @__PURE__ */ jsxRuntime.jsx("th", { colSpan: 8, className: `${T.headerCell} text-left`, onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ jsxRuntime.jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none", children: /* @__PURE__ */ jsxRuntime.jsxs(
+      tableshell_default,
+      {
+        colorScheme: colorSchemeProp,
+        headerClassName: `border-t ${borderColor} ${headerText}`,
+        renderHeader: () => anySelected ? /* @__PURE__ */ jsxRuntime.jsx("th", { colSpan: 8, className: `${T.headerCell} text-left`, onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2", children: [
           /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "text-xs text-rose-600", children: [
             selectedRows.size,
             " fila",
@@ -2154,8 +2160,15 @@ var DeudasTable = ({
           /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} text-center ${T.th} ${headerText} ${T.vline}`, children: "%" }),
           /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} text-center ${T.th} ${headerText}`, children: "Cuotas" }),
           /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol })
-        ] }) }) }),
-        /* @__PURE__ */ jsxRuntime.jsxs("tbody", { children: [
+        ] }),
+        renderFooter: () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold text-xs", children: [
+          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: 3, className: `${T.totalCell} ${T.totalLabel} ${T.vline}`, children: "TOTAL" }),
+          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} ${T.vline}`, children: totalSaldoPesos ? formatCurrency(totalSaldoPesos) : "\u2014" }),
+          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right ${T.totalValue}`, children: totalMontoCuota ? formatCurrency(totalMontoCuota) : "\u2014" }),
+          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: 3 })
+        ] }),
+        renderAfterContent: () => /* @__PURE__ */ jsxRuntime.jsx(recyclebin_default, { deletedRows, getLabel: (r) => r.institucion, onRestore: restoreRow }),
+        children: [
           activeRows.map((row) => {
             const hovered = isRowHovered(row.id);
             const selected = selectedRows.has(row.id);
@@ -2386,16 +2399,9 @@ var DeudasTable = ({
             /* @__PURE__ */ jsxRuntime.jsx("td", {}),
             /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
           ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntime.jsx("tfoot", { children: /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `${headerBg} font-semibold text-xs border-b ${borderColor}`, children: [
-          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: 3, className: `${T.totalCell} ${headerText} ${T.totalLabel} ${T.vline}`, children: "TOTAL" }),
-          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right ${headerText} ${T.totalValue} ${T.vline}`, children: totalSaldoPesos ? formatCurrency(totalSaldoPesos) : "\u2014" }),
-          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right ${headerText} ${T.totalValue}`, children: totalMontoCuota ? formatCurrency(totalMontoCuota) : "\u2014" }),
-          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: 3 })
-        ] }) })
-      ] }),
-      /* @__PURE__ */ jsxRuntime.jsx(recyclebin_default, { deletedRows, getLabel: (r) => r.institucion, onRestore: restoreRow })
-    ] }),
+        ]
+      }
+    ) }),
     deleteTargetId && /* @__PURE__ */ jsxRuntime.jsx(deletedialog_default, { count: 1, onConfirm: confirmDelete, onCancel: cancelDelete })
   ] });
 };
@@ -2797,10 +2803,12 @@ function AssetTable({
     );
   };
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "overflow-x-auto relative", onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, children: [
-      hasUfToggle && /* @__PURE__ */ jsxRuntime.jsx("div", { className: "absolute top-1 right-1 z-10", children: /* @__PURE__ */ jsxRuntime.jsx(currencytoggle_default, { value: currency, onChange: setCurrency }) }),
-      /* @__PURE__ */ jsxRuntime.jsxs("table", { className: T.table, children: [
-        /* @__PURE__ */ jsxRuntime.jsx("thead", { children: /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `${headerBg} border-t ${borderColor} ${headerText}`, children: [
+    /* @__PURE__ */ jsxRuntime.jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none", children: /* @__PURE__ */ jsxRuntime.jsxs(
+      tableshell_default,
+      {
+        colorScheme: colorSchemeProp,
+        headerClassName: `border-t ${borderColor} ${headerText}`,
+        renderHeader: () => /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
           resolvedColumns.map((col, i) => {
             const effectiveAlign = col.align ?? (col.type === "currency" || col.type === "number" ? "right" : "left");
             const vline = i < resolvedColumns.length - 1 ? T.vline : "";
@@ -2813,9 +2821,29 @@ function AssetTable({
               col.key
             );
           }),
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol })
-        ] }) }),
-        /* @__PURE__ */ jsxRuntime.jsxs("tbody", { children: [
+          /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol, children: hasUfToggle && /* @__PURE__ */ jsxRuntime.jsx(currencytoggle_default, { value: currency, onChange: setCurrency }) })
+        ] }),
+        renderFooter: () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold text-xs", children: [
+          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: textCols.length, className: `${T.totalCell} ${T.totalLabel} ${T.vline}`, children: "TOTAL" }),
+          editableCols.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} ${i < editableCols.length - 1 ? T.vline : ""}`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "\u2014" }, col.key)),
+          /* @__PURE__ */ jsxRuntime.jsx("td", {})
+        ] }),
+        renderAfterContent: () => /* @__PURE__ */ jsxRuntime.jsx(
+          recyclebin_default,
+          {
+            deletedRows,
+            getLabel: (r) => r[labelCol.key] || "",
+            onRestore: restoreRow,
+            renderCells: (row) => /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+              editableCols.map((col, i) => {
+                const v = row[col.key];
+                return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right tabular-nums ${i < editableCols.length - 1 ? T.vline : ""}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} ${v != null ? "text-gray-400" : "text-gray-200"}`, children: v != null ? col.type === "number" ? String(v) : formatCurrency(v) : "\u2014" }) }, col.key);
+              }),
+              /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
+            ] })
+          }
+        ),
+        children: [
           activeRows.map((row) => {
             const hovered = isHovered(row.id);
             return /* @__PURE__ */ jsxRuntime.jsxs(
@@ -2912,29 +2940,9 @@ function AssetTable({
             }),
             /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
           ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntime.jsx("tfoot", { children: /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `${headerBg} font-semibold text-xs border-b ${borderColor}`, children: [
-          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: textCols.length, className: `${T.totalCell} ${headerText} ${T.totalLabel} ${T.vline}`, children: "TOTAL" }),
-          editableCols.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${headerText} ${T.totalValue} ${i < editableCols.length - 1 ? T.vline : ""}`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "\u2014" }, col.key)),
-          /* @__PURE__ */ jsxRuntime.jsx("td", {})
-        ] }) })
-      ] }),
-      /* @__PURE__ */ jsxRuntime.jsx(
-        recyclebin_default,
-        {
-          deletedRows,
-          getLabel: (r) => r[labelCol.key] || "",
-          onRestore: restoreRow,
-          renderCells: (row) => /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-            editableCols.map((col, i) => {
-              const v = row[col.key];
-              return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right tabular-nums ${i < editableCols.length - 1 ? T.vline : ""}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} ${v != null ? "text-gray-400" : "text-gray-200"}`, children: v != null ? col.type === "number" ? String(v) : formatCurrency(v) : "\u2014" }) }, col.key);
-            }),
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
-          ] })
-        }
-      )
-    ] }),
+        ]
+      }
+    ) }),
     deleteTargetId && /* @__PURE__ */ jsxRuntime.jsx(deletedialog_default, { count: 1, onConfirm: confirmDelete, onCancel: cancelDelete })
   ] });
 }
