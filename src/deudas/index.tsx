@@ -173,14 +173,14 @@ const DeudasTable = ({
                 )}
                 renderFooter={() => (
                     <tr className="font-semibold text-xs">
-                        <td colSpan={3} className={`${T.totalCell} ${T.totalLabel} ${T.vline}`}>TOTAL</td>
-                        <td className={`${T.totalCell} text-right ${T.totalValue} ${T.vline}`}>
+                        <td colSpan={3} className={`${T.totalCell} ${T.totalLabel} border-t border-gray-200`}>TOTAL</td>
+                        <td className={`${T.totalCell} text-right ${T.totalValue} border-t border-gray-200`}>
                             {totalSaldoPesos ? formatCurrency(totalSaldoPesos) : '—'}
                         </td>
-                        <td className={`${T.totalCell} text-right ${T.totalValue}`}>
+                        <td className={`${T.totalCell} text-right ${T.totalValue} border-t border-gray-200`}>
                             {totalMontoCuota ? formatCurrency(totalMontoCuota) : '—'}
                         </td>
-                        <td colSpan={3}></td>
+                        <td colSpan={3} className="border-t border-gray-200"></td>
                     </tr>
                 )}
                 renderAfterContent={() => (

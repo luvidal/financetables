@@ -2155,10 +2155,10 @@ var DeudasTable = ({
           /* @__PURE__ */ jsx("th", { className: T.actionCol })
         ] }),
         renderFooter: () => /* @__PURE__ */ jsxs("tr", { className: "font-semibold text-xs", children: [
-          /* @__PURE__ */ jsx("td", { colSpan: 3, className: `${T.totalCell} ${T.totalLabel} ${T.vline}`, children: "TOTAL" }),
-          /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} ${T.vline}`, children: totalSaldoPesos ? formatCurrency(totalSaldoPesos) : "\u2014" }),
-          /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right ${T.totalValue}`, children: totalMontoCuota ? formatCurrency(totalMontoCuota) : "\u2014" }),
-          /* @__PURE__ */ jsx("td", { colSpan: 3 })
+          /* @__PURE__ */ jsx("td", { colSpan: 3, className: `${T.totalCell} ${T.totalLabel} border-t border-gray-200`, children: "TOTAL" }),
+          /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} border-t border-gray-200`, children: totalSaldoPesos ? formatCurrency(totalSaldoPesos) : "\u2014" }),
+          /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} border-t border-gray-200`, children: totalMontoCuota ? formatCurrency(totalMontoCuota) : "\u2014" }),
+          /* @__PURE__ */ jsx("td", { colSpan: 3, className: "border-t border-gray-200" })
         ] }),
         renderAfterContent: () => /* @__PURE__ */ jsx(recyclebin_default, { deletedRows, getLabel: (r) => r.institucion, onRestore: restoreRow }),
         children: [
