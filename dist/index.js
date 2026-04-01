@@ -1840,7 +1840,7 @@ var RentaTable = ({
                   const isSubtract = isSubtractType(section.type);
                   const label = isSubtract ? "Total descuentos" : "Total haberes";
                   return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `${isSubtract ? "bg-red-50/30" : "bg-emerald-50/30"}`, children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-b border-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} text-gray-600`, children: label }) }),
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-b border-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} text-gray-500`, children: label }) }),
                     showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
                       /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} border-b border-gray-200` }),
                       /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} border-b border-gray-200 ${T.vline}` })
@@ -1851,7 +1851,7 @@ var RentaTable = ({
                       const hasValue = value !== 0;
                       const display = isSubtract ? `-${formatValue(value)}` : formatValue(value);
                       const vline = mi < monthsArray.length - 1 ? T.vline : "";
-                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right border-b border-gray-200 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${hasValue ? "text-gray-600" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right border-b border-gray-200 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${hasValue ? "text-gray-500" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
                     }),
                     /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.actionCol} border-b border-gray-200` })
                   ] });
@@ -2945,8 +2945,8 @@ var assettable_default = AssetTable;
 var columns = [
   { key: "marca", label: "Marca", type: "text", isLabel: true, placeholder: "Marca" },
   { key: "modelo", label: "Modelo", type: "text", placeholder: "Modelo" },
-  { key: "monto", label: "Monto $", type: "currency" },
-  { key: "anio", label: "A\xF1o", type: "number", align: "center" }
+  { key: "anio", label: "A\xF1o", type: "number", align: "center" },
+  { key: "monto", label: "Monto $", type: "currency" }
 ];
 var VehiculosTable = ({
   rows,
@@ -2975,8 +2975,8 @@ var vehiculos_default = VehiculosTable;
 var columns2 = [
   { key: "institucion", label: "Instituci\xF3n", type: "text", isLabel: true, placeholder: "Instituci\xF3n" },
   { key: "tipo", label: "Tipo Inversi\xF3n", type: "text", placeholder: "Tipo" },
-  { key: "monto", label: "Monto $", type: "currency" },
-  { key: "fecha", label: "Fecha", type: "text", align: "right", placeholder: "-" }
+  { key: "fecha", label: "Fecha", type: "text", align: "right", placeholder: "-" },
+  { key: "monto", label: "Monto $", type: "currency" }
 ];
 var InversionesTable = ({
   rows,
