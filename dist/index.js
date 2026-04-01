@@ -2697,18 +2697,27 @@ function AssetTable({
 }) {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp);
   const { getHoverProps, isHovered } = useRowHover();
-  const [currency, setCurrency] = React3.useState("uf");
+  const [toggledCols, setToggledCols] = React3.useState(/* @__PURE__ */ new Set());
   const { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow } = useSoftDelete(rows, onRowsChange);
-  const canToggleCurrency = ufValue != null && columns3.some((c) => c.ufPair);
-  const isUf = currency === "uf";
+  const canToggleCurrency = ufValue != null;
+  const toggleColumn = (key) => {
+    setToggledCols((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
   const resolvedColumns = React3.useMemo(() => {
     return columns3.map((col) => {
-      if (col.ufPair && !isUf) {
-        return { ...col, key: col.ufPair, type: "currency", label: col.label.replace("UF", "$") };
+      if (col.ufPair && toggledCols.has(col.key)) {
+        const pairLabel = col.ufPairLabel || col.label;
+        const pairType = col.ufPairType || "currency";
+        return { ...col, key: col.ufPair, type: pairType, label: pairLabel };
       }
       return col;
     });
-  }, [columns3, isUf]);
+  }, [columns3, toggledCols]);
   const editableCols = React3.useMemo(
     () => resolvedColumns.filter((c) => c.type !== "text"),
     [resolvedColumns]
@@ -2788,12 +2797,13 @@ function AssetTable({
             const effectiveAlign = col.align ?? (col.type === "currency" || col.type === "number" ? "right" : "left");
             const vline = i < resolvedColumns.length - 1 ? T.vline : "";
             const label = col === labelCol && title ? title : col.label;
-            const isToggleable = canToggleCurrency && col.ufPair;
+            const origCol = columns3[i];
+            const isToggleable = canToggleCurrency && origCol?.ufPair;
             return /* @__PURE__ */ jsxRuntime.jsx(
               "th",
               {
                 className: `${T.headerCell} ${effectiveAlign === "right" ? "text-right" : effectiveAlign === "center" ? "text-center" : "text-left"} ${T.th} ${headerText} ${vline}`,
-                children: isToggleable ? /* @__PURE__ */ jsxRuntime.jsx(clickableheader_default, { onClick: () => setCurrency((c) => c === "uf" ? "clp" : "uf"), borderColor, children: label }) : label
+                children: isToggleable ? /* @__PURE__ */ jsxRuntime.jsx(clickableheader_default, { onClick: () => toggleColumn(origCol.key), borderColor, children: label }) : label
               },
               col.key
             );
@@ -3004,19 +3014,35 @@ var PropiedadesTable = ({
       label: "Valor UF",
       type: "number",
       ufPair: "valor_pesos",
+      ufPairLabel: "Valor $",
+      ufPairType: "currency",
       autoComputedClass: (row) => ufValue && row.valor_uf != null && row.valor_pesos != null ? "italic text-amber-500" : ""
     },
-    { key: "arriendo_real", label: "Arr. Real $", type: "currency" },
+    {
+      key: "arriendo_real",
+      label: "Arr. Real $",
+      type: "currency",
+      ufPair: "arriendo_real_uf",
+      ufPairLabel: "Arr. Real UF",
+      ufPairType: "number"
+    },
     {
       key: "arriendo_futuro",
       label: "Arr. Fut $",
       type: "currency",
+      ufPair: "arriendo_futuro_uf",
+      ufPairLabel: "Arr. Fut UF",
+      ufPairType: "number",
       autoComputedClass: (row) => ufValue && row.valor_uf != null ? "italic text-amber-500" : ""
     }
   ];
   const conversionRules = React3.useMemo(() => ufValue ? [
     { source: "valor_uf", target: "valor_pesos", formula: (v) => v * ufValue, precision: 0 },
-    { source: "valor_pesos", target: "valor_uf", formula: (v) => v / ufValue, precision: 2 }
+    { source: "valor_pesos", target: "valor_uf", formula: (v) => v / ufValue, precision: 2 },
+    { source: "arriendo_real", target: "arriendo_real_uf", formula: (v) => v / ufValue, precision: 2 },
+    { source: "arriendo_real_uf", target: "arriendo_real", formula: (v) => v * ufValue, precision: 0 },
+    { source: "arriendo_futuro", target: "arriendo_futuro_uf", formula: (v) => v / ufValue, precision: 2 },
+    { source: "arriendo_futuro_uf", target: "arriendo_futuro", formula: (v) => v * ufValue, precision: 0 }
   ] : [], [ufValue]);
   const computeRules = React3.useMemo(() => ufValue ? [
     {
@@ -3027,6 +3053,16 @@ var PropiedadesTable = ({
         const valorUf = row.valor_uf;
         if (!valorUf || !capRate) return null;
         return Math.round(valorUf * capRate / 12 * (1 - factorDescuento) * ufValue);
+      }
+    },
+    {
+      target: "arriendo_futuro_uf",
+      depends: ["valor_uf", "valor_pesos"],
+      condition: (row) => row.arriendo_futuro == null,
+      formula: (row) => {
+        const valorUf = row.valor_uf;
+        if (!valorUf || !capRate) return null;
+        return Math.round(valorUf * capRate / 12 * (1 - factorDescuento) * 100) / 100;
       }
     }
   ] : [], [ufValue, capRate, factorDescuento]);

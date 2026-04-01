@@ -242,7 +242,9 @@ type PropiedadRow = {
     valor_uf: number | null;
     valor_pesos: number | null;
     arriendo_real: number | null;
+    arriendo_real_uf: number | null;
     arriendo_futuro: number | null;
+    arriendo_futuro_uf: number | null;
 } & SoftDeletable;
 interface PropiedadesTableProps {
     rows: PropiedadRow[];
@@ -298,6 +300,10 @@ interface ColumnDef {
     isLabel?: boolean;
     /** Key of the paired UF/CLP field shown when currency toggle switches */
     ufPair?: string;
+    /** Label to show when toggled to the paired field (default: auto-swap UF↔$) */
+    ufPairLabel?: string;
+    /** Type of the paired field (default: 'currency') */
+    ufPairType?: 'currency' | 'number';
     /** Return class to apply when cell value is auto-computed */
     autoComputedClass?: (row: Record<string, unknown>) => string;
 }

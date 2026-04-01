@@ -7,7 +7,9 @@ export type PropiedadRow = {
   valor_uf: number | null
   valor_pesos: number | null
   arriendo_real: number | null
+  arriendo_real_uf: number | null
   arriendo_futuro: number | null
+  arriendo_futuro_uf: number | null
 } & SoftDeletable
 
 export interface PropiedadesTableProps {

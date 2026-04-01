@@ -31,21 +31,31 @@ function AssetTable<T extends AssetRow>({
 }: AssetTableProps<T>) {
     const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp)
     const { getHoverProps, isHovered } = useRowHover()
-    const [currency, setCurrency] = useState<'uf' | 'clp'>('uf')
+    // Per-column currency state: tracks which toggleable columns are showing their pair
+    const [toggledCols, setToggledCols] = useState<Set<string>>(new Set())
     const { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow } = useSoftDelete(rows, onRowsChange)
 
-    const canToggleCurrency = ufValue != null && columns.some(c => c.ufPair)
-    const isUf = currency === 'uf'
+    const canToggleCurrency = ufValue != null
+
+    const toggleColumn = (key: string) => {
+        setToggledCols(prev => {
+            const next = new Set(prev)
+            if (next.has(key)) next.delete(key)
+            else next.add(key)
+            return next
+        })
+    }
 
     const resolvedColumns = useMemo(() => {
         return columns.map(col => {
-            if (col.ufPair && !isUf) {
-                // Switch to the CLP pair
-                return { ...col, key: col.ufPair, type: 'currency' as const, label: col.label.replace('UF', '$') }
+            if (col.ufPair && toggledCols.has(col.key)) {
+                const pairLabel = col.ufPairLabel || col.label
+                const pairType = col.ufPairType || 'currency'
+                return { ...col, key: col.ufPair, type: pairType as 'currency' | 'number', label: pairLabel }
             }
             return col
         })
-    }, [columns, isUf])
+    }, [columns, toggledCols])
 
     // EditableCell columns for keyboard nav
     const editableCols = useMemo(() =>
@@ -138,14 +148,15 @@ function AssetTable<T extends AssetRow>({
                             const effectiveAlign = col.align ?? (col.type === 'currency' || col.type === 'number' ? 'right' : 'left')
                             const vline = i < resolvedColumns.length - 1 ? T.vline : ''
                             const label = col === labelCol && title ? title : col.label
-                            const isToggleable = canToggleCurrency && col.ufPair
+                            const origCol = columns[i]
+                            const isToggleable = canToggleCurrency && origCol?.ufPair
                             return (
                             <th
                                 key={col.key}
                                 className={`${T.headerCell} ${effectiveAlign === 'right' ? 'text-right' : effectiveAlign === 'center' ? 'text-center' : 'text-left'} ${T.th} ${headerText} ${vline}`}
                             >
                                 {isToggleable ? (
-                                    <ClickableHeader onClick={() => setCurrency(c => c === 'uf' ? 'clp' : 'uf')} borderColor={borderColor}>
+                                    <ClickableHeader onClick={() => toggleColumn(origCol.key)} borderColor={borderColor}>
                                         {label}
                                     </ClickableHeader>
                                 ) : label}
