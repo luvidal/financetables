@@ -2108,8 +2108,8 @@ var DeudasTable = ({
     return false;
   };
   const cuotaClassName = (row) => {
-    if (isAutoComputed(row, "monto_cuota")) return "italic text-rose-400";
-    if (row.cuota_estimated) return "italic text-gray-400";
+    if (isAutoComputed(row, "monto_cuota")) return "text-rose-400";
+    if (row.cuota_estimated) return "text-gray-400";
     return "";
   };
   return /* @__PURE__ */ jsxs(Fragment, { children: [
@@ -2254,7 +2254,7 @@ var DeudasTable = ({
                       onChange: (v) => updateField(row.id, "saldo_deuda_pesos", v),
                       type: "currency",
                       hasData: row.saldo_deuda_pesos !== null,
-                      className: `${T.vline} ${isAutoComputed(row, "saldo_deuda_pesos") ? "italic text-rose-400" : ""}`,
+                      className: `${T.vline} ${isAutoComputed(row, "saldo_deuda_pesos") ? "text-rose-400" : ""}`,
                       focused: keyboard.isFocused(row.id, 1),
                       onCellFocus: () => keyboard.focus(row.id, 1),
                       onNavigate: keyboard.navigate,
@@ -2308,7 +2308,7 @@ var DeudasTable = ({
                       type: "number",
                       hasData: true,
                       align: "center",
-                      className: "italic text-gray-400",
+                      className: "bg-blue-50/50 rounded !py-0.5 !px-1.5 [&>div]:h-4 text-[11px]",
                       asDiv: true,
                       focused: keyboard.isFocused(row.id, 3),
                       onCellFocus: () => keyboard.focus(row.id, 3),
