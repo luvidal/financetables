@@ -32,7 +32,7 @@ const AddRow = ({
 
     return (
         <tr className={`border-b border-dashed ${bgClass}`}>
-            <td className={`${T.cellEdit} ${T.vline}`}>
+            <td className={`${T.cellEdit} ${showClassificationColumns ? '' : T.vline}`}>
                 <input
                     type="text"
                     placeholder={section.placeholder}
@@ -46,7 +46,7 @@ const AddRow = ({
                     }}
                 />
             </td>
-            {showClassificationColumns && <><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td></>}
+            {showClassificationColumns && <><td className={T.cellCompact} /><td className={`${T.cellCompact} ${T.vline}`} /></>}
             {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} text-center ${T.vline}`}><span className={T.empty}>—</span></td>}
             {months.map((p, mi) => (
                 <EditableCell

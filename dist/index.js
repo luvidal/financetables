@@ -101,13 +101,14 @@ var TableShell = ({
   colorScheme: colorSchemeProp,
   headerBg: headerBgProp = "bg-gray-100",
   headerClassName,
+  className,
   renderHeader,
   children,
   renderFooter,
   renderAfterContent
 }) => {
   const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp);
-  return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `border-y border-gray-200 mb-3 sm:mb-4 ${className || ""}`, children: [
     /* @__PURE__ */ jsxRuntime.jsxs("table", { className: T.table, children: [
       /* @__PURE__ */ jsxRuntime.jsx("thead", { children: /* @__PURE__ */ jsxRuntime.jsx("tr", { className: `${headerBg} ${headerClassName || ""}`, children: renderHeader() }) }),
       /* @__PURE__ */ jsxRuntime.jsx("tbody", { children }),
@@ -583,25 +584,25 @@ var DataRow = ({
       onDragLeave,
       onDrop,
       children: [
-        /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEditLabel} text-gray-700 ${T.cellLabel} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `flex items-center gap-0.5 min-w-0 ${indented ? "pl-4" : ""}`, children: [
-          isHovered && onDragStart && !anySelected && /* @__PURE__ */ jsxRuntime.jsx(
+        /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEditLabel} text-gray-700 ${T.cellLabel} ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `flex items-center gap-0.5 min-w-0 ${indented ? "pl-4" : ""}`, children: [
+          onDragStart && !anySelected && /* @__PURE__ */ jsxRuntime.jsx(
             "span",
             {
-              draggable: true,
+              draggable: isHovered,
               onDragStart,
               onDragEnd,
-              className: "shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500",
+              className: `shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-opacity ${isHovered ? "opacity-100" : "opacity-0 pointer-events-none"}`,
               title: "Arrastrar para reordenar",
               children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.GripVertical, { size: 14 })
             }
           ),
-          showCheckbox ? /* @__PURE__ */ jsxRuntime.jsx(
+          selectable ? /* @__PURE__ */ jsxRuntime.jsx(
             "input",
             {
               type: "checkbox",
               checked: selected,
               onChange: onToggleSelect,
-              className: "shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+              className: `shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer transition-opacity ${showCheckbox ? "opacity-100" : "opacity-0 pointer-events-none"}`
             }
           ) : null,
           /* @__PURE__ */ jsxRuntime.jsx(
@@ -613,7 +614,7 @@ var DataRow = ({
               onKeyDown: (e) => {
                 if (e.key === "Enter") e.target.blur();
               },
-              className: `flex-1 min-w-0 ${T.rowLabel} ${isHovered || showCheckbox ? "" : "pl-1"}`,
+              className: `flex-1 min-w-0 ${T.rowLabel}`,
               title: row.label
             }
           ),
@@ -646,7 +647,7 @@ var DataRow = ({
             /* @__PURE__ */ jsxRuntime.jsx(
               "td",
               {
-                className: `${T.cellCompact} text-center`,
+                className: `${T.cellCompact} text-center ${T.vline}`,
                 onClick: (e) => {
                   e.stopPropagation();
                   if (row.naturaleza !== "Legal") onToggleVariable?.();
@@ -714,7 +715,7 @@ var AddRow = ({
   const subtract = isSubtractType(section.type);
   const bgClass = subtract ? "bg-red-50/30 border-red-100" : "bg-gray-50/30 border-gray-100";
   return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-b border-dashed ${bgClass}`, children: [
-    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx(
+    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx(
       "input",
       {
         type: "text",
@@ -730,8 +731,8 @@ var AddRow = ({
       }
     ) }),
     showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-      /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
-      /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) })
+      /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.cellCompact }),
+      /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} ${T.vline}` })
     ] }),
     showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
     months.map((p, mi) => /* @__PURE__ */ jsxRuntime.jsx(
@@ -784,14 +785,14 @@ var GroupRow = ({
       onDragLeave,
       onDrop,
       children: [
-        /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEditLabel} text-gray-700 overflow-hidden ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-0.5 min-w-0", children: [
-          isHovered && onDragStart && /* @__PURE__ */ jsxRuntime.jsx(
+        /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEditLabel} text-gray-700 overflow-hidden ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-0.5 min-w-0", children: [
+          onDragStart && /* @__PURE__ */ jsxRuntime.jsx(
             "span",
             {
-              draggable: true,
+              draggable: isHovered,
               onDragStart,
               onDragEnd,
-              className: "shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500",
+              className: `shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-opacity ${isHovered ? "opacity-100" : "opacity-0 pointer-events-none"}`,
               title: "Arrastrar para reordenar",
               children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.GripVertical, { size: 14 })
             }
@@ -820,8 +821,8 @@ var GroupRow = ({
           )
         ] }) }),
         showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) })
+          /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.cellCompact }),
+          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} ${T.vline}` })
         ] }),
         showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
         months.map((p, mi) => {
@@ -1717,13 +1718,13 @@ var RentaTable = ({
               showClassificationColumns
             }
           ) : /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.headerAccordion} text-left ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.headerAccordion} text-left ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2", children: [
               /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} ${T.headerTitle}`, children: title }),
               /* @__PURE__ */ jsxRuntime.jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
             ] }) }),
             showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[9px] font-semibold opacity-60`, children: "Tipo" }) }),
-              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[9px] font-semibold opacity-60`, children: "Renta" }) })
+              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[10px] font-semibold opacity-60`, children: "Tipo" }) }),
+              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[10px] font-semibold opacity-60`, children: "Renta" }) })
             ] }),
             showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.vline }),
             monthsArray.map((p) => {
@@ -1787,27 +1788,6 @@ var RentaTable = ({
             effectiveSections.map((section) => {
               const items = getOrderedItems(rows, section.type);
               return /* @__PURE__ */ jsxRuntime.jsxs(React3__default.default.Fragment, { children: [
-                effectiveSections.length > 1 && (() => {
-                  const subtotals = computeSectionSubtotal(rows, section.type, monthsArray);
-                  const isSubtract = isSubtractType(section.type);
-                  const label = isSubtract ? "Total descuentos" : "Total haberes";
-                  return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-b-2 ${isSubtract ? "border-b-rose-200 bg-red-50/30" : "border-b-emerald-200 bg-emerald-50/30"}`, children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-gray-700 ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} ${isSubtract ? "text-rose-700" : "text-emerald-700"}`, children: label }) }),
-                    showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-                      /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
-                      /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) })
-                    ] }),
-                    showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
-                    monthsArray.map((p, mi) => {
-                      const value = subtotals[p.id] ?? 0;
-                      const hasValue = value !== 0;
-                      const display = isSubtract ? `-${formatValue(value)}` : formatValue(value);
-                      const vline = mi < monthsArray.length - 1 ? T.vline : "";
-                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${isSubtract ? hasValue ? "text-rose-600" : "text-gray-300" : hasValue ? "text-emerald-700" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
-                    }),
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
-                  ] });
-                })(),
                 items.map((item) => {
                   if (item.kind === "group") {
                     const { group, children: groupChildren } = item;
@@ -1854,18 +1834,39 @@ var RentaTable = ({
                     showVariableColumn,
                     showClassificationColumns
                   }
-                )
+                ),
+                effectiveSections.length > 1 && (() => {
+                  const subtotals = computeSectionSubtotal(rows, section.type, monthsArray);
+                  const isSubtract = isSubtractType(section.type);
+                  const label = isSubtract ? "Total descuentos" : "Total haberes";
+                  return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-b-2 ${isSubtract ? "border-b-rose-200 bg-red-50/30" : "border-b-emerald-200 bg-emerald-50/30"}`, children: [
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.footerLabel} text-xs`, children: label }) }),
+                    showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+                      /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.cellCompact }),
+                      /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} ${T.vline}` })
+                    ] }),
+                    showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} ${T.vline}` }),
+                    monthsArray.map((p, mi) => {
+                      const value = subtotals[p.id] ?? 0;
+                      const hasValue = value !== 0;
+                      const display = isSubtract ? `-${formatValue(value)}` : formatValue(value);
+                      const vline = mi < monthsArray.length - 1 ? T.vline : "";
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.footerValue} text-xs tabular-nums ${hasValue ? "" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
+                    }),
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
+                  ] });
+                })()
               ] }, section.type);
             }),
             (showVariableColumn || showClassificationColumns) && effectiveSections.length > 1 && (() => {
               const naiveVariable = computeRentaVariable(rows, monthsArray);
               const fmtSigned = (v) => v < 0 ? `-${formatValue(-v)}` : formatValue(v);
               return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-                /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "border-t-2 border-t-gray-200 border-b border-gray-100 bg-amber-50/30", children: [
-                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} text-amber-700`, children: "Renta Variable" }) }),
+                /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "border-t-2 border-t-gray-200 border-b border-gray-100 bg-amber-50/30 group/rv", children: [
+                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} text-amber-700`, children: "Renta Variable" }) }),
                   showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) })
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.cellCompact }),
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} ${T.vline}` })
                   ] }),
                   showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
                   monthsArray.map((p, mi) => {
@@ -1874,8 +1875,8 @@ var RentaTable = ({
                     const hasValue = value !== 0;
                     const vline = mi < monthsArray.length - 1 ? T.vline : "";
                     return /* @__PURE__ */ jsxRuntime.jsxs("td", { className: `${T.totalCell} text-right relative ${vline}`, children: [
-                      rliq && hasValue && /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "group/reliq absolute cursor-help", style: { top: "9px", left: "30px" }, children: [
-                        /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Info, { size: 12, className: "text-amber-400 hover:text-amber-500" }),
+                      rliq && hasValue && /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "group/reliq absolute cursor-help opacity-0 group-hover/rv:opacity-100 transition-opacity", style: { top: "9px", left: "12px" }, children: [
+                        /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Info, { size: 14, className: "text-gray-400 hover:text-gray-600 p-0.5 rounded hover:bg-gray-200" }),
                         /* @__PURE__ */ jsxRuntime.jsx(ReliqInfoTooltip, { data: rliq, type: "variable" })
                       ] }),
                       /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${hasValue ? "text-amber-700" : "text-gray-300"}`, children: hasValue ? fmtSigned(value) : "\u2014" })
@@ -1883,11 +1884,11 @@ var RentaTable = ({
                   }),
                   /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
                 ] }),
-                /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "border-b border-gray-200 bg-sky-50/30", children: [
-                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} text-sky-700`, children: "Renta Fija" }) }),
+                /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "border-b border-gray-200 bg-sky-50/30 group/rf", children: [
+                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} text-sky-700`, children: "Renta Fija" }) }),
                   showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) })
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.cellCompact }),
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} ${T.vline}` })
                   ] }),
                   showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: T.empty, children: "\u2014" }) }),
                   monthsArray.map((p, mi) => {
@@ -1896,8 +1897,8 @@ var RentaTable = ({
                     const hasValue = fija !== 0;
                     const vline = mi < monthsArray.length - 1 ? T.vline : "";
                     return /* @__PURE__ */ jsxRuntime.jsxs("td", { className: `${T.totalCell} text-right relative ${vline}`, children: [
-                      rliq && hasValue && /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "group/reliq absolute cursor-help", style: { top: "9px", left: "30px" }, children: [
-                        /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Info, { size: 12, className: "text-sky-400 hover:text-sky-500" }),
+                      rliq && hasValue && /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "group/reliq absolute cursor-help opacity-0 group-hover/rf:opacity-100 transition-opacity", style: { top: "9px", left: "12px" }, children: [
+                        /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Info, { size: 14, className: "text-gray-400 hover:text-gray-600 p-0.5 rounded hover:bg-gray-200" }),
                         /* @__PURE__ */ jsxRuntime.jsx(ReliqInfoTooltip, { data: rliq, type: "fija" })
                       ] }),
                       /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${hasValue ? "text-blue-700" : "text-gray-300"}`, children: hasValue ? fmtSigned(fija) : "\u2014" })
@@ -3133,7 +3134,7 @@ function formatCell(v, format) {
 }
 var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme }) => {
   const colors = colorScheme ?? DEFAULT_SCHEME;
-  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxRuntime.jsx("table", { className: `${T.table} border-collapse`, children: /* @__PURE__ */ jsxRuntime.jsx("tbody", { children: rows.map((row, idx) => {
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "overflow-x-auto border-y border-gray-200 mb-3 sm:mb-4", children: /* @__PURE__ */ jsxRuntime.jsx("table", { className: `${T.table} border-collapse`, children: /* @__PURE__ */ jsxRuntime.jsx("tbody", { children: rows.map((row, idx) => {
     if (row.type === "subheader") {
       return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-b-2 ${colors.border}`, children: [
         /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} ${T.th} font-bold ${colors.text} tracking-wider ${T.vline}`, children: row.label }),

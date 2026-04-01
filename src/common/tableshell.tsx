@@ -39,6 +39,8 @@ export interface TableShellProps {
     headerBg?: string
     /** Extra classes on the header <tr> (e.g. border-t, text color) */
     headerClassName?: string
+    /** Extra classes on the outer wrapper div */
+    className?: string
 
     // Header content — render prop returns <td>/<th> cells for the header <tr>
     renderHeader: () => React.ReactNode
@@ -57,6 +59,7 @@ const TableShell = ({
     colorScheme: colorSchemeProp,
     headerBg: headerBgProp = 'bg-gray-100',
     headerClassName,
+    className,
     renderHeader,
     children,
     renderFooter,
@@ -65,7 +68,7 @@ const TableShell = ({
     const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp)
 
     return (
-        <>
+        <div className={`border-y border-gray-200 mb-3 sm:mb-4 ${className || ''}`}>
             <table className={T.table}>
                 <thead>
                     <tr className={`${headerBg} ${headerClassName || ''}`}>
@@ -82,7 +85,7 @@ const TableShell = ({
                 )}
             </table>
             {renderAfterContent?.()}
-        </>
+        </div>
     )
 }
 

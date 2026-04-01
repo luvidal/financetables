@@ -137,25 +137,25 @@ const DataRow = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
         >
-            <td className={`${T.cellEditLabel} text-gray-700 ${T.cellLabel} ${T.vline}`}>
+            <td className={`${T.cellEditLabel} text-gray-700 ${T.cellLabel} ${showClassificationColumns ? '' : T.vline}`}>
                 <div className={`flex items-center gap-0.5 min-w-0 ${indented ? 'pl-4' : ''}`}>
-                    {isHovered && onDragStart && !anySelected && (
+                    {onDragStart && !anySelected && (
                         <span
-                            draggable
+                            draggable={isHovered}
                             onDragStart={onDragStart}
                             onDragEnd={onDragEnd}
-                            className="shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500"
+                            className={`shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                             title="Arrastrar para reordenar"
                         >
                             <GripVertical size={14} />
                         </span>
                     )}
-                    {showCheckbox ? (
+                    {selectable ? (
                         <input
                             type="checkbox"
                             checked={selected}
                             onChange={onToggleSelect}
-                            className="shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                            className={`shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer transition-opacity ${showCheckbox ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                         />
                     ) : null}
                     <input
@@ -165,7 +165,7 @@ const DataRow = ({
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
                         }}
-                        className={`flex-1 min-w-0 ${T.rowLabel} ${isHovered || showCheckbox ? '' : 'pl-1'}`}
+                        className={`flex-1 min-w-0 ${T.rowLabel}`}
                         title={row.label}
                     />
                     {row.sourceFileId && onViewSource && (
@@ -190,7 +190,7 @@ const DataRow = ({
                         >
                             <span className={`${PILL} ${tipo.style}`}>{tipo.label}</span>
                         </td>
-                        <td className={`${T.cellCompact} text-center`}
+                        <td className={`${T.cellCompact} text-center ${T.vline}`}
                             onClick={(e) => { e.stopPropagation(); if (row.naturaleza !== 'Legal') onToggleVariable?.() }}
                             title={row.naturaleza === 'Legal' ? 'Descuento legal' : row.isVariable ? 'Variable — click para cambiar a Fija' : 'Fija — click para cambiar a Variable'}
                         >

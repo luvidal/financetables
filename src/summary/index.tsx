@@ -24,7 +24,7 @@ const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, col
   const colors = colorScheme ?? DEFAULT_SCHEME
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto border-y border-gray-200 mb-3 sm:mb-4">
       <table className={`${T.table} border-collapse`}>
         <tbody>
           {rows.map((row, idx) => {

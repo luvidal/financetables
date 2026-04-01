@@ -502,12 +502,14 @@ interface TableShellProps {
     headerBg?: string;
     /** Extra classes on the header <tr> (e.g. border-t, text color) */
     headerClassName?: string;
+    /** Extra classes on the outer wrapper div */
+    className?: string;
     renderHeader: () => React$1.ReactNode;
     children: React$1.ReactNode;
     renderFooter?: () => React$1.ReactNode;
     renderAfterContent?: () => React$1.ReactNode;
 }
-declare const TableShell: ({ colorScheme: colorSchemeProp, headerBg: headerBgProp, headerClassName, renderHeader, children, renderFooter, renderAfterContent, }: TableShellProps) => react_jsx_runtime.JSX.Element;
+declare const TableShell: ({ colorScheme: colorSchemeProp, headerBg: headerBgProp, headerClassName, className, renderHeader, children, renderFooter, renderAfterContent, }: TableShellProps) => react_jsx_runtime.JSX.Element;
 
 declare const generateId: (prefix: string) => string;
 declare const formatDeletedDate: (iso: string) => string;

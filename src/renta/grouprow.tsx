@@ -64,14 +64,14 @@ const GroupRow = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
         >
-            <td className={`${T.cellEditLabel} text-gray-700 overflow-hidden ${T.vline}`}>
+            <td className={`${T.cellEditLabel} text-gray-700 overflow-hidden ${showClassificationColumns ? '' : T.vline}`}>
                 <div className="flex items-center gap-0.5 min-w-0">
-                    {isHovered && onDragStart && (
+                    {onDragStart && (
                         <span
-                            draggable
+                            draggable={isHovered}
                             onDragStart={onDragStart}
                             onDragEnd={onDragEnd}
-                            className="shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500"
+                            className={`shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                             title="Arrastrar para reordenar"
                         >
                             <GripVertical size={14} />
@@ -96,7 +96,7 @@ const GroupRow = ({
                     />
                 </div>
             </td>
-            {showClassificationColumns && <><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td></>}
+            {showClassificationColumns && <><td className={T.cellCompact} /><td className={`${T.cellCompact} ${T.vline}`} /></>}
             {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} text-center ${T.vline}`}><span className={T.empty}>—</span></td>}
             {months.map((p, mi) => {
                 const value = groupValues[p.id] ?? 0

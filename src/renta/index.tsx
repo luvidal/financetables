@@ -401,13 +401,13 @@ const RentaTable = ({
                         />
                     ) : (
                         <>
-                            <td className={`${T.headerAccordion} text-left ${T.vline}`}>
+                            <td className={`${T.headerAccordion} text-left ${showClassificationColumns ? '' : T.vline}`}>
                                 <div className="flex items-center gap-2">
                                     <span className={`${headerText} ${T.headerTitle}`}>{title}</span>
                                     <SourceIcon fileIds={sourceFileIds} onViewSource={onViewSource} className={headerText} />
                                 </div>
                             </td>
-                            {showClassificationColumns && <><td className={`${T.cellCompact} text-center`}><span className={`${headerText} text-[9px] font-semibold opacity-60`}>Tipo</span></td><td className={`${T.cellCompact} text-center`}><span className={`${headerText} text-[9px] font-semibold opacity-60`}>Renta</span></td></>}
+                            {showClassificationColumns && <><td className={`${T.cellCompact} text-center`}><span className={`${headerText} text-[10px] font-semibold opacity-60`}>Tipo</span></td><td className={`${T.cellCompact} text-center ${T.vline}`}><span className={`${headerText} text-[10px] font-semibold opacity-60`}>Renta</span></td></>}
                             {showVariableColumn && !showClassificationColumns && <td className={T.vline} />}
                             {monthsArray.map((p) => {
                                 const total = calculateTotal(p.id, rows)
@@ -481,35 +481,6 @@ const RentaTable = ({
                     const items = getOrderedItems(rows, section.type)
                     return (
                         <React.Fragment key={section.type}>
-                            {/* Subtotal row at TOP of section — only when table has multiple sections */}
-                            {effectiveSections.length > 1 && (() => {
-                                const subtotals = computeSectionSubtotal(rows, section.type, monthsArray)
-                                const isSubtract = isSubtractType(section.type)
-                                const label = isSubtract ? 'Total descuentos' : 'Total haberes'
-                                return (
-                                    <tr className={`border-b-2 ${isSubtract ? 'border-b-rose-200 bg-red-50/30' : 'border-b-emerald-200 bg-emerald-50/30'}`}>
-                                        <td className={`${T.totalCell} text-gray-700 ${T.vline}`}>
-                                            <span className={`${T.totalLabel} ${isSubtract ? 'text-rose-700' : 'text-emerald-700'}`}>{label}</span>
-                                        </td>
-                                        {showClassificationColumns && <><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td></>}
-                                        {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} text-center ${T.vline}`}><span className={T.empty}>—</span></td>}
-                                        {monthsArray.map((p, mi) => {
-                                            const value = subtotals[p.id] ?? 0
-                                            const hasValue = value !== 0
-                                            const display = isSubtract ? `-${formatValue(value)}` : formatValue(value)
-                                            const vline = mi < monthsArray.length - 1 ? T.vline : ''
-                                            return (
-                                                <td key={p.id} className={`${T.totalCell} text-right ${vline}`}>
-                                                    <span className={`${T.totalValue} tabular-nums ${isSubtract ? (hasValue ? 'text-rose-600' : 'text-gray-300') : (hasValue ? 'text-emerald-700' : 'text-gray-300')}`}>
-                                                        {hasValue ? display : '—'}
-                                                    </span>
-                                                </td>
-                                            )
-                                        })}
-                                        <td className={T.actionCol} />
-                                    </tr>
-                                )
-                            })()}
                             {items.map(item => {
                                 if (item.kind === 'group') {
                                     const { group, children: groupChildren } = item
@@ -553,6 +524,35 @@ const RentaTable = ({
                                 showVariableColumn={showVariableColumn}
                                 showClassificationColumns={showClassificationColumns}
                             />
+                            {/* Subtotal row — below AddRow, only when table has multiple sections */}
+                            {effectiveSections.length > 1 && (() => {
+                                const subtotals = computeSectionSubtotal(rows, section.type, monthsArray)
+                                const isSubtract = isSubtractType(section.type)
+                                const label = isSubtract ? 'Total descuentos' : 'Total haberes'
+                                return (
+                                    <tr className={`border-b-2 ${isSubtract ? 'border-b-rose-200 bg-red-50/30' : 'border-b-emerald-200 bg-emerald-50/30'}`}>
+                                        <td className={`${T.totalCell} ${showClassificationColumns ? '' : T.vline}`}>
+                                            <span className={`${T.footerLabel} text-xs`}>{label}</span>
+                                        </td>
+                                        {showClassificationColumns && <><td className={T.cellCompact} /><td className={`${T.cellCompact} ${T.vline}`} /></>}
+                                        {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} ${T.vline}`} />}
+                                        {monthsArray.map((p, mi) => {
+                                            const value = subtotals[p.id] ?? 0
+                                            const hasValue = value !== 0
+                                            const display = isSubtract ? `-${formatValue(value)}` : formatValue(value)
+                                            const vline = mi < monthsArray.length - 1 ? T.vline : ''
+                                            return (
+                                                <td key={p.id} className={`${T.totalCell} text-right ${vline}`}>
+                                                    <span className={`${T.footerValue} text-xs tabular-nums ${hasValue ? '' : 'text-gray-300'}`}>
+                                                        {hasValue ? display : '—'}
+                                                    </span>
+                                                </td>
+                                            )
+                                        })}
+                                        <td className={T.actionCol} />
+                                    </tr>
+                                )
+                            })()}
                         </React.Fragment>
                     )
                 })}
@@ -567,11 +567,11 @@ const RentaTable = ({
                     return (
                         <>
                             {/* Renta Variable */}
-                            <tr className="border-t-2 border-t-gray-200 border-b border-gray-100 bg-amber-50/30">
-                                <td className={`${T.totalCell} ${T.vline}`}>
+                            <tr className="border-t-2 border-t-gray-200 border-b border-gray-100 bg-amber-50/30 group/rv">
+                                <td className={`${T.totalCell} ${showClassificationColumns ? '' : T.vline}`}>
                                     <span className={`${T.totalLabel} text-amber-700`}>Renta Variable</span>
                                 </td>
-                                {showClassificationColumns && <><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td></>}
+                                {showClassificationColumns && <><td className={T.cellCompact} /><td className={`${T.cellCompact} ${T.vline}`} /></>}
                                 {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} text-center ${T.vline}`}><span className={T.empty}>—</span></td>}
                                 {monthsArray.map((p, mi) => {
                                     const rliq = reliquidacion?.[p.id]
@@ -581,8 +581,8 @@ const RentaTable = ({
                                     return (
                                         <td key={p.id} className={`${T.totalCell} text-right relative ${vline}`}>
                                             {rliq && hasValue && (
-                                                <span className="group/reliq absolute cursor-help" style={{ top: '9px', left: '30px' }}>
-                                                    <Info size={12} className="text-amber-400 hover:text-amber-500" />
+                                                <span className="group/reliq absolute cursor-help opacity-0 group-hover/rv:opacity-100 transition-opacity" style={{ top: '9px', left: '12px' }}>
+                                                    <Info size={14} className="text-gray-400 hover:text-gray-600 p-0.5 rounded hover:bg-gray-200" />
                                                     <ReliqInfoTooltip data={rliq} type="variable" />
                                                 </span>
                                             )}
@@ -595,11 +595,11 @@ const RentaTable = ({
                                 <td className={T.actionCol} />
                             </tr>
                             {/* Renta Fija */}
-                            <tr className="border-b border-gray-200 bg-sky-50/30">
-                                <td className={`${T.totalCell} ${T.vline}`}>
+                            <tr className="border-b border-gray-200 bg-sky-50/30 group/rf">
+                                <td className={`${T.totalCell} ${showClassificationColumns ? '' : T.vline}`}>
                                     <span className={`${T.totalLabel} text-sky-700`}>Renta Fija</span>
                                 </td>
-                                {showClassificationColumns && <><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td><td className={`${T.cellCompact} text-center`}><span className={T.empty}>—</span></td></>}
+                                {showClassificationColumns && <><td className={T.cellCompact} /><td className={`${T.cellCompact} ${T.vline}`} /></>}
                                 {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} text-center ${T.vline}`}><span className={T.empty}>—</span></td>}
                                 {monthsArray.map((p, mi) => {
                                     const rliq = reliquidacion?.[p.id]
@@ -609,8 +609,8 @@ const RentaTable = ({
                                     return (
                                         <td key={p.id} className={`${T.totalCell} text-right relative ${vline}`}>
                                             {rliq && hasValue && (
-                                                <span className="group/reliq absolute cursor-help" style={{ top: '9px', left: '30px' }}>
-                                                    <Info size={12} className="text-sky-400 hover:text-sky-500" />
+                                                <span className="group/reliq absolute cursor-help opacity-0 group-hover/rf:opacity-100 transition-opacity" style={{ top: '9px', left: '12px' }}>
+                                                    <Info size={14} className="text-gray-400 hover:text-gray-600 p-0.5 rounded hover:bg-gray-200" />
                                                     <ReliqInfoTooltip data={rliq} type="fija" />
                                                 </span>
                                             )}
