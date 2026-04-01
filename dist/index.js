@@ -1719,8 +1719,8 @@ var RentaTable = ({
               /* @__PURE__ */ jsxRuntime.jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
             ] }) }),
             showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[9px] font-semibold opacity-60`, children: "Tipo" }) }),
-              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[9px] font-semibold opacity-60`, children: "Renta" }) })
+              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[9px] font-semibold opacity-60`, children: "Tipo" }) }),
+              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[9px] font-semibold opacity-60`, children: "Renta" }) })
             ] }),
             showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.vline }),
             monthsArray.map((p) => {
@@ -1911,28 +1911,6 @@ var RentaTable = ({
   );
 };
 var renta_default = RentaTable;
-function EditableField({
-  value,
-  onChange,
-  type = "percent",
-  min = 0,
-  max = 100,
-  className = ""
-}) {
-  return /* @__PURE__ */ jsxRuntime.jsx(
-    editablecell_default,
-    {
-      value,
-      onChange: (v) => {
-        const n = typeof v === "number" ? v : 0;
-        onChange(Math.max(min, Math.min(max, Math.round(n))));
-      },
-      type,
-      asDiv: true,
-      className: `bg-blue-50/50 rounded !py-0.5 !px-1.5 [&>div]:h-4 text-[11px] ${className}`
-    }
-  );
-}
 
 // src/common/autoconvert.ts
 function applyAutoConversions(row, editedField, editedValue, rules, params) {
@@ -2317,11 +2295,21 @@ var DeudasTable = ({
                     )
                   ] }),
                   /* @__PURE__ */ jsxRuntime.jsx("td", { className: `text-center ${T.vline}`, children: row.cuota_estimated ? /* @__PURE__ */ jsxRuntime.jsx(
-                    EditableField,
+                    editablecell_default,
                     {
                       value: row.castigo_pct != null ? Math.round(row.castigo_pct * 100) : Math.round(castigo * 100),
-                      onChange: (v) => updateField(row.id, "castigo_pct", v / 100),
-                      className: "italic text-gray-400"
+                      onChange: (v) => updateField(row.id, "castigo_pct", v != null ? v / 100 : castigo),
+                      type: "number",
+                      hasData: true,
+                      align: "center",
+                      className: "italic text-gray-400",
+                      asDiv: true,
+                      focused: keyboard.isFocused(row.id, 3),
+                      onCellFocus: () => keyboard.focus(row.id, 3),
+                      onNavigate: keyboard.navigate,
+                      requestEdit: keyboard.isFocused(row.id, 3) ? keyboard.editTrigger : 0,
+                      requestClear: keyboard.isFocused(row.id, 3) ? keyboard.clearTrigger : 0,
+                      editInitialValue: keyboard.isFocused(row.id, 3) ? keyboard.editInitialValue : void 0
                     }
                   ) : /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-[11px] text-gray-300", children: "\u2014" }) }),
                   /* @__PURE__ */ jsxRuntime.jsx("td", { className: "text-center text-xs text-gray-500", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center justify-center gap-0.5", children: [
@@ -3203,6 +3191,28 @@ var DeclaracionTable = ({
   ] }) }) });
 };
 var declaracion_default = DeclaracionTable;
+function EditableField({
+  value,
+  onChange,
+  type = "percent",
+  min = 0,
+  max = 100,
+  className = ""
+}) {
+  return /* @__PURE__ */ jsxRuntime.jsx(
+    editablecell_default,
+    {
+      value,
+      onChange: (v) => {
+        const n = typeof v === "number" ? v : 0;
+        onChange(Math.max(min, Math.min(max, Math.round(n))));
+      },
+      type,
+      asDiv: true,
+      className: `bg-blue-50/50 rounded !py-0.5 !px-1.5 [&>div]:h-4 text-[11px] ${className}`
+    }
+  );
+}
 
 exports.ActivosSummary = activossummary_default;
 exports.AssetTable = assettable_default;
