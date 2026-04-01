@@ -1723,8 +1723,8 @@ var RentaTable = ({
               /* @__PURE__ */ jsxRuntime.jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
             ] }) }),
             showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[10px] font-semibold opacity-60`, children: "Tipo" }) }),
-              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[10px] font-semibold opacity-60`, children: "Renta" }) })
+              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[11px] font-semibold opacity-60`, children: "Tipo" }) }),
+              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} text-center ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${headerText} text-[11px] font-semibold opacity-60`, children: "Renta" }) })
             ] }),
             showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.vline }),
             monthsArray.map((p) => {
@@ -1840,7 +1840,7 @@ var RentaTable = ({
                   const isSubtract = isSubtractType(section.type);
                   const label = isSubtract ? "Total descuentos" : "Total haberes";
                   return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `${isSubtract ? "bg-red-50/30" : "bg-emerald-50/30"}`, children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-b border-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} text-gray-500`, children: label }) }),
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-b border-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} font-semibold text-gray-500`, children: label }) }),
                     showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
                       /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} border-b border-gray-200` }),
                       /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} border-b border-gray-200 ${T.vline}` })
@@ -1851,7 +1851,7 @@ var RentaTable = ({
                       const hasValue = value !== 0;
                       const display = isSubtract ? `-${formatValue(value)}` : formatValue(value);
                       const vline = mi < monthsArray.length - 1 ? T.vline : "";
-                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right border-b border-gray-200 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${hasValue ? "text-gray-500" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right border-b border-gray-200 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} font-semibold tabular-nums ${hasValue ? "text-gray-500" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
                     }),
                     /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.actionCol} border-b border-gray-200` })
                   ] });
@@ -2817,9 +2817,9 @@ function AssetTable({
               return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${T.totalLabel} border-t border-gray-200`, children: "TOTAL" }, col.key);
             }
             if (col.type === "text") {
-              return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "right" ? "text-right" : ""} border-t border-gray-200`, children: "\u2014" }, col.key);
+              return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-t border-gray-200` }, col.key);
             }
-            return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} border-t border-gray-200`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "\u2014" }, col.key);
+            return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} border-t border-gray-200`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "" }, col.key);
           }),
           /* @__PURE__ */ jsxRuntime.jsx("td", { className: "border-t border-gray-200" })
         ] }),

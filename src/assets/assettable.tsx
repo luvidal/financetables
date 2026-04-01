@@ -172,7 +172,7 @@ function AssetTable<T extends AssetRow>({
                                 return <td key={col.key} className={`${T.totalCell} ${T.totalLabel} border-t border-gray-200`}>TOTAL</td>
                             }
                             if (col.type === 'text') {
-                                return <td key={col.key} className={`${T.totalCell} ${col.align === 'right' ? 'text-right' : ''} border-t border-gray-200`}>—</td>
+                                return <td key={col.key} className={`${T.totalCell} border-t border-gray-200`} />
                             }
                             return (
                                 <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${T.totalValue} border-t border-gray-200`}>
@@ -180,7 +180,7 @@ function AssetTable<T extends AssetRow>({
                                         col.type === 'number'
                                             ? totals[col.key].toLocaleString('es-CL', { maximumFractionDigits: 2 })
                                             : formatCurrency(totals[col.key])
-                                    ) : '—'}
+                                    ) : ''}
                                 </td>
                             )
                         })}
