@@ -5,8 +5,8 @@ import type { VehiculoRow, VehiculosTableProps } from './types'
 const columns: ColumnDef[] = [
     { key: 'marca', label: 'Marca', type: 'text', isLabel: true, placeholder: 'Marca' },
     { key: 'modelo', label: 'Modelo', type: 'text', placeholder: 'Modelo' },
-    { key: 'anio', label: 'Año', type: 'number', align: 'center' },
     { key: 'monto', label: 'Monto $', type: 'currency' },
+    { key: 'anio', label: 'Año', type: 'number', align: 'center' },
 ]
 
 const VehiculosTable = ({

@@ -1840,7 +1840,7 @@ var RentaTable = ({
                   const isSubtract = isSubtractType(section.type);
                   const label = isSubtract ? "Total descuentos" : "Total haberes";
                   return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `${isSubtract ? "bg-red-50/30" : "bg-emerald-50/30"}`, children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-b border-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel}`, children: label }) }),
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-b border-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel} text-gray-600`, children: label }) }),
                     showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
                       /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} border-b border-gray-200` }),
                       /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} border-b border-gray-200 ${T.vline}` })
@@ -1851,7 +1851,7 @@ var RentaTable = ({
                       const hasValue = value !== 0;
                       const display = isSubtract ? `-${formatValue(value)}` : formatValue(value);
                       const vline = mi < monthsArray.length - 1 ? T.vline : "";
-                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right border-b border-gray-200 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${hasValue ? "" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right border-b border-gray-200 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${hasValue ? "text-gray-600" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
                     }),
                     /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.actionCol} border-b border-gray-200` })
                   ] });
@@ -2725,7 +2725,7 @@ function AssetTable({
   );
   const visibleRowIds = React3.useMemo(() => activeRows.map((r) => r.id), [activeRows]);
   const keyboard = useGridKeyboard({ visibleRowIds, colCount: editableCols.length });
-  const textCols = resolvedColumns.filter((c) => c.type === "text");
+  resolvedColumns.filter((c) => c.type === "text");
   const labelCol = resolvedColumns.find((c) => c.isLabel) || resolvedColumns[0];
   const [newRowValues, setNewRowValues] = React3.useState({});
   const hasAutoConvert = conversionRules.length > 0 || computeRules.length > 0;
@@ -2812,8 +2812,15 @@ function AssetTable({
           /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol })
         ] }),
         renderFooter: () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold text-xs", children: [
-          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: textCols.length, className: `${T.totalCell} ${T.totalLabel} border-t border-gray-200`, children: "TOTAL" }),
-          editableCols.map((col) => /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} border-t border-gray-200`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "\u2014" }, col.key)),
+          resolvedColumns.map((col) => {
+            if (col.isLabel) {
+              return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${T.totalLabel} border-t border-gray-200`, children: "TOTAL" }, col.key);
+            }
+            if (col.type === "text") {
+              return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "right" ? "text-right" : ""} border-t border-gray-200`, children: "\u2014" }, col.key);
+            }
+            return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} border-t border-gray-200`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "\u2014" }, col.key);
+          }),
           /* @__PURE__ */ jsxRuntime.jsx("td", { className: "border-t border-gray-200" })
         ] }),
         renderAfterContent: () => /* @__PURE__ */ jsxRuntime.jsx(
@@ -2938,8 +2945,8 @@ var assettable_default = AssetTable;
 var columns = [
   { key: "marca", label: "Marca", type: "text", isLabel: true, placeholder: "Marca" },
   { key: "modelo", label: "Modelo", type: "text", placeholder: "Modelo" },
-  { key: "anio", label: "A\xF1o", type: "number", align: "center" },
-  { key: "monto", label: "Monto $", type: "currency" }
+  { key: "monto", label: "Monto $", type: "currency" },
+  { key: "anio", label: "A\xF1o", type: "number", align: "center" }
 ];
 var VehiculosTable = ({
   rows,
@@ -2968,8 +2975,8 @@ var vehiculos_default = VehiculosTable;
 var columns2 = [
   { key: "institucion", label: "Instituci\xF3n", type: "text", isLabel: true, placeholder: "Instituci\xF3n" },
   { key: "tipo", label: "Tipo Inversi\xF3n", type: "text", placeholder: "Tipo" },
-  { key: "fecha", label: "Fecha", type: "text", align: "right", placeholder: "-" },
-  { key: "monto", label: "Monto $", type: "currency" }
+  { key: "monto", label: "Monto $", type: "currency" },
+  { key: "fecha", label: "Fecha", type: "text", align: "right", placeholder: "-" }
 ];
 var InversionesTable = ({
   rows,
