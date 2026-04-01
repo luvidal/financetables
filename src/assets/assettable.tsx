@@ -167,9 +167,9 @@ function AssetTable<T extends AssetRow>({
                 )}
                 renderFooter={() => (
                     <tr className="font-semibold text-xs">
-                        <td colSpan={textCols.length} className={`${T.totalCell} ${T.totalLabel} ${T.vline}`}>TOTAL</td>
-                        {editableCols.map((col, i) => (
-                            <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${T.totalValue} ${i < editableCols.length - 1 ? T.vline : ''}`}>
+                        <td colSpan={textCols.length} className={`${T.totalCell} ${T.totalLabel} border-t border-t-gray-200`}>TOTAL</td>
+                        {editableCols.map((col) => (
+                            <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${T.totalValue} border-t border-t-gray-200`}>
                                 {totals[col.key] ? (
                                     col.type === 'number'
                                         ? totals[col.key].toLocaleString('es-CL', { maximumFractionDigits: 2 })
@@ -177,7 +177,7 @@ function AssetTable<T extends AssetRow>({
                                 ) : '—'}
                             </td>
                         ))}
-                        <td></td>
+                        <td className="border-t border-t-gray-200"></td>
                     </tr>
                 )}
                 renderAfterContent={() => (

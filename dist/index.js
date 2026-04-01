@@ -2812,9 +2812,9 @@ function AssetTable({
           /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol })
         ] }),
         renderFooter: () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold text-xs", children: [
-          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: textCols.length, className: `${T.totalCell} ${T.totalLabel} ${T.vline}`, children: "TOTAL" }),
-          editableCols.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} ${i < editableCols.length - 1 ? T.vline : ""}`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "\u2014" }, col.key)),
-          /* @__PURE__ */ jsxRuntime.jsx("td", {})
+          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: textCols.length, className: `${T.totalCell} ${T.totalLabel} border-t border-t-gray-200`, children: "TOTAL" }),
+          editableCols.map((col) => /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} border-t border-t-gray-200`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "\u2014" }, col.key)),
+          /* @__PURE__ */ jsxRuntime.jsx("td", { className: "border-t border-t-gray-200" })
         ] }),
         renderAfterContent: () => /* @__PURE__ */ jsxRuntime.jsx(
           recyclebin_default,
@@ -2938,8 +2938,8 @@ var assettable_default = AssetTable;
 var columns = [
   { key: "marca", label: "Marca", type: "text", isLabel: true, placeholder: "Marca" },
   { key: "modelo", label: "Modelo", type: "text", placeholder: "Modelo" },
-  { key: "monto", label: "Monto $", type: "currency" },
-  { key: "anio", label: "A\xF1o", type: "number", align: "center" }
+  { key: "anio", label: "A\xF1o", type: "number", align: "center" },
+  { key: "monto", label: "Monto $", type: "currency" }
 ];
 var VehiculosTable = ({
   rows,
@@ -2968,8 +2968,8 @@ var vehiculos_default = VehiculosTable;
 var columns2 = [
   { key: "institucion", label: "Instituci\xF3n", type: "text", isLabel: true, placeholder: "Instituci\xF3n" },
   { key: "tipo", label: "Tipo Inversi\xF3n", type: "text", placeholder: "Tipo" },
-  { key: "monto", label: "Monto $", type: "currency" },
-  { key: "fecha", label: "Fecha", type: "text", align: "right", placeholder: "Fecha" }
+  { key: "fecha", label: "Fecha", type: "text", align: "right", placeholder: "-" },
+  { key: "monto", label: "Monto $", type: "currency" }
 ];
 var InversionesTable = ({
   rows,
