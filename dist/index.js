@@ -3167,25 +3167,20 @@ var DeclaracionTable = ({
 }) => {
   const { text: headerText, border: borderColor } = resolveColors(colorSchemeProp);
   const showCodeColumn = rows.some((r) => r.code != null);
-  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "p-3", children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "overflow-x-auto", children: /* @__PURE__ */ jsxRuntime.jsxs("table", { className: T.table, children: [
-    /* @__PURE__ */ jsxRuntime.jsx("thead", { children: /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-b ${borderColor}`, children: [
-      showCodeColumn && /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: "C\xF3digo" }),
-      /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-1.5", children: [
-        "Concepto",
-        /* @__PURE__ */ jsxRuntime.jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
-      ] }) }),
-      columns3.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-right ${T.cell} font-medium ${headerText} ${i < columns3.length - 1 ? T.vline : ""}`, children: col.label }, col.key))
-    ] }) }),
-    /* @__PURE__ */ jsxRuntime.jsxs("tbody", { children: [
-      rows.map((row) => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: T.row, children: [
-        showCodeColumn && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-gray-400 tabular-nums ${T.vline}`, children: row.code ?? "" }),
-        /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-gray-700 ${T.vline}`, children: row.label }),
-        columns3.map((col, ci) => {
-          const value = data[row.key]?.[col.key];
-          return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellValue} ${value != null ? "text-gray-900" : "text-gray-400"} ${ci < columns3.length - 1 ? T.vline : ""}`, children: value != null ? formatCurrency(value) : "\u2014" }, col.key);
-        })
-      ] }, row.key)),
-      totalLabel && /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-t-2 ${borderColor} font-semibold`, children: [
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "p-3", children: /* @__PURE__ */ jsxRuntime.jsx(
+    tableshell_default,
+    {
+      headerBg: "",
+      headerClassName: `border-b ${borderColor}`,
+      renderHeader: () => /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+        showCodeColumn && /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: "C\xF3digo" }),
+        /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-1.5", children: [
+          "Concepto",
+          /* @__PURE__ */ jsxRuntime.jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
+        ] }) }),
+        columns3.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-right ${T.cell} font-medium ${headerText} ${i < columns3.length - 1 ? T.vline : ""}`, children: col.label }, col.key))
+      ] }),
+      renderFooter: totalLabel ? () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-t-2 ${borderColor} font-semibold`, children: [
         showCodeColumn && /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.cell }),
         /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-gray-800`, children: totalLabel }),
         columns3.map((col) => {
@@ -3194,9 +3189,17 @@ var DeclaracionTable = ({
           const sum = summedRows.reduce((acc, r) => acc + (data[r.key]?.[col.key] ?? 0), 0);
           return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellValue} text-gray-900`, children: hasAny ? formatCurrency(sum) : "\u2014" }, col.key);
         })
-      ] })
-    ] })
-  ] }) }) });
+      ] }) : void 0,
+      children: rows.map((row) => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: T.row, children: [
+        showCodeColumn && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-gray-400 tabular-nums ${T.vline}`, children: row.code ?? "" }),
+        /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-gray-700 ${T.vline}`, children: row.label }),
+        columns3.map((col, ci) => {
+          const value = data[row.key]?.[col.key];
+          return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellValue} ${value != null ? "text-gray-900" : "text-gray-400"} ${ci < columns3.length - 1 ? T.vline : ""}`, children: value != null ? formatCurrency(value) : "\u2014" }, col.key);
+        })
+      ] }, row.key))
+    }
+  ) });
 };
 var declaracion_default = DeclaracionTable;
 function EditableField({
