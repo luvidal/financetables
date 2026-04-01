@@ -43,7 +43,7 @@ const DeclaracionTable = ({
                     </>
                 )}
                 renderFooter={totalLabel ? () => (
-                    <tr className="border-t border-gray-200 font-semibold">
+                    <tr className="border-t-2 border-gray-200 font-semibold">
                         {showCodeColumn && <td className={T.cell} />}
                         <td className={`${T.cell} text-gray-800`}>{totalLabel}</td>
                         {columns.map(col => {

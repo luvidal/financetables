@@ -1831,7 +1831,7 @@ var RentaTable = ({
                   const subtotals = computeSectionSubtotal(rows, section.type, monthsArray);
                   const isSubtract = isSubtractType(section.type);
                   const label = isSubtract ? "Total descuentos" : "Total haberes";
-                  return /* @__PURE__ */ jsxs("tr", { className: `border-b border-gray-200 ${isSubtract ? "bg-red-50/30" : "bg-emerald-50/30"}`, children: [
+                  return /* @__PURE__ */ jsxs("tr", { className: `border-t-2 border-b border-gray-200 ${isSubtract ? "bg-red-50/30" : "bg-emerald-50/30"}`, children: [
                     /* @__PURE__ */ jsx("td", { className: `${T.totalCell} ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsx("span", { className: `${T.footerLabel} text-xs`, children: label }) }),
                     showClassificationColumns && /* @__PURE__ */ jsxs(Fragment, { children: [
                       /* @__PURE__ */ jsx("td", { className: T.cellCompact }),
@@ -3186,7 +3186,7 @@ var DeclaracionTable = ({
         ] }) }),
         columns3.map((col, i) => /* @__PURE__ */ jsx("th", { className: `text-right ${T.cell} font-medium ${headerText} ${i < columns3.length - 1 ? T.vline : ""}`, children: col.label }, col.key))
       ] }),
-      renderFooter: totalLabel ? () => /* @__PURE__ */ jsxs("tr", { className: "border-t border-gray-200 font-semibold", children: [
+      renderFooter: totalLabel ? () => /* @__PURE__ */ jsxs("tr", { className: "border-t-2 border-gray-200 font-semibold", children: [
         showCodeColumn && /* @__PURE__ */ jsx("td", { className: T.cell }),
         /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-800`, children: totalLabel }),
         columns3.map((col) => {
