@@ -4,8 +4,6 @@ import type { ColumnDef } from '../assets/types'
 import type { AutoConvertRule, AutoComputeRule } from '../common/autoconvert'
 import type { PropiedadRow, PropiedadesTableProps } from './types'
 
-// TODO(jogi): plug UF/$ selector — AssetTable renders CurrencyToggle when ufValue
-// is provided and columns have ufPair. The consumer passes ufValue from context.
 
 const PropiedadesTable = ({
     rows,

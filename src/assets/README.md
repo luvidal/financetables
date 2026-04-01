@@ -32,7 +32,7 @@ const columns: ColumnDef[] = [
 
 ## UF/$ Toggle
 
-When `ufValue` is provided and at least one column has `ufPair`, a CurrencyToggle appears in the top-right corner. In CLP mode, columns with `ufPair` switch to show the paired field with `type: 'currency'`.
+When `ufValue` is provided and at least one column has `ufPair`, the column header becomes a clickable pill (via `ClickableHeader`). Clicking it toggles between UF and CLP display. In CLP mode, columns with `ufPair` switch to show the paired field with `type: 'currency'`.
 
 ## Features
 
@@ -42,4 +42,4 @@ When `ufValue` is provided and at least one column has `ufPair`, a CurrencyToggl
 - Add row with Enter key or value entry
 - Auto-conversion and auto-compute rules (for UF/CLP)
 - Footer totals for all numeric columns
-- CurrencyToggle rendered in header action column when UF columns present
+- Clickable header pill (ClickableHeader) on UF/CLP columns to toggle currency display

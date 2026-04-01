@@ -9,7 +9,7 @@ Shared components, hooks, and utilities used across all table components. Everyt
 | `styles.ts` | `T` object with Tailwind class tokens for consistent table styling (incl. `rowBorder`, `rowHover`) |
 | `utils.ts` | Currency formatting (`displayCurrency`, `displayCurrencyCompact`, `defaultFormatCurrency`), `generateId`, `formatDeletedDate`, `MONTH_LABELS` |
 | `editablecell.tsx` | Inline-editable table cell with currency, number, text, and percent modes |
-| `currencytoggle.tsx` | `CurrencyToggle` — UF/$ toggle button used by AssetTable when UF columns exist |
+| `clickableheader.tsx` | `ClickableHeader` — pill-styled clickable wrapper for header content. Used by AssetTable (UF/CLP toggle) and BoletasTable (month toggle) |
 | `tableshell.tsx` | `TableShell` — single-table wrapper with colored header row + `SourceIcon` |
 | `deletebutton.tsx` | `DeleteRowButton` — red X button with opacity-on-hover transition |
 | `viewsourcebutton.tsx` | `ViewSourceButton` — row-level eye icon for source file viewing |
@@ -40,7 +40,7 @@ import { useSoftDelete } from '../common/usesoftdelete'
 import DeleteDialog from '../common/deletedialog'
 import RecycleBin from '../common/recyclebin'
 import { defaultFormatCurrency, displayCurrencyCompact, generateId, formatDeletedDate, MONTH_LABELS } from '../common/utils'
-import CurrencyToggle from '../common/currencytoggle'
+import ClickableHeader from '../common/clickableheader'
 ```
 
 ### TableShell
@@ -137,7 +137,7 @@ const MyTable = ({
 - **editablecell.tsx** — used by renta (datarow, addrow), deudas, assets
 - **tableshell.tsx** — used by renta, boletas, deudas, assets
 - **utils.ts** — used by renta (helpers), boletas, finalresults, assets, deudas, recyclebin
-- **currencytoggle.tsx** — used by assets (when UF columns present)
+- **clickableheader.tsx** — used by assets (UF/CLP column toggle) and boletas (month toggle)
 - **recyclebin.tsx** — used by renta (with `renderCells` for month values), deudas, assets
 - **userowhover.ts** — used by boletas, deudas, renta, assets
 - **usemobile.ts** — used by editablecell

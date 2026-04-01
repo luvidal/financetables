@@ -14,7 +14,7 @@ Thin wrapper around `AssetTable` for property assets with UF/$ toggle.
 
 ## UF/$ Toggle
 
-When `ufValue` is provided, a CurrencyToggle button appears. Switching to CLP mode replaces `valor_uf` with `valor_pesos` (auto-converted). Auto-computed values render in italic amber.
+When `ufValue` is provided, the "Valor UF" column header becomes a clickable pill. Clicking it toggles to CLP mode, replacing `valor_uf` with `valor_pesos` (auto-converted). Auto-computed values render in italic amber.
 
 ## Props
 

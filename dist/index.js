@@ -2406,6 +2406,18 @@ var DeudasTable = ({
   ] });
 };
 var deudas_default = DeudasTable;
+var ClickableHeader = ({ onClick, borderColor, className, children }) => /* @__PURE__ */ jsxRuntime.jsx(
+  "span",
+  {
+    className: `whitespace-nowrap ${onClick ? `cursor-pointer select-none inline-flex items-center rounded-full border ${borderColor || "border-gray-300"} px-2 py-0.5 -mx-2 -my-0.5 transition-colors` : ""} ${className || ""}`,
+    onClick: onClick ? (e) => {
+      e.stopPropagation();
+      onClick();
+    } : void 0,
+    children
+  }
+);
+var clickableheader_default = ClickableHeader;
 var SHORT_MONTHS = {
   enero: "ENE",
   febrero: "FEB",
@@ -2456,23 +2468,13 @@ var BoletasTable = ({
             "td",
             {
               className: `${T.headerAccordionStat} ${isExcluded ? "opacity-35 line-through" : ""}`,
-              children: /* @__PURE__ */ jsxRuntime.jsxs(
-                "span",
-                {
-                  className: `whitespace-nowrap ${canToggle ? `cursor-pointer select-none inline-flex items-center rounded-full border ${borderColor} px-2 py-0.5 -mx-2 -my-0.5` : ""}`,
-                  onClick: canToggle ? (e) => {
-                    e.stopPropagation();
-                    onToggleMonth(m.periodo);
-                  } : void 0,
-                  children: [
-                    /* @__PURE__ */ jsxRuntime.jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
-                      label,
-                      ": "
-                    ] }),
-                    /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? displayCurrencyCompact(m.liquido) : "\u2014" })
-                  ]
-                }
-              )
+              children: /* @__PURE__ */ jsxRuntime.jsxs(clickableheader_default, { onClick: canToggle ? () => onToggleMonth(m.periodo) : void 0, borderColor, children: [
+                /* @__PURE__ */ jsxRuntime.jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
+                  label,
+                  ": "
+                ] }),
+                /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? displayCurrencyCompact(m.liquido) : "\u2014" })
+              ] })
             },
             m.periodo
           );
@@ -2678,25 +2680,6 @@ var FinalResultsCompact = ({
   ] });
 };
 var finalresults_default = FinalResultsCompact;
-var CurrencyToggle = ({ value, onChange }) => /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "inline-flex rounded-md overflow-hidden border border-amber-200 ml-2 text-[10px] leading-none align-middle", children: [
-  /* @__PURE__ */ jsxRuntime.jsx(
-    "button",
-    {
-      className: `px-1.5 py-0.5 font-medium transition-colors ${value === "uf" ? "bg-amber-200 text-amber-800" : "text-amber-500 hover:text-amber-700"}`,
-      onClick: () => onChange("uf"),
-      children: "UF"
-    }
-  ),
-  /* @__PURE__ */ jsxRuntime.jsx(
-    "button",
-    {
-      className: `px-1.5 py-0.5 font-medium transition-colors ${value === "clp" ? "bg-amber-200 text-amber-800" : "text-amber-500 hover:text-amber-700"}`,
-      onClick: () => onChange("clp"),
-      children: "$"
-    }
-  )
-] });
-var currencytoggle_default = CurrencyToggle;
 function AssetTable({
   columns: columns3,
   rows,
@@ -2716,16 +2699,8 @@ function AssetTable({
   const { getHoverProps, isHovered } = useRowHover();
   const [currency, setCurrency] = React3.useState("uf");
   const { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow } = useSoftDelete(rows, onRowsChange);
-  const hasUfToggle = ufValue != null && columns3.some((c) => c.ufPair);
+  const canToggleCurrency = ufValue != null && columns3.some((c) => c.ufPair);
   const isUf = currency === "uf";
-  React3.useMemo(() => {
-    if (!hasUfToggle) return columns3;
-    const ufPairKeys = new Set(columns3.filter((c) => c.ufPair).map((c) => c.ufPair));
-    return columns3.filter((c) => {
-      if (ufPairKeys.has(c.key)) return isUf;
-      return true;
-    });
-  }, [columns3, hasUfToggle, isUf]);
   const resolvedColumns = React3.useMemo(() => {
     return columns3.map((col) => {
       if (col.ufPair && !isUf) {
@@ -2812,16 +2787,18 @@ function AssetTable({
           resolvedColumns.map((col, i) => {
             const effectiveAlign = col.align ?? (col.type === "currency" || col.type === "number" ? "right" : "left");
             const vline = i < resolvedColumns.length - 1 ? T.vline : "";
+            const label = col === labelCol && title ? title : col.label;
+            const isToggleable = canToggleCurrency && col.ufPair;
             return /* @__PURE__ */ jsxRuntime.jsx(
               "th",
               {
                 className: `${T.headerCell} ${effectiveAlign === "right" ? "text-right" : effectiveAlign === "center" ? "text-center" : "text-left"} ${T.th} ${headerText} ${vline}`,
-                children: col === labelCol && title ? title : col.label
+                children: isToggleable ? /* @__PURE__ */ jsxRuntime.jsx(clickableheader_default, { onClick: () => setCurrency((c) => c === "uf" ? "clp" : "uf"), borderColor, children: label }) : label
               },
               col.key
             );
           }),
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol, children: hasUfToggle && /* @__PURE__ */ jsxRuntime.jsx(currencytoggle_default, { value: currency, onChange: setCurrency }) })
+          /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol })
         ] }),
         renderFooter: () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold text-xs", children: [
           /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: textCols.length, className: `${T.totalCell} ${T.totalLabel} ${T.vline}`, children: "TOTAL" }),
@@ -3228,7 +3205,7 @@ function EditableField({
 exports.ActivosSummary = activossummary_default;
 exports.AssetTable = assettable_default;
 exports.BoletasTable = boletas_default;
-exports.CurrencyToggle = currencytoggle_default;
+exports.ClickableHeader = clickableheader_default;
 exports.DEFAULT_SCHEME = DEFAULT_SCHEME;
 exports.DeclaracionTable = declaracion_default;
 exports.DeleteDialog = deletedialog_default;

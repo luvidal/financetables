@@ -3,6 +3,7 @@ import { displayCurrencyCompact } from '../common/utils'
 import { T } from '../common/styles'
 import { resolveColors } from '../common/colors'
 import TableShell, { SourceIcon } from '../common/tableshell'
+import ClickableHeader from '../common/clickableheader'
 
 // ============================================================================
 // Types
@@ -102,15 +103,12 @@ const BoletasTable = ({
                                 key={m.periodo}
                                 className={`${T.headerAccordionStat} ${isExcluded ? 'opacity-35 line-through' : ''}`}
                             >
-                                <span
-                                    className={`whitespace-nowrap ${canToggle ? `cursor-pointer select-none inline-flex items-center rounded-full border ${borderColor} px-2 py-0.5 -mx-2 -my-0.5` : ''}`}
-                                    onClick={canToggle ? (e) => { e.stopPropagation(); onToggleMonth!(m.periodo) } : undefined}
-                                >
+                                <ClickableHeader onClick={canToggle ? () => onToggleMonth!(m.periodo) : undefined} borderColor={borderColor}>
                                     <span className={`${headerText} ${T.headerStatLabel}`}>{label}: </span>
                                     <span className={`${T.headerStat} ${hasValue ? headerText : 'text-gray-400'}`}>
                                         {hasValue ? displayCurrencyCompact(m.liquido) : '—'}
                                     </span>
-                                </span>
+                                </ClickableHeader>
                             </td>
                         )
                     })}

@@ -2398,6 +2398,18 @@ var DeudasTable = ({
   ] });
 };
 var deudas_default = DeudasTable;
+var ClickableHeader = ({ onClick, borderColor, className, children }) => /* @__PURE__ */ jsx(
+  "span",
+  {
+    className: `whitespace-nowrap ${onClick ? `cursor-pointer select-none inline-flex items-center rounded-full border ${borderColor || "border-gray-300"} px-2 py-0.5 -mx-2 -my-0.5 transition-colors` : ""} ${className || ""}`,
+    onClick: onClick ? (e) => {
+      e.stopPropagation();
+      onClick();
+    } : void 0,
+    children
+  }
+);
+var clickableheader_default = ClickableHeader;
 var SHORT_MONTHS = {
   enero: "ENE",
   febrero: "FEB",
@@ -2448,23 +2460,13 @@ var BoletasTable = ({
             "td",
             {
               className: `${T.headerAccordionStat} ${isExcluded ? "opacity-35 line-through" : ""}`,
-              children: /* @__PURE__ */ jsxs(
-                "span",
-                {
-                  className: `whitespace-nowrap ${canToggle ? `cursor-pointer select-none inline-flex items-center rounded-full border ${borderColor} px-2 py-0.5 -mx-2 -my-0.5` : ""}`,
-                  onClick: canToggle ? (e) => {
-                    e.stopPropagation();
-                    onToggleMonth(m.periodo);
-                  } : void 0,
-                  children: [
-                    /* @__PURE__ */ jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
-                      label,
-                      ": "
-                    ] }),
-                    /* @__PURE__ */ jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? displayCurrencyCompact(m.liquido) : "\u2014" })
-                  ]
-                }
-              )
+              children: /* @__PURE__ */ jsxs(clickableheader_default, { onClick: canToggle ? () => onToggleMonth(m.periodo) : void 0, borderColor, children: [
+                /* @__PURE__ */ jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
+                  label,
+                  ": "
+                ] }),
+                /* @__PURE__ */ jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? displayCurrencyCompact(m.liquido) : "\u2014" })
+              ] })
             },
             m.periodo
           );
@@ -2670,25 +2672,6 @@ var FinalResultsCompact = ({
   ] });
 };
 var finalresults_default = FinalResultsCompact;
-var CurrencyToggle = ({ value, onChange }) => /* @__PURE__ */ jsxs("span", { className: "inline-flex rounded-md overflow-hidden border border-amber-200 ml-2 text-[10px] leading-none align-middle", children: [
-  /* @__PURE__ */ jsx(
-    "button",
-    {
-      className: `px-1.5 py-0.5 font-medium transition-colors ${value === "uf" ? "bg-amber-200 text-amber-800" : "text-amber-500 hover:text-amber-700"}`,
-      onClick: () => onChange("uf"),
-      children: "UF"
-    }
-  ),
-  /* @__PURE__ */ jsx(
-    "button",
-    {
-      className: `px-1.5 py-0.5 font-medium transition-colors ${value === "clp" ? "bg-amber-200 text-amber-800" : "text-amber-500 hover:text-amber-700"}`,
-      onClick: () => onChange("clp"),
-      children: "$"
-    }
-  )
-] });
-var currencytoggle_default = CurrencyToggle;
 function AssetTable({
   columns: columns3,
   rows,
@@ -2708,16 +2691,8 @@ function AssetTable({
   const { getHoverProps, isHovered } = useRowHover();
   const [currency, setCurrency] = useState("uf");
   const { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow } = useSoftDelete(rows, onRowsChange);
-  const hasUfToggle = ufValue != null && columns3.some((c) => c.ufPair);
+  const canToggleCurrency = ufValue != null && columns3.some((c) => c.ufPair);
   const isUf = currency === "uf";
-  useMemo(() => {
-    if (!hasUfToggle) return columns3;
-    const ufPairKeys = new Set(columns3.filter((c) => c.ufPair).map((c) => c.ufPair));
-    return columns3.filter((c) => {
-      if (ufPairKeys.has(c.key)) return isUf;
-      return true;
-    });
-  }, [columns3, hasUfToggle, isUf]);
   const resolvedColumns = useMemo(() => {
     return columns3.map((col) => {
       if (col.ufPair && !isUf) {
@@ -2804,16 +2779,18 @@ function AssetTable({
           resolvedColumns.map((col, i) => {
             const effectiveAlign = col.align ?? (col.type === "currency" || col.type === "number" ? "right" : "left");
             const vline = i < resolvedColumns.length - 1 ? T.vline : "";
+            const label = col === labelCol && title ? title : col.label;
+            const isToggleable = canToggleCurrency && col.ufPair;
             return /* @__PURE__ */ jsx(
               "th",
               {
                 className: `${T.headerCell} ${effectiveAlign === "right" ? "text-right" : effectiveAlign === "center" ? "text-center" : "text-left"} ${T.th} ${headerText} ${vline}`,
-                children: col === labelCol && title ? title : col.label
+                children: isToggleable ? /* @__PURE__ */ jsx(clickableheader_default, { onClick: () => setCurrency((c) => c === "uf" ? "clp" : "uf"), borderColor, children: label }) : label
               },
               col.key
             );
           }),
-          /* @__PURE__ */ jsx("th", { className: T.actionCol, children: hasUfToggle && /* @__PURE__ */ jsx(currencytoggle_default, { value: currency, onChange: setCurrency }) })
+          /* @__PURE__ */ jsx("th", { className: T.actionCol })
         ] }),
         renderFooter: () => /* @__PURE__ */ jsxs("tr", { className: "font-semibold text-xs", children: [
           /* @__PURE__ */ jsx("td", { colSpan: textCols.length, className: `${T.totalCell} ${T.totalLabel} ${T.vline}`, children: "TOTAL" }),
@@ -3217,6 +3194,6 @@ function EditableField({
   );
 }
 
-export { activossummary_default as ActivosSummary, assettable_default as AssetTable, boletas_default as BoletasTable, currencytoggle_default as CurrencyToggle, DEFAULT_SCHEME, declaracion_default as DeclaracionTable, deletedialog_default as DeleteDialog, deudas_default as DeudasTable, editablecell_default as EditableCell, EditableField, finalresults_default as FinalResultsCompact, inversiones_default as InversionesTable, MONTH_LABELS, propiedades_default as PropiedadesTable, recyclebin_default as RecycleBin, SourceIcon, summary_default as SummaryTable, tableshell_default as TableShell, vehiculos_default as VehiculosTable, applyAutoCompute, applyAutoConversions, renta_default as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, formatDeletedDate, generateId, generateLastNMonths, resolveColors, useSoftDelete };
+export { activossummary_default as ActivosSummary, assettable_default as AssetTable, boletas_default as BoletasTable, clickableheader_default as ClickableHeader, DEFAULT_SCHEME, declaracion_default as DeclaracionTable, deletedialog_default as DeleteDialog, deudas_default as DeudasTable, editablecell_default as EditableCell, EditableField, finalresults_default as FinalResultsCompact, inversiones_default as InversionesTable, MONTH_LABELS, propiedades_default as PropiedadesTable, recyclebin_default as RecycleBin, SourceIcon, summary_default as SummaryTable, tableshell_default as TableShell, vehiculos_default as VehiculosTable, applyAutoCompute, applyAutoConversions, renta_default as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, formatDeletedDate, generateId, generateLastNMonths, resolveColors, useSoftDelete };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

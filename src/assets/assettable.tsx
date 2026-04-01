@@ -11,7 +11,7 @@ import { defaultFormatCurrency, generateId } from '../common/utils'
 import { useSoftDelete } from '../common/usesoftdelete'
 import DeleteDialog from '../common/deletedialog'
 import RecycleBin from '../common/recyclebin'
-import CurrencyToggle from '../common/currencytoggle'
+import ClickableHeader from '../common/clickableheader'
 import type { AssetRow, AssetTableProps, ColumnDef } from './types'
 
 function AssetTable<T extends AssetRow>({
@@ -34,27 +34,8 @@ function AssetTable<T extends AssetRow>({
     const [currency, setCurrency] = useState<'uf' | 'clp'>('uf')
     const { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow } = useSoftDelete(rows, onRowsChange)
 
-    const hasUfToggle = ufValue != null && columns.some(c => c.ufPair)
+    const canToggleCurrency = ufValue != null && columns.some(c => c.ufPair)
     const isUf = currency === 'uf'
-
-    // Resolve visible columns based on UF/CLP toggle
-    const visibleColumns = useMemo(() => {
-        if (!hasUfToggle) return columns
-        const ufPairKeys = new Set(columns.filter(c => c.ufPair).map(c => c.ufPair!))
-        return columns.filter(c => {
-            // If this column is a ufPair target, hide it (it's shown when toggle flips)
-            if (ufPairKeys.has(c.key)) return isUf  // show ufPair columns only in UF mode... wait
-            // Actually, the logic: a column with ufPair shows in UF mode. Its pair shows in CLP mode.
-            return true
-        })
-    }, [columns, hasUfToggle, isUf])
-
-    // Actually, let me rethink. The column definition approach:
-    // - Column with key='valor_uf', ufPair='valor_pesos': shown when isUf=true
-    // - Column with key='valor_pesos' (no ufPair): shown when isUf=false
-    // But we only define the primary column (with ufPair) and auto-switch.
-    // The paired column doesn't exist in the columns array — it's implicit.
-    // This means we need to compute which key and type to use per column at render time.
 
     const resolvedColumns = useMemo(() => {
         return columns.map(col => {
@@ -156,17 +137,21 @@ function AssetTable<T extends AssetRow>({
                         {resolvedColumns.map((col, i) => {
                             const effectiveAlign = col.align ?? (col.type === 'currency' || col.type === 'number' ? 'right' : 'left')
                             const vline = i < resolvedColumns.length - 1 ? T.vline : ''
+                            const label = col === labelCol && title ? title : col.label
+                            const isToggleable = canToggleCurrency && col.ufPair
                             return (
                             <th
                                 key={col.key}
                                 className={`${T.headerCell} ${effectiveAlign === 'right' ? 'text-right' : effectiveAlign === 'center' ? 'text-center' : 'text-left'} ${T.th} ${headerText} ${vline}`}
                             >
-                                {col === labelCol && title ? title : col.label}
+                                {isToggleable ? (
+                                    <ClickableHeader onClick={() => setCurrency(c => c === 'uf' ? 'clp' : 'uf')} borderColor={borderColor}>
+                                        {label}
+                                    </ClickableHeader>
+                                ) : label}
                             </th>
                         )})}
-                        <th className={T.actionCol}>
-                            {hasUfToggle && <CurrencyToggle value={currency} onChange={setCurrency} />}
-                        </th>
+                        <th className={T.actionCol}></th>
                     </>
                 )}
                 renderFooter={() => (
