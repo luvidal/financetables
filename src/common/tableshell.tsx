@@ -20,7 +20,7 @@ export const SourceIcon = ({
     return (
         <button
             onClick={(e) => { e.stopPropagation(); onViewSource(fileIds) }}
-            className="p-1 rounded hover:bg-white/50 transition-colors"
+            className="p-1 rounded hover:bg-white/50 transition-all opacity-0 group-hover/header:opacity-100"
             title="Ver documento fuente"
         >
             <Eye size={14} className={className} />
@@ -71,7 +71,7 @@ const TableShell = ({
         <div className={`border-y border-gray-200 mb-3 sm:mb-4 ${className || ''}`}>
             <table className={T.table}>
                 <thead>
-                    <tr className={`${headerBg} ${headerClassName || ''}`}>
+                    <tr className={`${headerBg} ${headerClassName || ''} group/header`}>
                         {renderHeader()}
                     </tr>
                 </thead>

@@ -83,7 +83,7 @@ var SourceIcon = ({
         e.stopPropagation();
         onViewSource(fileIds);
       },
-      className: "p-1 rounded hover:bg-white/50 transition-colors",
+      className: "p-1 rounded hover:bg-white/50 transition-all opacity-0 group-hover/header:opacity-100",
       title: "Ver documento fuente",
       children: /* @__PURE__ */ jsx(Eye, { size: 14, className })
     }
@@ -102,7 +102,7 @@ var TableShell = ({
   const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp);
   return /* @__PURE__ */ jsxs("div", { className: `border-y border-gray-200 mb-3 sm:mb-4 ${className || ""}`, children: [
     /* @__PURE__ */ jsxs("table", { className: T.table, children: [
-      /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { className: `${headerBg} ${headerClassName || ""}`, children: renderHeader() }) }),
+      /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { className: `${headerBg} ${headerClassName || ""} group/header`, children: renderHeader() }) }),
       /* @__PURE__ */ jsx("tbody", { children }),
       renderFooter && /* @__PURE__ */ jsx("tfoot", { children: renderFooter() })
     ] }),
@@ -3171,34 +3171,34 @@ var DeclaracionTable = ({
   sourceFileIds,
   onViewSource
 }) => {
-  const { text: headerText, border: borderColor } = resolveColors(colorSchemeProp);
+  const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp);
   const showCodeColumn = rows.some((r) => r.code != null);
   return /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(
     tableshell_default,
     {
-      headerBg: "",
+      headerBg,
       headerClassName: `border-b ${borderColor}`,
       renderHeader: () => /* @__PURE__ */ jsxs(Fragment, { children: [
-        showCodeColumn && /* @__PURE__ */ jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: "C\xF3digo" }),
         /* @__PURE__ */ jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
           "Concepto",
           /* @__PURE__ */ jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
         ] }) }),
+        showCodeColumn && /* @__PURE__ */ jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: "C\xF3digo" }),
         columns3.map((col, i) => /* @__PURE__ */ jsx("th", { className: `text-right ${T.cell} font-medium ${headerText} ${i < columns3.length - 1 ? T.vline : ""}`, children: col.label }, col.key))
       ] }),
       renderFooter: totalLabel ? () => /* @__PURE__ */ jsxs("tr", { className: "font-semibold", children: [
-        showCodeColumn && /* @__PURE__ */ jsx("td", { className: `${T.cell} border-t-2 border-t-gray-200` }),
-        /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-800 border-t-2 border-t-gray-200`, children: totalLabel }),
+        /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-800 border-t border-t-gray-200`, children: totalLabel }),
+        showCodeColumn && /* @__PURE__ */ jsx("td", { className: `${T.cell} border-t border-t-gray-200` }),
         columns3.map((col) => {
           const summedRows = rows.filter((r) => r.summed);
           const hasAny = summedRows.some((r) => data[r.key]?.[col.key] != null);
           const sum = summedRows.reduce((acc, r) => acc + (data[r.key]?.[col.key] ?? 0), 0);
-          return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} text-gray-900 border-t-2 border-t-gray-200`, children: hasAny ? formatCurrency(sum) : "\u2014" }, col.key);
+          return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} text-gray-900 border-t border-t-gray-200`, children: hasAny ? formatCurrency(sum) : "\u2014" }, col.key);
         })
       ] }) : void 0,
       children: rows.map((row) => /* @__PURE__ */ jsxs("tr", { className: T.row, children: [
-        showCodeColumn && /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-400 tabular-nums ${T.vline}`, children: row.code ?? "" }),
         /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-700 ${T.vline}`, children: row.label }),
+        showCodeColumn && /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-400 tabular-nums ${T.vline}`, children: row.code ?? "" }),
         columns3.map((col, ci) => {
           const value = data[row.key]?.[col.key];
           return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} ${value != null ? "text-gray-900" : "text-gray-400"} ${ci < columns3.length - 1 ? T.vline : ""}`, children: value != null ? formatCurrency(value) : "\u2014" }, col.key);
