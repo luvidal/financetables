@@ -1840,7 +1840,7 @@ var RentaTable = ({
                   const isSubtract = isSubtractType(section.type);
                   const label = isSubtract ? "Total descuentos" : "Total haberes";
                   return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `${isSubtract ? "bg-red-50/30" : "bg-emerald-50/30"}`, children: [
-                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-b border-b-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.footerLabel} text-xs`, children: label }) }),
+                    /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-b border-b-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalLabel}`, children: label }) }),
                     showClassificationColumns && /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
                       /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} border-b border-b-gray-200` }),
                       /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellCompact} border-b border-b-gray-200 ${T.vline}` })
@@ -1851,7 +1851,7 @@ var RentaTable = ({
                       const hasValue = value !== 0;
                       const display = isSubtract ? `-${formatValue(value)}` : formatValue(value);
                       const vline = mi < monthsArray.length - 1 ? T.vline : "";
-                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right border-b border-b-gray-200 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.footerValue} text-xs tabular-nums ${hasValue ? "" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right border-b border-b-gray-200 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} tabular-nums ${hasValue ? "" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
                     }),
                     /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.actionCol} border-b border-b-gray-200` })
                   ] });

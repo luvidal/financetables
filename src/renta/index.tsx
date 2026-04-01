@@ -532,7 +532,7 @@ const RentaTable = ({
                                 return (
                                     <tr className={`${isSubtract ? 'bg-red-50/30' : 'bg-emerald-50/30'}`}>
                                         <td className={`${T.totalCell} border-b border-b-gray-200 ${showClassificationColumns ? '' : T.vline}`}>
-                                            <span className={`${T.footerLabel} text-xs`}>{label}</span>
+                                            <span className={`${T.totalLabel}`}>{label}</span>
                                         </td>
                                         {showClassificationColumns && <><td className={`${T.cellCompact} border-b border-b-gray-200`} /><td className={`${T.cellCompact} border-b border-b-gray-200 ${T.vline}`} /></>}
                                         {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} border-b border-b-gray-200 ${T.vline}`} />}
@@ -543,7 +543,7 @@ const RentaTable = ({
                                             const vline = mi < monthsArray.length - 1 ? T.vline : ''
                                             return (
                                                 <td key={p.id} className={`${T.totalCell} text-right border-b border-b-gray-200 ${vline}`}>
-                                                    <span className={`${T.footerValue} text-xs tabular-nums ${hasValue ? '' : 'text-gray-300'}`}>
+                                                    <span className={`${T.totalValue} tabular-nums ${hasValue ? '' : 'text-gray-300'}`}>
                                                         {hasValue ? display : '—'}
                                                     </span>
                                                 </td>
