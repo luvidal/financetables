@@ -14,33 +14,33 @@ export const T = {
 
     // ── Header: accordion bar (TableShell) ──
     headerAccordion: 'px-4 py-2.5',
-    headerAccordionStat: 'px-2 py-2.5 text-right',
+    headerAccordionStat: 'px-2 py-2.5 text-right whitespace-nowrap',
     headerTitle: 'font-normal text-xs truncate',
     headerStat: 'font-normal text-xs',
-    headerStatLabel: 'font-normal text-xs uppercase',
+    headerStatLabel: 'font-normal text-xs',
     headerCount: 'font-medium text-xs',
 
     // ── Header: column headers (th) ──
     th: 'text-gray-500 font-medium text-xs uppercase',
-    headerCell: 'px-2 py-1.5',
+    headerCell: 'px-2 py-1.5 whitespace-nowrap',
     /** Vertical divider between columns */
-    vline: 'border-r border-gray-200',
+    vline: 'border-r border-gray-100',
     /** Action column (delete button) — fixed narrow width */
     actionCol: 'w-10',
     /** Compact cell padding for small icon/badge columns (80px min) */
-    cellCompact: 'px-0.5 py-1',
+    cellCompact: 'px-0.5 py-1 whitespace-nowrap',
 
     // ── Body: read-only cells (compact) ──
-    cell: 'py-1.5 px-3',
-    cellValue: 'py-1.5 px-3 text-right tabular-nums',
+    cell: 'py-1.5 px-3 whitespace-nowrap',
+    cellValue: 'py-1.5 px-3 text-right tabular-nums whitespace-nowrap',
     cellLabel: 'overflow-hidden',
 
     // ── Body: editable cells (taller click targets) ──
-    cellEdit: 'px-2 py-1.5',
-    cellEditLabel: 'pl-1 pr-2 py-1.5',
+    cellEdit: 'px-2 py-1.5 whitespace-nowrap',
+    cellEditLabel: 'pl-1 pr-2 py-1.5 whitespace-nowrap',
 
     // ── Totals / footer ──
-    totalCell: 'px-2 py-1.5',
+    totalCell: 'px-2 py-1.5 whitespace-nowrap',
     totalLabel: 'font-medium text-xs',
     totalValue: 'font-medium text-xs',
     footerLabel: 'font-bold',
@@ -49,7 +49,7 @@ export const T = {
     // ── Inputs (transparent inline) ──
     input: 'bg-transparent border-none outline-none text-xs truncate',
     inputLabel: 'bg-transparent border-none outline-none text-xs font-medium truncate',
-    inputPlaceholder: 'bg-transparent border-none outline-none text-xs text-gray-500 placeholder-gray-400 truncate',
+    inputPlaceholder: 'bg-transparent border-none outline-none text-xs text-gray-400 placeholder-gray-300 truncate',
     rowLabel: 'bg-transparent border-none outline-none text-xs font-medium text-gray-600 truncate',
 
     // ── Typography helpers ──

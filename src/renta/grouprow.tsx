@@ -58,7 +58,7 @@ const GroupRow = ({
 
     return (
         <tr
-            className={`border-b border-gray-200 ${subtract ? 'bg-red-50/30' : 'bg-gray-50/50'} ${isDragging ? 'opacity-40' : ''} ${dropBorder} group`}
+            className={`border-b border-gray-100 ${subtract ? 'bg-red-50/30' : 'bg-gray-50/50'} ${isDragging ? 'opacity-40' : ''} ${dropBorder} group`}
             {...hoverProps}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}

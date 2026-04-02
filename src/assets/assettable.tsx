@@ -142,6 +142,7 @@ function AssetTable<T extends AssetRow>({
             <TableShell
                 colorScheme={colorSchemeProp}
                 headerClassName={`border-t ${borderColor} ${headerText}`}
+                rowCount={activeRows.length}
                 renderHeader={() => (
                     <>
                         {resolvedColumns.map((col, i) => {
@@ -153,7 +154,8 @@ function AssetTable<T extends AssetRow>({
                             return (
                             <th
                                 key={col.key}
-                                className={`${T.headerCell} ${effectiveAlign === 'right' ? 'text-right' : effectiveAlign === 'center' ? 'text-center' : 'text-left'} ${T.th} ${headerText} ${vline}`}
+                                style={col.width ? { width: col.width } : undefined}
+                                className={`${T.headerCell} ${effectiveAlign === 'right' ? 'text-right' : effectiveAlign === 'center' ? 'text-center' : 'text-left'} ${T.th} normal-case ${headerText} ${vline}`}
                             >
                                 {isToggleable ? (
                                     <ClickableHeader onClick={() => toggleColumn(origCol.key)} borderColor={borderColor}>
@@ -169,13 +171,13 @@ function AssetTable<T extends AssetRow>({
                     <tr className="font-semibold text-xs">
                         {resolvedColumns.map((col) => {
                             if (col.isLabel) {
-                                return <td key={col.key} className={`${T.totalCell} ${T.totalLabel} border-t border-gray-200`}>TOTAL</td>
+                                return <td key={col.key} className={`${T.totalCell} ${T.totalLabel} border-t border-gray-100`}>TOTAL</td>
                             }
                             if (col.type === 'text') {
-                                return <td key={col.key} className={`${T.totalCell} border-t border-gray-200`} />
+                                return <td key={col.key} className={`${T.totalCell} border-t border-gray-100`} />
                             }
                             return (
-                                <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${T.totalValue} border-t border-gray-200`}>
+                                <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${T.totalValue} border-t border-gray-100`}>
                                     {totals[col.key] ? (
                                         col.type === 'number'
                                             ? totals[col.key].toLocaleString('es-CL', { maximumFractionDigits: 2 })
@@ -184,7 +186,7 @@ function AssetTable<T extends AssetRow>({
                                 </td>
                             )
                         })}
-                        <td className="border-t border-gray-200"></td>
+                        <td className="border-t border-gray-100"></td>
                     </tr>
                 )}
                 renderAfterContent={() => (
@@ -238,15 +240,16 @@ function AssetTable<T extends AssetRow>({
                                 }
                                 if (col.type === 'text') {
                                     const isRight = col.align === 'right'
-                                    const textAlign = isRight ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                                    const isCenter = col.align === 'center'
+                                    const textAlign = isRight ? 'text-right' : isCenter ? 'text-center' : 'text-left'
                                     return (
                                         <td key={col.key} className={`${T.cellEdit} ${vline}`}>
                                             <input
                                                 type="text"
                                                 value={(row[col.key] as string) || ''}
                                                 onChange={e => updateField(row.id, col.key, e.target.value)}
-                                                className={`w-full ${T.input} ${textAlign} pl-1`}
-                                                style={isRight ? { padding: 0 } : undefined}
+                                                className={`w-full ${T.input} ${textAlign} ${!isRight && !isCenter ? 'pl-1' : ''}`}
+                                                style={isRight || isCenter ? { padding: 0 } : undefined}
                                                 placeholder={col.placeholder || col.label}
                                             />
                                         </td>
@@ -281,7 +284,8 @@ function AssetTable<T extends AssetRow>({
                         }
                         if (col.type === 'text') {
                             const isAddRight = col.align === 'right'
-                            const addTextAlign = isAddRight ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                            const isAddCenter = col.align === 'center'
+                            const addTextAlign = isAddRight ? 'text-right' : isAddCenter ? 'text-center' : 'text-left'
                             return (
                                 <td key={col.key} className={`${T.cellEdit} ${vline}`}>
                                     <input
@@ -290,7 +294,7 @@ function AssetTable<T extends AssetRow>({
                                         value={newRowValues[col.key] || ''}
                                         onChange={e => setNewRowValues(prev => ({ ...prev, [col.key]: e.target.value }))}
                                         className={`w-full ${T.inputPlaceholder} ${addTextAlign}`}
-                                        style={isAddRight ? { padding: 0 } : undefined}
+                                        style={isAddRight || isAddCenter ? { padding: 0 } : undefined}
                                     />
                                 </td>
                             )

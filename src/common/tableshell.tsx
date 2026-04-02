@@ -16,11 +16,11 @@ export const SourceIcon = ({
     onViewSource?: (ids: string[]) => void
     className?: string
 }) => {
-    if (!fileIds?.length || !onViewSource) return null
+    if (!onViewSource) return null
     return (
         <button
-            onClick={(e) => { e.stopPropagation(); onViewSource(fileIds) }}
-            className="p-1 rounded hover:bg-white/50 transition-all opacity-0 group-hover/header:opacity-100"
+            onClick={(e) => { e.stopPropagation(); onViewSource(fileIds || []) }}
+            className="p-1 rounded hover:bg-white/50 transition-all opacity-0 group-hover/header:opacity-100 cursor-pointer"
             title="Ver documento fuente"
         >
             <Eye size={14} className={className} />
@@ -42,6 +42,9 @@ export interface TableShellProps {
     /** Extra classes on the outer wrapper div */
     className?: string
 
+    /** Number of data rows — when 0, footer is hidden */
+    rowCount?: number
+
     // Header content — render prop returns <td>/<th> cells for the header <tr>
     renderHeader: () => React.ReactNode
 
@@ -60,6 +63,7 @@ const TableShell = ({
     headerBg: headerBgProp = 'bg-gray-100',
     headerClassName,
     className,
+    rowCount,
     renderHeader,
     children,
     renderFooter,
@@ -68,7 +72,7 @@ const TableShell = ({
     const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp)
 
     return (
-        <div className={`border-y border-gray-200 mb-3 sm:mb-4 ${className || ''}`}>
+        <div className={`border-y border-gray-200 mb-4 sm:mb-6 ${className || ''}`}>
             <table className={T.table}>
                 <thead>
                     <tr className={`${headerBg} ${headerClassName || ''} group/header`}>
@@ -78,7 +82,7 @@ const TableShell = ({
                 <tbody>
                     {children}
                 </tbody>
-                {renderFooter && (
+                {renderFooter && rowCount !== 0 && (
                     <tfoot>
                         {renderFooter()}
                     </tfoot>

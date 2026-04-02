@@ -154,8 +154,10 @@ interface BoletasTableProps {
     /** Periodos excluded from summary calculations — columns are dimmed and clickable to toggle */
     excludedMonths?: string[];
     onToggleMonth?: (periodo: string) => void;
+    /** Toggle all months at once (year-level select/deselect) */
+    onToggleAll?: () => void;
 }
-declare const BoletasTable: ({ title, months, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, sourceFileIds, onViewSource, excludedMonths, onToggleMonth, }: BoletasTableProps) => react_jsx_runtime.JSX.Element;
+declare const BoletasTable: ({ title, months, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, sourceFileIds, onViewSource, excludedMonths, onToggleMonth, onToggleAll, }: BoletasTableProps) => react_jsx_runtime.JSX.Element;
 
 interface FinalResultsValues {
     renta_liquida_ajustada_comprador?: number | null;
@@ -295,6 +297,8 @@ interface ColumnDef {
     key: string;
     label: string;
     type: 'text' | 'currency' | 'number';
+    /** Column width hint (e.g. '30%') — applied on <th>, browser distributes proportionally */
+    width?: string;
     align?: 'left' | 'right' | 'center';
     placeholder?: string;
     isLabel?: boolean;
@@ -504,12 +508,14 @@ interface TableShellProps {
     headerClassName?: string;
     /** Extra classes on the outer wrapper div */
     className?: string;
+    /** Number of data rows — when 0, footer is hidden */
+    rowCount?: number;
     renderHeader: () => React$1.ReactNode;
     children: React$1.ReactNode;
     renderFooter?: () => React$1.ReactNode;
     renderAfterContent?: () => React$1.ReactNode;
 }
-declare const TableShell: ({ colorScheme: colorSchemeProp, headerBg: headerBgProp, headerClassName, className, renderHeader, children, renderFooter, renderAfterContent, }: TableShellProps) => react_jsx_runtime.JSX.Element;
+declare const TableShell: ({ colorScheme: colorSchemeProp, headerBg: headerBgProp, headerClassName, className, rowCount, renderHeader, children, renderFooter, renderAfterContent, }: TableShellProps) => react_jsx_runtime.JSX.Element;
 
 declare const generateId: (prefix: string) => string;
 declare const formatDeletedDate: (iso: string) => string;

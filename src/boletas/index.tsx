@@ -40,6 +40,8 @@ export interface BoletasTableProps {
     /** Periodos excluded from summary calculations — columns are dimmed and clickable to toggle */
     excludedMonths?: string[]
     onToggleMonth?: (periodo: string) => void
+    /** Toggle all months at once (year-level select/deselect) */
+    onToggleAll?: () => void
 }
 
 // ============================================================================
@@ -47,9 +49,9 @@ export interface BoletasTableProps {
 // ============================================================================
 
 const SHORT_MONTHS: Record<string, string> = {
-    enero: 'ENE', febrero: 'FEB', marzo: 'MAR', abril: 'ABR',
-    mayo: 'MAY', junio: 'JUN', julio: 'JUL', agosto: 'AGO',
-    septiembre: 'SEP', octubre: 'OCT', noviembre: 'NOV', diciembre: 'DIC',
+    enero: 'Ene', febrero: 'Feb', marzo: 'Mar', abril: 'Abr',
+    mayo: 'May', junio: 'Jun', julio: 'Jul', agosto: 'Ago',
+    septiembre: 'Sep', octubre: 'Oct', noviembre: 'Nov', diciembre: 'Dic',
 }
 
 // ============================================================================
@@ -78,18 +80,22 @@ const BoletasTable = ({
     onViewSource,
     excludedMonths,
     onToggleMonth,
+    onToggleAll,
 }: BoletasTableProps) => {
     const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp)
     const excluded = excludedMonths ?? []
+    const allExcluded = months.length > 0 && months.every(m => excluded.includes(m.periodo))
 
     return (
         <TableShell
             headerBg={headerBg}
             renderHeader={() => (
                 <>
-                    <td className={`${T.headerAccordion} text-left ${T.vline}`}>
+                    <td className={`${T.headerAccordion} text-left ${T.vline} ${allExcluded ? 'opacity-35' : ''}`}>
                         <div className="flex items-center gap-2">
-                            <span className={`${headerText} ${T.headerTitle}`}>{title}</span>
+                            <ClickableHeader onClick={onToggleAll} borderColor={borderColor}>
+                                <span className={`${headerText} ${T.headerTitle}`}>{title}</span>
+                            </ClickableHeader>
                             <SourceIcon fileIds={sourceFileIds} onViewSource={onViewSource} className={headerText} />
                         </div>
                     </td>
@@ -97,14 +103,14 @@ const BoletasTable = ({
                         const isExcluded = excluded.includes(m.periodo)
                         const canToggle = !!onToggleMonth
                         const hasValue = m.hasData && m.liquido != null
-                        const label = SHORT_MONTHS[m.mes] || m.mes.slice(0, 3).toUpperCase()
+                        const label = SHORT_MONTHS[m.mes] || (m.mes.charAt(0).toUpperCase() + m.mes.slice(1, 3))
                         return (
                             <td
                                 key={m.periodo}
                                 className={`${T.headerAccordionStat} ${isExcluded ? 'opacity-35 line-through' : ''}`}
                             >
                                 <ClickableHeader onClick={canToggle ? () => onToggleMonth!(m.periodo) : undefined} borderColor={borderColor}>
-                                    <span className={`${headerText} ${T.headerStatLabel}`}>{label}: </span>
+                                    <span className={`${headerText} ${T.headerStatLabel}`}>{label}</span>
                                     <span className={`${T.headerStat} ${hasValue ? headerText : 'text-gray-400'}`}>
                                         {hasValue ? displayCurrencyCompact(m.liquido) : '—'}
                                     </span>

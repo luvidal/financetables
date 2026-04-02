@@ -11,28 +11,28 @@ var T = {
   table: "w-full text-xs border-separate border-spacing-0",
   // ── Header: accordion bar (TableShell) ──
   headerAccordion: "px-4 py-2.5",
-  headerAccordionStat: "px-2 py-2.5 text-right",
+  headerAccordionStat: "px-2 py-2.5 text-right whitespace-nowrap",
   headerTitle: "font-normal text-xs truncate",
   headerStat: "font-normal text-xs",
-  headerStatLabel: "font-normal text-xs uppercase",
+  headerStatLabel: "font-normal text-xs",
   // ── Header: column headers (th) ──
   th: "text-gray-500 font-medium text-xs uppercase",
-  headerCell: "px-2 py-1.5",
+  headerCell: "px-2 py-1.5 whitespace-nowrap",
   /** Vertical divider between columns */
-  vline: "border-r border-gray-200",
+  vline: "border-r border-gray-100",
   /** Action column (delete button) — fixed narrow width */
   actionCol: "w-10",
   /** Compact cell padding for small icon/badge columns (80px min) */
-  cellCompact: "px-0.5 py-1",
+  cellCompact: "px-0.5 py-1 whitespace-nowrap",
   // ── Body: read-only cells (compact) ──
-  cell: "py-1.5 px-3",
-  cellValue: "py-1.5 px-3 text-right tabular-nums",
+  cell: "py-1.5 px-3 whitespace-nowrap",
+  cellValue: "py-1.5 px-3 text-right tabular-nums whitespace-nowrap",
   cellLabel: "overflow-hidden",
   // ── Body: editable cells (taller click targets) ──
-  cellEdit: "px-2 py-1.5",
-  cellEditLabel: "pl-1 pr-2 py-1.5",
+  cellEdit: "px-2 py-1.5 whitespace-nowrap",
+  cellEditLabel: "pl-1 pr-2 py-1.5 whitespace-nowrap",
   // ── Totals / footer ──
-  totalCell: "px-2 py-1.5",
+  totalCell: "px-2 py-1.5 whitespace-nowrap",
   totalLabel: "font-medium text-xs",
   totalValue: "font-medium text-xs",
   footerLabel: "font-bold",
@@ -40,7 +40,7 @@ var T = {
   // ── Inputs (transparent inline) ──
   input: "bg-transparent border-none outline-none text-xs truncate",
   inputLabel: "bg-transparent border-none outline-none text-xs font-medium truncate",
-  inputPlaceholder: "bg-transparent border-none outline-none text-xs text-gray-500 placeholder-gray-400 truncate",
+  inputPlaceholder: "bg-transparent border-none outline-none text-xs text-gray-400 placeholder-gray-300 truncate",
   rowLabel: "bg-transparent border-none outline-none text-xs font-medium text-gray-600 truncate",
   /** Data row indent (child rows below subheaders) */
   cellIndent: "pl-6",
@@ -75,15 +75,15 @@ var SourceIcon = ({
   onViewSource,
   className
 }) => {
-  if (!fileIds?.length || !onViewSource) return null;
+  if (!onViewSource) return null;
   return /* @__PURE__ */ jsx(
     "button",
     {
       onClick: (e) => {
         e.stopPropagation();
-        onViewSource(fileIds);
+        onViewSource(fileIds || []);
       },
-      className: "p-1 rounded hover:bg-white/50 transition-all opacity-0 group-hover/header:opacity-100",
+      className: "p-1 rounded hover:bg-white/50 transition-all opacity-0 group-hover/header:opacity-100 cursor-pointer",
       title: "Ver documento fuente",
       children: /* @__PURE__ */ jsx(Eye, { size: 14, className })
     }
@@ -94,17 +94,18 @@ var TableShell = ({
   headerBg: headerBgProp = "bg-gray-100",
   headerClassName,
   className,
+  rowCount,
   renderHeader,
   children,
   renderFooter,
   renderAfterContent
 }) => {
   const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp);
-  return /* @__PURE__ */ jsxs("div", { className: `border-y border-gray-200 mb-3 sm:mb-4 ${className || ""}`, children: [
+  return /* @__PURE__ */ jsxs("div", { className: `border-y border-gray-200 mb-4 sm:mb-6 ${className || ""}`, children: [
     /* @__PURE__ */ jsxs("table", { className: T.table, children: [
       /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { className: `${headerBg} ${headerClassName || ""} group/header`, children: renderHeader() }) }),
       /* @__PURE__ */ jsx("tbody", { children }),
-      renderFooter && /* @__PURE__ */ jsx("tfoot", { children: renderFooter() })
+      renderFooter && rowCount !== 0 && /* @__PURE__ */ jsx("tfoot", { children: renderFooter() })
     ] }),
     renderAfterContent?.()
   ] });
@@ -157,7 +158,7 @@ var displayCurrencyCompact = (value, isDeduction = false) => {
 };
 
 // src/renta/helpers.ts
-var MONTH_NAMES = ["", "ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+var MONTH_NAMES = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 var generateLastNMonths = (count) => {
   const months = [];
   const now = /* @__PURE__ */ new Date();
@@ -772,7 +773,7 @@ var GroupRow = ({
   return /* @__PURE__ */ jsxs(
     "tr",
     {
-      className: `border-b border-gray-200 ${subtract ? "bg-red-50/30" : "bg-gray-50/50"} ${isDragging ? "opacity-40" : ""} ${dropBorder} group`,
+      className: `border-b border-gray-100 ${subtract ? "bg-red-50/30" : "bg-gray-50/50"} ${isDragging ? "opacity-40" : ""} ${dropBorder} group`,
       ...hoverProps,
       onDragOver,
       onDragLeave,
@@ -930,7 +931,7 @@ var deletedialog_default = DeleteDialog;
 function RecycleBin({ deletedRows, getLabel, onRestore, renderCells }) {
   const [expanded, setExpanded] = useState(false);
   if (deletedRows.length === 0) return null;
-  return /* @__PURE__ */ jsxs("div", { className: "border-t border-gray-200 bg-gray-50/50", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "border-t border-gray-100 bg-gray-50/50", children: [
     /* @__PURE__ */ jsxs(
       "button",
       {
@@ -1446,7 +1447,7 @@ var ReliqInfoTooltip = ({ data, type }) => {
 };
 var RentaTable = ({
   title,
-  months = 3,
+  months = 6,
   rows,
   onRowsChange,
   sections,
@@ -1724,10 +1725,7 @@ var RentaTable = ({
               const total = calculateTotal(p.id, rows);
               const hasValue = total !== 0;
               return /* @__PURE__ */ jsxs("td", { className: `${T.headerAccordionStat}`, children: [
-                /* @__PURE__ */ jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
-                  p.label,
-                  ": "
-                ] }),
+                /* @__PURE__ */ jsx("span", { className: `${headerText} ${T.headerStatLabel} mr-1`, children: p.label }),
                 /* @__PURE__ */ jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? formatValue(total) : "\u2014" })
               ] }, p.id);
             }),
@@ -1833,20 +1831,20 @@ var RentaTable = ({
                   const isSubtract = isSubtractType(section.type);
                   const label = isSubtract ? "Total descuentos" : "Total haberes";
                   return /* @__PURE__ */ jsxs("tr", { className: `${isSubtract ? "bg-red-50/30" : "bg-emerald-50/30"}`, children: [
-                    /* @__PURE__ */ jsx("td", { className: `${T.totalCell} border-b border-gray-200 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsx("span", { className: "font-semibold text-xs text-gray-500", children: label }) }),
+                    /* @__PURE__ */ jsx("td", { className: `${T.totalCell} border-b border-gray-100 ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsx("span", { className: "font-semibold text-xs text-gray-500", children: label }) }),
                     showClassificationColumns && /* @__PURE__ */ jsxs(Fragment, { children: [
-                      /* @__PURE__ */ jsx("td", { className: `${T.cellCompact} border-b border-gray-200` }),
-                      /* @__PURE__ */ jsx("td", { className: `${T.cellCompact} border-b border-gray-200 ${T.vline}` })
+                      /* @__PURE__ */ jsx("td", { className: `${T.cellCompact} border-b border-gray-100` }),
+                      /* @__PURE__ */ jsx("td", { className: `${T.cellCompact} border-b border-gray-100 ${T.vline}` })
                     ] }),
-                    showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsx("td", { className: `${T.cellCompact} border-b border-gray-200 ${T.vline}` }),
+                    showVariableColumn && !showClassificationColumns && /* @__PURE__ */ jsx("td", { className: `${T.cellCompact} border-b border-gray-100 ${T.vline}` }),
                     monthsArray.map((p, mi) => {
                       const value = subtotals[p.id] ?? 0;
                       const hasValue = value !== 0;
                       const display = isSubtract ? `-${formatValue(value)}` : formatValue(value);
                       const vline = mi < monthsArray.length - 1 ? T.vline : "";
-                      return /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right border-b border-gray-200 ${vline}`, children: /* @__PURE__ */ jsx("span", { className: `font-semibold text-xs tabular-nums ${hasValue ? "text-gray-500" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
+                      return /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right border-b border-gray-100 ${vline}`, children: /* @__PURE__ */ jsx("span", { className: `font-semibold text-xs tabular-nums ${hasValue ? "text-gray-500" : "text-gray-300"}`, children: hasValue ? display : "\u2014" }) }, p.id);
                     }),
-                    /* @__PURE__ */ jsx("td", { className: `${T.actionCol} border-b border-gray-200` })
+                    /* @__PURE__ */ jsx("td", { className: `${T.actionCol} border-b border-gray-100` })
                   ] });
                 })()
               ] }, section.type);
@@ -1877,7 +1875,7 @@ var RentaTable = ({
                   }),
                   /* @__PURE__ */ jsx("td", { className: T.actionCol })
                 ] }),
-                /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-200 bg-sky-50/30 group/rf", children: [
+                /* @__PURE__ */ jsxs("tr", { className: "border-b border-gray-100 bg-sky-50/30 group/rf", children: [
                   /* @__PURE__ */ jsx("td", { className: `${T.totalCell} ${showClassificationColumns ? "" : T.vline}`, children: /* @__PURE__ */ jsx("span", { className: `${T.totalLabel} text-sky-700`, children: "Renta Fija" }) }),
                   showClassificationColumns && /* @__PURE__ */ jsxs(Fragment, { children: [
                     /* @__PURE__ */ jsx("td", { className: T.cellCompact }),
@@ -2021,7 +2019,7 @@ var useDragReorder2 = () => {
 var ClickableHeader = ({ onClick, borderColor, className, children }) => /* @__PURE__ */ jsx(
   "span",
   {
-    className: `whitespace-nowrap ${onClick ? `cursor-pointer select-none inline-flex items-center rounded-full border ${borderColor || "border-gray-300"} px-2 py-0.5 -mx-2 -my-0.5 transition-colors` : ""} ${className || ""}`,
+    className: `whitespace-nowrap ${onClick ? `cursor-pointer select-none inline-flex items-center gap-1 rounded-full border ${borderColor || "border-gray-300"} px-2 py-0.5 -mx-2 -my-0.5 transition-colors` : ""} ${className || ""}`,
     onClick: onClick ? (e) => {
       e.stopPropagation();
       onClick();
@@ -2137,6 +2135,7 @@ var DeudasTable = ({
       {
         colorScheme: colorSchemeProp,
         headerClassName: `border-t ${borderColor} ${headerText}`,
+        rowCount: activeRows.length,
         renderHeader: () => anySelected ? /* @__PURE__ */ jsx("th", { colSpan: 7, className: `${T.headerCell} text-left`, onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
           /* @__PURE__ */ jsxs("span", { className: "text-xs text-rose-600", children: [
             selectedRows.size,
@@ -2164,19 +2163,19 @@ var DeudasTable = ({
             }
           )
         ] }) }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-left ${T.th} ${headerText} ${T.vline}`, children: "Instituci\xF3n" }),
-          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-left ${T.th} ${headerText} ${T.vline}`, children: "Tipo Deuda" }),
-          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-right ${T.th} ${headerText} ${T.vline}`, children: canToggleSaldo ? /* @__PURE__ */ jsx(clickableheader_default, { onClick: () => setShowUF((prev) => !prev), borderColor, children: saldoLabel }) : saldoLabel }),
-          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-right ${T.th} ${headerText} ${T.vline}`, children: "Cuota $" }),
-          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-center ${T.th} ${headerText} ${T.vline}`, children: "%" }),
-          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-center ${T.th} ${headerText}`, children: "Cuotas" }),
+          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-left ${T.th} normal-case ${headerText} ${T.vline}`, children: "Instituci\xF3n" }),
+          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-left ${T.th} normal-case ${headerText} ${T.vline}`, children: "Tipo Deuda" }),
+          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-right ${T.th} normal-case ${headerText} ${T.vline}`, children: canToggleSaldo ? /* @__PURE__ */ jsx(clickableheader_default, { onClick: () => setShowUF((prev) => !prev), borderColor, children: saldoLabel }) : saldoLabel }),
+          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-right ${T.th} normal-case ${headerText} ${T.vline}`, children: "Cuota $" }),
+          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-center ${T.th} normal-case ${headerText} ${T.vline}`, children: "%" }),
+          /* @__PURE__ */ jsx("th", { className: `${T.headerCell} text-center ${T.th} normal-case ${headerText}`, children: "Cuotas" }),
           /* @__PURE__ */ jsx("th", { className: T.actionCol })
         ] }),
         renderFooter: () => /* @__PURE__ */ jsxs("tr", { className: "font-semibold text-xs", children: [
-          /* @__PURE__ */ jsx("td", { colSpan: 2, className: `${T.totalCell} ${T.totalLabel} border-t border-gray-200`, children: "TOTAL" }),
-          /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} border-t border-gray-200`, children: showUF ? totalSaldoUF ? totalSaldoUF.toLocaleString("es-CL", { maximumFractionDigits: 2 }) : "" : totalSaldoPesos ? formatCurrency(totalSaldoPesos) : "" }),
-          /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} border-t border-gray-200`, children: totalMontoCuota ? formatCurrency(totalMontoCuota) : "" }),
-          /* @__PURE__ */ jsx("td", { colSpan: 3, className: "border-t border-gray-200" })
+          /* @__PURE__ */ jsx("td", { colSpan: 2, className: `${T.totalCell} ${T.totalLabel} border-t border-gray-100`, children: "TOTAL" }),
+          /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} border-t border-gray-100`, children: showUF ? totalSaldoUF ? totalSaldoUF.toLocaleString("es-CL", { maximumFractionDigits: 2 }) : "" : totalSaldoPesos ? formatCurrency(totalSaldoPesos) : "" }),
+          /* @__PURE__ */ jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} border-t border-gray-100`, children: totalMontoCuota ? formatCurrency(totalMontoCuota) : "" }),
+          /* @__PURE__ */ jsx("td", { colSpan: 3, className: "border-t border-gray-100" })
         ] }),
         renderAfterContent: () => /* @__PURE__ */ jsx(recyclebin_default, { deletedRows, getLabel: (r) => r.institucion, onRestore: restoreRow }),
         children: [
@@ -2401,18 +2400,18 @@ var DeudasTable = ({
 };
 var deudas_default = DeudasTable;
 var SHORT_MONTHS = {
-  enero: "ENE",
-  febrero: "FEB",
-  marzo: "MAR",
-  abril: "ABR",
-  mayo: "MAY",
-  junio: "JUN",
-  julio: "JUL",
-  agosto: "AGO",
-  septiembre: "SEP",
-  octubre: "OCT",
-  noviembre: "NOV",
-  diciembre: "DIC"
+  enero: "Ene",
+  febrero: "Feb",
+  marzo: "Mar",
+  abril: "Abr",
+  mayo: "May",
+  junio: "Jun",
+  julio: "Jul",
+  agosto: "Ago",
+  septiembre: "Sep",
+  octubre: "Oct",
+  noviembre: "Nov",
+  diciembre: "Dic"
 };
 var METRICS = [
   { key: "bruto", label: "Honor. Bruto", color: "text-gray-800", format: (v) => displayCurrencyCompact(v) },
@@ -2428,33 +2427,32 @@ var BoletasTable = ({
   sourceFileIds,
   onViewSource,
   excludedMonths,
-  onToggleMonth
+  onToggleMonth,
+  onToggleAll
 }) => {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp);
   const excluded = excludedMonths ?? [];
+  const allExcluded = months.length > 0 && months.every((m) => excluded.includes(m.periodo));
   return /* @__PURE__ */ jsx(
     tableshell_default,
     {
       headerBg,
       renderHeader: () => /* @__PURE__ */ jsxs(Fragment, { children: [
-        /* @__PURE__ */ jsx("td", { className: `${T.headerAccordion} text-left ${T.vline}`, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx("span", { className: `${headerText} ${T.headerTitle}`, children: title }),
+        /* @__PURE__ */ jsx("td", { className: `${T.headerAccordion} text-left ${T.vline} ${allExcluded ? "opacity-35" : ""}`, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx(clickableheader_default, { onClick: onToggleAll, borderColor, children: /* @__PURE__ */ jsx("span", { className: `${headerText} ${T.headerTitle}`, children: title }) }),
           /* @__PURE__ */ jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
         ] }) }),
         months.map((m) => {
           const isExcluded = excluded.includes(m.periodo);
           const canToggle = !!onToggleMonth;
           const hasValue = m.hasData && m.liquido != null;
-          const label = SHORT_MONTHS[m.mes] || m.mes.slice(0, 3).toUpperCase();
+          const label = SHORT_MONTHS[m.mes] || m.mes.charAt(0).toUpperCase() + m.mes.slice(1, 3);
           return /* @__PURE__ */ jsx(
             "td",
             {
               className: `${T.headerAccordionStat} ${isExcluded ? "opacity-35 line-through" : ""}`,
               children: /* @__PURE__ */ jsxs(clickableheader_default, { onClick: canToggle ? () => onToggleMonth(m.periodo) : void 0, borderColor, children: [
-                /* @__PURE__ */ jsxs("span", { className: `${headerText} ${T.headerStatLabel}`, children: [
-                  label,
-                  ": "
-                ] }),
+                /* @__PURE__ */ jsx("span", { className: `${headerText} ${T.headerStatLabel}`, children: label }),
                 /* @__PURE__ */ jsx("span", { className: `${T.headerStat} ${hasValue ? headerText : "text-gray-400"}`, children: hasValue ? displayCurrencyCompact(m.liquido) : "\u2014" })
               ] })
             },
@@ -2774,6 +2772,7 @@ function AssetTable({
       {
         colorScheme: colorSchemeProp,
         headerClassName: `border-t ${borderColor} ${headerText}`,
+        rowCount: activeRows.length,
         renderHeader: () => /* @__PURE__ */ jsxs(Fragment, { children: [
           resolvedColumns.map((col, i) => {
             const effectiveAlign = col.align ?? (col.type === "currency" || col.type === "number" ? "right" : "left");
@@ -2784,7 +2783,8 @@ function AssetTable({
             return /* @__PURE__ */ jsx(
               "th",
               {
-                className: `${T.headerCell} ${effectiveAlign === "right" ? "text-right" : effectiveAlign === "center" ? "text-center" : "text-left"} ${T.th} ${headerText} ${vline}`,
+                style: col.width ? { width: col.width } : void 0,
+                className: `${T.headerCell} ${effectiveAlign === "right" ? "text-right" : effectiveAlign === "center" ? "text-center" : "text-left"} ${T.th} normal-case ${headerText} ${vline}`,
                 children: isToggleable ? /* @__PURE__ */ jsx(clickableheader_default, { onClick: () => toggleColumn(origCol.key), borderColor, children: label }) : label
               },
               col.key
@@ -2795,14 +2795,14 @@ function AssetTable({
         renderFooter: () => /* @__PURE__ */ jsxs("tr", { className: "font-semibold text-xs", children: [
           resolvedColumns.map((col) => {
             if (col.isLabel) {
-              return /* @__PURE__ */ jsx("td", { className: `${T.totalCell} ${T.totalLabel} border-t border-gray-200`, children: "TOTAL" }, col.key);
+              return /* @__PURE__ */ jsx("td", { className: `${T.totalCell} ${T.totalLabel} border-t border-gray-100`, children: "TOTAL" }, col.key);
             }
             if (col.type === "text") {
-              return /* @__PURE__ */ jsx("td", { className: `${T.totalCell} border-t border-gray-200` }, col.key);
+              return /* @__PURE__ */ jsx("td", { className: `${T.totalCell} border-t border-gray-100` }, col.key);
             }
-            return /* @__PURE__ */ jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} border-t border-gray-200`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "" }, col.key);
+            return /* @__PURE__ */ jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} border-t border-gray-100`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "" }, col.key);
           }),
-          /* @__PURE__ */ jsx("td", { className: "border-t border-gray-200" })
+          /* @__PURE__ */ jsx("td", { className: "border-t border-gray-100" })
         ] }),
         renderAfterContent: () => /* @__PURE__ */ jsx(
           recyclebin_default,
@@ -2847,15 +2847,16 @@ function AssetTable({
                     }
                     if (col.type === "text") {
                       const isRight = col.align === "right";
-                      const textAlign = isRight ? "text-right" : col.align === "center" ? "text-center" : "text-left";
+                      const isCenter = col.align === "center";
+                      const textAlign = isRight ? "text-right" : isCenter ? "text-center" : "text-left";
                       return /* @__PURE__ */ jsx("td", { className: `${T.cellEdit} ${vline}`, children: /* @__PURE__ */ jsx(
                         "input",
                         {
                           type: "text",
                           value: row[col.key] || "",
                           onChange: (e) => updateField(row.id, col.key, e.target.value),
-                          className: `w-full ${T.input} ${textAlign} pl-1`,
-                          style: isRight ? { padding: 0 } : void 0,
+                          className: `w-full ${T.input} ${textAlign} ${!isRight && !isCenter ? "pl-1" : ""}`,
+                          style: isRight || isCenter ? { padding: 0 } : void 0,
                           placeholder: col.placeholder || col.label
                         }
                       ) }, col.key);
@@ -2888,7 +2889,8 @@ function AssetTable({
               }
               if (col.type === "text") {
                 const isAddRight = col.align === "right";
-                const addTextAlign = isAddRight ? "text-right" : col.align === "center" ? "text-center" : "text-left";
+                const isAddCenter = col.align === "center";
+                const addTextAlign = isAddRight ? "text-right" : isAddCenter ? "text-center" : "text-left";
                 return /* @__PURE__ */ jsx("td", { className: `${T.cellEdit} ${vline}`, children: /* @__PURE__ */ jsx(
                   "input",
                   {
@@ -2897,7 +2899,7 @@ function AssetTable({
                     value: newRowValues[col.key] || "",
                     onChange: (e) => setNewRowValues((prev) => ({ ...prev, [col.key]: e.target.value })),
                     className: `w-full ${T.inputPlaceholder} ${addTextAlign}`,
-                    style: isAddRight ? { padding: 0 } : void 0
+                    style: isAddRight || isAddCenter ? { padding: 0 } : void 0
                   }
                 ) }, col.key);
               }
@@ -2924,10 +2926,10 @@ function AssetTable({
 }
 var assettable_default = AssetTable;
 var columns = [
-  { key: "marca", label: "Marca", type: "text", isLabel: true, placeholder: "Marca" },
-  { key: "modelo", label: "Modelo", type: "text", placeholder: "Modelo" },
-  { key: "anio", label: "A\xF1o", type: "number", align: "center" },
-  { key: "monto", label: "Monto $", type: "currency" }
+  { key: "marca", label: "Marca", type: "text", width: "30%", isLabel: true, placeholder: "Marca" },
+  { key: "modelo", label: "Modelo", type: "text", width: "30%", placeholder: "Modelo" },
+  { key: "anio", label: "A\xF1o", type: "number", width: "20%", align: "center" },
+  { key: "monto", label: "Monto $", type: "currency", width: "20%" }
 ];
 var VehiculosTable = ({
   rows,
@@ -2954,10 +2956,10 @@ var VehiculosTable = ({
 );
 var vehiculos_default = VehiculosTable;
 var columns2 = [
-  { key: "institucion", label: "Instituci\xF3n", type: "text", isLabel: true, placeholder: "Instituci\xF3n" },
-  { key: "tipo", label: "Tipo Inversi\xF3n", type: "text", placeholder: "Tipo" },
-  { key: "fecha", label: "Fecha", type: "text", align: "right", placeholder: "-" },
-  { key: "monto", label: "Monto $", type: "currency" }
+  { key: "institucion", label: "Instituci\xF3n", type: "text", width: "30%", isLabel: true, placeholder: "Instituci\xF3n" },
+  { key: "tipo", label: "Tipo Inversi\xF3n", type: "text", width: "30%", placeholder: "Tipo" },
+  { key: "fecha", label: "Fecha", type: "text", width: "20%", align: "center", placeholder: "-" },
+  { key: "monto", label: "Monto $", type: "currency", width: "20%" }
 ];
 var InversionesTable = ({
   rows,
@@ -2995,13 +2997,14 @@ var PropiedadesTable = ({
   headerText,
   title
 }) => {
-  const columns3 = [
-    { key: "direccion", label: "Direcci\xF3n", type: "text", isLabel: true, placeholder: "Direcci\xF3n" },
-    { key: "comuna", label: "Comuna", type: "text", placeholder: "Comuna" },
+  const columns3 = useMemo(() => [
+    { key: "direccion", label: "Direcci\xF3n", type: "text", width: "30%", isLabel: true, placeholder: "Direcci\xF3n" },
+    { key: "comuna", label: "Comuna", type: "text", width: "25%", placeholder: "Comuna" },
     {
       key: "valor_pesos",
       label: "Valor $",
       type: "currency",
+      width: "15%",
       ufPair: "valor_uf",
       ufPairLabel: "Valor UF",
       ufPairType: "number",
@@ -3011,6 +3014,7 @@ var PropiedadesTable = ({
       key: "arriendo_real",
       label: "Arr. Real $",
       type: "currency",
+      width: "15%",
       ufPair: "arriendo_real_uf",
       ufPairLabel: "Arr. Real UF",
       ufPairType: "number"
@@ -3019,12 +3023,13 @@ var PropiedadesTable = ({
       key: "arriendo_futuro",
       label: "Arr. Fut $",
       type: "currency",
+      width: "15%",
       ufPair: "arriendo_futuro_uf",
       ufPairLabel: "Arr. Fut UF",
       ufPairType: "number",
       autoComputedClass: (row) => ufValue && row.valor_uf != null ? "text-amber-500" : ""
     }
-  ];
+  ], [ufValue]);
   const conversionRules = useMemo(() => ufValue ? [
     { source: "valor_uf", target: "valor_pesos", formula: (v) => v * ufValue, precision: 0 },
     { source: "valor_pesos", target: "valor_uf", formula: (v) => v / ufValue, precision: 2 },
@@ -3174,6 +3179,7 @@ var DeclaracionTable = ({
     {
       headerBg,
       headerClassName: `border-b ${borderColor}`,
+      rowCount: rows.length,
       renderHeader: () => /* @__PURE__ */ jsxs(Fragment, { children: [
         /* @__PURE__ */ jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1.5", children: [
           "Concepto",
@@ -3183,13 +3189,13 @@ var DeclaracionTable = ({
         columns3.map((col, i) => /* @__PURE__ */ jsx("th", { className: `text-right ${T.cell} font-medium ${headerText} ${i < columns3.length - 1 ? T.vline : ""}`, children: col.label }, col.key))
       ] }),
       renderFooter: totalLabel ? () => /* @__PURE__ */ jsxs("tr", { className: "font-semibold", children: [
-        /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-800 border-t border-gray-200`, children: totalLabel }),
-        showCodeColumn && /* @__PURE__ */ jsx("td", { className: `${T.cell} border-t border-gray-200` }),
+        /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-800 border-t border-gray-100`, children: totalLabel }),
+        showCodeColumn && /* @__PURE__ */ jsx("td", { className: `${T.cell} border-t border-gray-100` }),
         columns3.map((col) => {
           const summedRows = rows.filter((r) => r.summed);
           const hasAny = summedRows.some((r) => data[r.key]?.[col.key] != null);
           const sum = summedRows.reduce((acc, r) => acc + (data[r.key]?.[col.key] ?? 0), 0);
-          return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} text-gray-900 border-t border-gray-200`, children: hasAny ? formatCurrency(sum) : "\u2014" }, col.key);
+          return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} text-gray-900 border-t border-gray-100`, children: hasAny ? formatCurrency(sum) : "\u2014" }, col.key);
         })
       ] }) : void 0,
       children: rows.map((row) => /* @__PURE__ */ jsxs("tr", { className: T.row, children: [

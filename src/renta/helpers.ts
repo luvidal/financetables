@@ -5,7 +5,7 @@ import type { RowData, RowType, Month } from './types'
 // Month generation
 // ============================================================================
 
-const MONTH_NAMES = ['', 'ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']
+const MONTH_NAMES = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
 export const generateLastNMonths = (count: number): Month[] => {
     const months: Month[] = []

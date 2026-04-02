@@ -19,7 +19,7 @@ function RecycleBin<T extends RecycleBinRow>({ deletedRows, getLabel, onRestore,
     if (deletedRows.length === 0) return null
 
     return (
-        <div className="border-t border-gray-200 bg-gray-50/50">
+        <div className="border-t border-gray-100 bg-gray-50/50">
             <button
                 onClick={() => setExpanded(!expanded)}
                 className="w-full px-4 py-2 flex items-center gap-2 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 transition-colors"

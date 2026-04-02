@@ -7,6 +7,8 @@ export interface ColumnDef {
     key: string
     label: string
     type: 'text' | 'currency' | 'number'
+    /** Column width hint (e.g. '30%') — applied on <th>, browser distributes proportionally */
+    width?: string
     align?: 'left' | 'right' | 'center'
     placeholder?: string
     isLabel?: boolean

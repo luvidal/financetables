@@ -101,7 +101,7 @@ const ReliqInfoTooltip = ({ data, type }: { data: ReliquidacionBreakdown; type: 
 
 const RentaTable = ({
     title,
-    months = 3,
+    months = 6,
     rows,
     onRowsChange,
     sections,
@@ -414,7 +414,7 @@ const RentaTable = ({
                                 const hasValue = total !== 0
                                 return (
                                     <td key={p.id} className={`${T.headerAccordionStat}`}>
-                                        <span className={`${headerText} ${T.headerStatLabel}`}>{p.label}: </span>
+                                        <span className={`${headerText} ${T.headerStatLabel} mr-1`}>{p.label}</span>
                                         <span className={`${T.headerStat} ${hasValue ? headerText : 'text-gray-400'}`}>
                                             {hasValue ? formatValue(total) : '—'}
                                         </span>
@@ -531,25 +531,25 @@ const RentaTable = ({
                                 const label = isSubtract ? 'Total descuentos' : 'Total haberes'
                                 return (
                                     <tr className={`${isSubtract ? 'bg-red-50/30' : 'bg-emerald-50/30'}`}>
-                                        <td className={`${T.totalCell} border-b border-gray-200 ${showClassificationColumns ? '' : T.vline}`}>
+                                        <td className={`${T.totalCell} border-b border-gray-100 ${showClassificationColumns ? '' : T.vline}`}>
                                             <span className="font-semibold text-xs text-gray-500">{label}</span>
                                         </td>
-                                        {showClassificationColumns && <><td className={`${T.cellCompact} border-b border-gray-200`} /><td className={`${T.cellCompact} border-b border-gray-200 ${T.vline}`} /></>}
-                                        {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} border-b border-gray-200 ${T.vline}`} />}
+                                        {showClassificationColumns && <><td className={`${T.cellCompact} border-b border-gray-100`} /><td className={`${T.cellCompact} border-b border-gray-100 ${T.vline}`} /></>}
+                                        {showVariableColumn && !showClassificationColumns && <td className={`${T.cellCompact} border-b border-gray-100 ${T.vline}`} />}
                                         {monthsArray.map((p, mi) => {
                                             const value = subtotals[p.id] ?? 0
                                             const hasValue = value !== 0
                                             const display = isSubtract ? `-${formatValue(value)}` : formatValue(value)
                                             const vline = mi < monthsArray.length - 1 ? T.vline : ''
                                             return (
-                                                <td key={p.id} className={`${T.totalCell} text-right border-b border-gray-200 ${vline}`}>
+                                                <td key={p.id} className={`${T.totalCell} text-right border-b border-gray-100 ${vline}`}>
                                                     <span className={`font-semibold text-xs tabular-nums ${hasValue ? 'text-gray-500' : 'text-gray-300'}`}>
                                                         {hasValue ? display : '—'}
                                                     </span>
                                                 </td>
                                             )
                                         })}
-                                        <td className={`${T.actionCol} border-b border-gray-200`} />
+                                        <td className={`${T.actionCol} border-b border-gray-100`} />
                                     </tr>
                                 )
                             })()}
@@ -595,7 +595,7 @@ const RentaTable = ({
                                 <td className={T.actionCol} />
                             </tr>
                             {/* Renta Fija */}
-                            <tr className="border-b border-gray-200 bg-sky-50/30 group/rf">
+                            <tr className="border-b border-gray-100 bg-sky-50/30 group/rf">
                                 <td className={`${T.totalCell} ${showClassificationColumns ? '' : T.vline}`}>
                                     <span className={`${T.totalLabel} text-sky-700`}>Renta Fija</span>
                                 </td>

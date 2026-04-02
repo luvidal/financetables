@@ -17,24 +17,24 @@ const PropiedadesTable = ({
     headerText,
     title,
 }: PropiedadesTableProps) => {
-    const columns: ColumnDef[] = [
-        { key: 'direccion', label: 'Dirección', type: 'text', isLabel: true, placeholder: 'Dirección' },
-        { key: 'comuna', label: 'Comuna', type: 'text', placeholder: 'Comuna' },
+    const columns: ColumnDef[] = useMemo(() => [
+        { key: 'direccion', label: 'Dirección', type: 'text', width: '30%', isLabel: true, placeholder: 'Dirección' },
+        { key: 'comuna', label: 'Comuna', type: 'text', width: '25%', placeholder: 'Comuna' },
         {
-            key: 'valor_pesos', label: 'Valor $', type: 'currency',
+            key: 'valor_pesos', label: 'Valor $', type: 'currency', width: '15%',
             ufPair: 'valor_uf', ufPairLabel: 'Valor UF', ufPairType: 'number',
             autoComputedClass: (row) => (ufValue && row.valor_uf != null && row.valor_pesos != null) ? 'text-amber-500' : '',
         },
         {
-            key: 'arriendo_real', label: 'Arr. Real $', type: 'currency',
+            key: 'arriendo_real', label: 'Arr. Real $', type: 'currency', width: '15%',
             ufPair: 'arriendo_real_uf', ufPairLabel: 'Arr. Real UF', ufPairType: 'number',
         },
         {
-            key: 'arriendo_futuro', label: 'Arr. Fut $', type: 'currency',
+            key: 'arriendo_futuro', label: 'Arr. Fut $', type: 'currency', width: '15%',
             ufPair: 'arriendo_futuro_uf', ufPairLabel: 'Arr. Fut UF', ufPairType: 'number',
             autoComputedClass: (row) => (ufValue && row.valor_uf != null) ? 'text-amber-500' : '',
         },
-    ]
+    ], [ufValue])
 
     const conversionRules: AutoConvertRule[] = useMemo(() => ufValue ? [
         { source: 'valor_uf', target: 'valor_pesos', formula: (v: number) => v * ufValue, precision: 0 },

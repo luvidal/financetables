@@ -143,6 +143,7 @@ const DeudasTable = ({
             <TableShell
                 colorScheme={colorSchemeProp}
                 headerClassName={`border-t ${borderColor} ${headerText}`}
+                rowCount={activeRows.length}
                 renderHeader={() => (
                     anySelected ? (
                         <th colSpan={7} className={`${T.headerCell} text-left`} onClick={e => e.stopPropagation()}>
@@ -168,34 +169,34 @@ const DeudasTable = ({
                         </th>
                     ) : (
                         <>
-                            <th className={`${T.headerCell} text-left ${T.th} ${headerText} ${T.vline}`}>Institución</th>
-                            <th className={`${T.headerCell} text-left ${T.th} ${headerText} ${T.vline}`}>Tipo Deuda</th>
-                            <th className={`${T.headerCell} text-right ${T.th} ${headerText} ${T.vline}`}>
+                            <th className={`${T.headerCell} text-left ${T.th} normal-case ${headerText} ${T.vline}`}>Institución</th>
+                            <th className={`${T.headerCell} text-left ${T.th} normal-case ${headerText} ${T.vline}`}>Tipo Deuda</th>
+                            <th className={`${T.headerCell} text-right ${T.th} normal-case ${headerText} ${T.vline}`}>
                                 {canToggleSaldo ? (
                                     <ClickableHeader onClick={() => setShowUF(prev => !prev)} borderColor={borderColor}>
                                         {saldoLabel}
                                     </ClickableHeader>
                                 ) : saldoLabel}
                             </th>
-                            <th className={`${T.headerCell} text-right ${T.th} ${headerText} ${T.vline}`}>Cuota $</th>
-                            <th className={`${T.headerCell} text-center ${T.th} ${headerText} ${T.vline}`}>%</th>
-                            <th className={`${T.headerCell} text-center ${T.th} ${headerText}`}>Cuotas</th>
+                            <th className={`${T.headerCell} text-right ${T.th} normal-case ${headerText} ${T.vline}`}>Cuota $</th>
+                            <th className={`${T.headerCell} text-center ${T.th} normal-case ${headerText} ${T.vline}`}>%</th>
+                            <th className={`${T.headerCell} text-center ${T.th} normal-case ${headerText}`}>Cuotas</th>
                             <th className={T.actionCol}></th>
                         </>
                     )
                 )}
                 renderFooter={() => (
                     <tr className="font-semibold text-xs">
-                        <td colSpan={2} className={`${T.totalCell} ${T.totalLabel} border-t border-gray-200`}>TOTAL</td>
-                        <td className={`${T.totalCell} text-right ${T.totalValue} border-t border-gray-200`}>
+                        <td colSpan={2} className={`${T.totalCell} ${T.totalLabel} border-t border-gray-100`}>TOTAL</td>
+                        <td className={`${T.totalCell} text-right ${T.totalValue} border-t border-gray-100`}>
                             {showUF
                                 ? (totalSaldoUF ? totalSaldoUF.toLocaleString('es-CL', { maximumFractionDigits: 2 }) : '')
                                 : (totalSaldoPesos ? formatCurrency(totalSaldoPesos) : '')}
                         </td>
-                        <td className={`${T.totalCell} text-right ${T.totalValue} border-t border-gray-200`}>
+                        <td className={`${T.totalCell} text-right ${T.totalValue} border-t border-gray-100`}>
                             {totalMontoCuota ? formatCurrency(totalMontoCuota) : ''}
                         </td>
-                        <td colSpan={3} className="border-t border-gray-200"></td>
+                        <td colSpan={3} className="border-t border-gray-100"></td>
                     </tr>
                 )}
                 renderAfterContent={() => (
