@@ -72,7 +72,7 @@ const TableShell = ({
     const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp)
 
     return (
-        <div className={`border-y border-gray-200 mb-4 sm:mb-6 ${className || ''}`}>
+        <div className={`border-t border-gray-200 mb-4 sm:mb-6 ${className || ''}`}>
             <table className={T.table}>
                 <thead>
                     <tr className={`${headerBg} ${headerClassName || ''} group/header`}>

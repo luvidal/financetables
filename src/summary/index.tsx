@@ -30,7 +30,7 @@ const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, col
           {rows.map((row, idx) => {
             if (row.type === 'subheader') {
               return (
-                <tr key={idx} className={`border-b-2 ${colors.border}`}>
+                <tr key={idx} className={`border-b-2 ${colors.bg} ${colors.border}`}>
                   <td className={`${T.cell} ${T.th} font-bold ${colors.text} tracking-wider ${T.vline}`}>{row.label}</td>
                   {extraColumn && (
                     <td className={`${T.cell} ${T.th} text-right font-bold ${colors.text} ${T.vline}`}>{extraColumn.header}</td>

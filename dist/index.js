@@ -109,7 +109,7 @@ var TableShell = ({
   renderAfterContent
 }) => {
   const { bg: headerBg } = resolveColors(colorSchemeProp, headerBgProp);
-  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `border-y border-gray-200 mb-4 sm:mb-6 ${className || ""}`, children: [
+  return /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `border-t border-gray-200 mb-4 sm:mb-6 ${className || ""}`, children: [
     /* @__PURE__ */ jsxRuntime.jsxs("table", { className: T.table, children: [
       /* @__PURE__ */ jsxRuntime.jsx("thead", { children: /* @__PURE__ */ jsxRuntime.jsx("tr", { className: `${headerBg} ${headerClassName || ""} group/header`, children: renderHeader() }) }),
       /* @__PURE__ */ jsxRuntime.jsx("tbody", { children }),
@@ -3137,7 +3137,7 @@ var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, color
   const colors = colorScheme ?? DEFAULT_SCHEME;
   return /* @__PURE__ */ jsxRuntime.jsx("div", { className: "overflow-x-auto border-y border-gray-200 mb-3 sm:mb-4", children: /* @__PURE__ */ jsxRuntime.jsx("table", { className: `${T.table} border-collapse`, children: /* @__PURE__ */ jsxRuntime.jsx("tbody", { children: rows.map((row, idx) => {
     if (row.type === "subheader") {
-      return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-b-2 ${colors.border}`, children: [
+      return /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-b-2 ${colors.bg} ${colors.border}`, children: [
         /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} ${T.th} font-bold ${colors.text} tracking-wider ${T.vline}`, children: row.label }),
         extraColumn && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} ${T.th} text-right font-bold ${colors.text} ${T.vline}`, children: extraColumn.header }),
         columnHeaders.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} ${T.th} text-right font-bold ${colors.text} ${i < columnHeaders.length - 1 ? T.vline : ""}`, children: col }, i))
