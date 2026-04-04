@@ -403,6 +403,33 @@ interface DeclaracionTableProps {
 
 declare const DeclaracionTable: ({ columns, rows, data, totalLabel, formatCurrency, colorScheme: colorSchemeProp, sourceFileIds, onViewSource, }: DeclaracionTableProps) => react_jsx_runtime.JSX.Element;
 
+interface BalanceRow {
+    id: string;
+    empresa: string;
+    rut: string;
+    periodo: string;
+    total_activos: number | null;
+    total_pasivos: number | null;
+    patrimonio: number | null;
+    total_ingresos: number | null;
+    total_gastos: number | null;
+    resultado: number | null;
+    sourceFileId?: string;
+}
+interface BalanceFieldDef {
+    key: keyof BalanceRow;
+    label: string;
+    type: 'text' | 'currency';
+}
+interface BalanceTableProps {
+    rows: BalanceRow[];
+    onRowsChange: (rows: BalanceRow[]) => void;
+    colorScheme?: ColorScheme;
+    onViewSource?: (fileIds: string[]) => void;
+}
+
+declare const BalanceTable: ({ rows, onRowsChange, colorScheme: colorSchemeProp, onViewSource, }: BalanceTableProps) => react_jsx_runtime.JSX.Element | null;
+
 interface EditableCellProps {
     value: number | string | null | undefined;
     onChange: (value: number | string | null) => void;
@@ -541,4 +568,4 @@ declare const ClickableHeader: ({ onClick, borderColor, className, children }: {
     children: React$1.ReactNode;
 }) => react_jsx_runtime.JSX.Element;
 
-export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, AssetTable, type AssetTableProps, type AutoComputeRule, type AutoConvertRule, type BoletaMonth, BoletasTable, type BoletasTableProps, ClickableHeader, type CodeudorIncomeInfo, type ColorScheme, type ColumnDef, DEFAULT_SCHEME, type DeclaracionColumn, type DeclaracionRow, DeclaracionTable, type DeclaracionTableProps, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, EditableCell, EditableField, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type InversionRow, InversionesTable, type InversionesTableProps, MONTH_LABELS, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, type SummaryRow, type SummaryRowFormat, type SummaryRowType, SummaryTable, type SummaryTableProps, TableShell, type TableShellProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, formatDeletedDate, generateId, generateLastNMonths, resolveColors, useSoftDelete };
+export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, AssetTable, type AssetTableProps, type AutoComputeRule, type AutoConvertRule, type BalanceFieldDef, type BalanceRow, BalanceTable, type BalanceTableProps, type BoletaMonth, BoletasTable, type BoletasTableProps, ClickableHeader, type CodeudorIncomeInfo, type ColorScheme, type ColumnDef, DEFAULT_SCHEME, type DeclaracionColumn, type DeclaracionRow, DeclaracionTable, type DeclaracionTableProps, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, EditableCell, EditableField, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type InversionRow, InversionesTable, type InversionesTableProps, MONTH_LABELS, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, type SummaryRow, type SummaryRowFormat, type SummaryRowType, SummaryTable, type SummaryTableProps, TableShell, type TableShellProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, formatDeletedDate, generateId, generateLastNMonths, resolveColors, useSoftDelete };

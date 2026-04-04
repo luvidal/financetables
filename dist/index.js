@@ -3218,6 +3218,106 @@ var DeclaracionTable = ({
   ) });
 };
 var declaracion_default = DeclaracionTable;
+var FIELD_ROWS = [
+  { key: "rut", label: "RUT", type: "text" },
+  { key: "periodo", label: "Per\xEDodo", type: "text" },
+  { key: "total_activos", label: "Activos", type: "currency" },
+  { key: "total_pasivos", label: "Pasivos", type: "currency" },
+  { key: "patrimonio", label: "Patrimonio", type: "currency" },
+  { key: "total_ingresos", label: "Ingresos", type: "currency" },
+  { key: "total_gastos", label: "Gastos", type: "currency" },
+  { key: "resultado", label: "Resultado", type: "currency" }
+];
+var CURRENCY_FIELDS = FIELD_ROWS.filter((f) => f.type === "currency");
+var BalanceTable = ({
+  rows,
+  onRowsChange,
+  colorScheme: colorSchemeProp,
+  onViewSource
+}) => {
+  const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp);
+  const { getHoverProps} = useRowHover();
+  const fieldIds = React3.useMemo(() => CURRENCY_FIELDS.map((f) => f.key), []);
+  const keyboard = useGridKeyboard({ visibleRowIds: fieldIds, colCount: rows.length });
+  const handleCellChange = (rowIdx, key, value) => {
+    const updated = [...rows];
+    updated[rowIdx] = { ...updated[rowIdx], [key]: value };
+    onRowsChange(updated);
+  };
+  if (rows.length === 0) return null;
+  return /* @__PURE__ */ jsxRuntime.jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none", children: /* @__PURE__ */ jsxRuntime.jsx(
+    tableshell_default,
+    {
+      headerBg,
+      headerClassName: `border-b ${borderColor} ${headerText}`,
+      rowCount: rows.length,
+      renderHeader: () => /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} ${T.vline} w-28` }),
+        rows.map((row, i) => /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-center ${T.headerCell} font-semibold ${headerText} min-w-[140px] ${i < rows.length - 1 ? T.vline : ""}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center justify-center gap-1", children: [
+          row.empresa || `Empresa ${i + 1}`,
+          row.sourceFileId && onViewSource && /* @__PURE__ */ jsxRuntime.jsx(
+            "button",
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                onViewSource([row.sourceFileId]);
+              },
+              className: "p-0.5 rounded hover:bg-white/50 transition-all opacity-0 group-hover/header:opacity-100 cursor-pointer",
+              title: "Ver documento fuente",
+              children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Eye, { size: 14, className: headerText })
+            }
+          )
+        ] }) }, row.id))
+      ] }),
+      children: FIELD_ROWS.map((field) => {
+        const isText = field.type === "text";
+        const isResultado = field.key === "resultado";
+        const isPatrimonio = field.key === "patrimonio";
+        const isSectionBreak = field.key === "total_activos" || field.key === "total_ingresos";
+        return /* @__PURE__ */ jsxRuntime.jsxs(
+          "tr",
+          {
+            className: `${T.rowBorder} ${!isText ? T.rowHover : ""} ${isSectionBreak ? "border-t border-gray-200" : ""} ${isPatrimonio || isResultado ? "bg-gray-50/60" : ""}`,
+            ...!isText ? getHoverProps(field.key) : {},
+            children: [
+              /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-right text-gray-500 font-medium whitespace-nowrap ${T.vline} ${isPatrimonio || isResultado ? "font-semibold text-gray-600" : ""}`, children: field.label }),
+              rows.map((row, colIdx) => {
+                const val = row[field.key];
+                const vline = colIdx < rows.length - 1 ? T.vline : "";
+                if (isText) {
+                  return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellValue} ${val ? "text-gray-700" : "text-gray-400"} ${vline}`, children: val || "\u2014" }, row.id);
+                }
+                const numVal = val;
+                const isNegative = typeof numVal === "number" && numVal < 0;
+                const colorClass = isNegative ? "text-red-600" : "";
+                const weightClass = isPatrimonio || isResultado ? "font-semibold" : "";
+                return /* @__PURE__ */ jsxRuntime.jsx(
+                  editablecell_default,
+                  {
+                    value: numVal,
+                    onChange: (v) => handleCellChange(colIdx, field.key, v),
+                    type: "currency",
+                    hasData: numVal != null,
+                    className: `${vline} ${colorClass} ${weightClass}`,
+                    focused: keyboard.isFocused(field.key, colIdx),
+                    onCellFocus: () => keyboard.focus(field.key, colIdx),
+                    onNavigate: keyboard.navigate,
+                    requestEdit: keyboard.isFocused(field.key, colIdx) ? keyboard.editTrigger : 0,
+                    requestClear: keyboard.isFocused(field.key, colIdx) ? keyboard.clearTrigger : 0,
+                    editInitialValue: keyboard.isFocused(field.key, colIdx) ? keyboard.editInitialValue : void 0
+                  },
+                  row.id
+                );
+              })
+            ]
+          },
+          field.key
+        );
+      })
+    }
+  ) });
+};
+var balance_default = BalanceTable;
 function EditableField({
   value,
   onChange,
@@ -3243,6 +3343,7 @@ function EditableField({
 
 exports.ActivosSummary = activossummary_default;
 exports.AssetTable = assettable_default;
+exports.BalanceTable = balance_default;
 exports.BoletasTable = boletas_default;
 exports.ClickableHeader = clickableheader_default;
 exports.DEFAULT_SCHEME = DEFAULT_SCHEME;

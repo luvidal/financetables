@@ -43,6 +43,10 @@ export type { SummaryRow, SummaryRowType, SummaryRowFormat, SummaryTableProps } 
 export { default as DeclaracionTable } from './declaracion'
 export type { DeclaracionColumn, DeclaracionRow, DeclaracionTableProps } from './declaracion/types'
 
+// BalanceTable
+export { default as BalanceTable } from './balance'
+export type { BalanceRow, BalanceFieldDef, BalanceTableProps } from './balance/types'
+
 // ColorScheme
 export { DEFAULT_SCHEME, resolveColors } from './common/colors'
 export type { ColorScheme } from './common/colors'
