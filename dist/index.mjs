@@ -3216,11 +3216,12 @@ var FIELD_ROWS = [
   { key: "total_activos", label: "Activos", type: "currency" },
   { key: "total_pasivos", label: "Pasivos", type: "currency" },
   { key: "patrimonio", label: "Patrimonio", type: "currency" },
+  { key: "participacion", label: "Participaci\xF3n", type: "percent" },
   { key: "total_ingresos", label: "Ingresos", type: "currency" },
   { key: "total_gastos", label: "Gastos", type: "currency" },
   { key: "resultado", label: "Resultado", type: "currency" }
 ];
-var CURRENCY_FIELDS = FIELD_ROWS.filter((f) => f.type === "currency");
+var EDITABLE_FIELDS = FIELD_ROWS.filter((f) => f.type === "currency" || f.type === "percent");
 var BalanceTable = ({
   rows,
   onRowsChange,
@@ -3229,7 +3230,7 @@ var BalanceTable = ({
 }) => {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp);
   const { getHoverProps} = useRowHover();
-  const fieldIds = useMemo(() => CURRENCY_FIELDS.map((f) => f.key), []);
+  const fieldIds = useMemo(() => EDITABLE_FIELDS.map((f) => f.key), []);
   const keyboard = useGridKeyboard({ visibleRowIds: fieldIds, colCount: rows.length });
   const handleCellChange = (rowIdx, key, value) => {
     const updated = [...rows];
@@ -3288,7 +3289,7 @@ var BalanceTable = ({
                   {
                     value: numVal,
                     onChange: (v) => handleCellChange(colIdx, field.key, v),
-                    type: "currency",
+                    type: field.type,
                     hasData: numVal != null,
                     className: `${vline} ${colorClass} ${weightClass}`,
                     focused: keyboard.isFocused(field.key, colIdx),

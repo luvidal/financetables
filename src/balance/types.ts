@@ -11,13 +11,14 @@ export interface BalanceRow {
   total_ingresos: number | null
   total_gastos: number | null
   resultado: number | null
+  participacion?: number | null
   sourceFileId?: string
 }
 
 export interface BalanceFieldDef {
   key: keyof BalanceRow
   label: string
-  type: 'text' | 'currency'
+  type: 'text' | 'currency' | 'percent'
 }
 
 export interface BalanceTableProps {
