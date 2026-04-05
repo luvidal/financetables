@@ -45,7 +45,7 @@ export type { DeclaracionColumn, DeclaracionRow, DeclaracionTableProps } from '.
 
 // BalanceTable
 export { default as BalanceTable } from './balance'
-export type { BalanceRow, BalanceFieldDef, BalanceTableProps } from './balance/types'
+export type { BalanceRow, BalanceTableProps } from './balance/types'
 
 // ColorScheme
 export { DEFAULT_SCHEME, resolveColors } from './common/colors'

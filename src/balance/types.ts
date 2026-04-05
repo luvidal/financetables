@@ -15,12 +15,6 @@ export interface BalanceRow {
   sourceFileId?: string
 }
 
-export interface BalanceFieldDef {
-  key: keyof BalanceRow
-  label: string
-  type: 'text' | 'currency' | 'percent'
-}
-
 export interface BalanceTableProps {
   rows: BalanceRow[]
   onRowsChange: (rows: BalanceRow[]) => void
