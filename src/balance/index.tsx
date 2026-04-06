@@ -13,6 +13,7 @@ import EditableCell from '../common/editablecell'
 import EditableField from '../common/editablefield'
 import { useGridKeyboard } from '../common/usegridkeyboard'
 import { useRowHover } from '../common/userowhover'
+import { ORIGIN_CLASSES } from '../common/cellorigin'
 import type { BalanceRow, BalanceTableProps } from './types'
 
 const CURRENCY_KEYS: (keyof BalanceRow)[] = [
@@ -50,6 +51,7 @@ const BalanceTable = ({
     onRowsChange,
     colorScheme: colorSchemeProp,
     onViewSource,
+    getCellOriginClass,
 }: BalanceTableProps) => {
     const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp)
     const { getHoverProps } = useRowHover()
@@ -147,6 +149,7 @@ const BalanceTable = ({
                                                 type="currency"
                                                 hasData={val != null}
                                                 className={`${!isLast ? T.vline : ''} ${isNeg ? 'text-red-600' : ''} ${isBold ? 'font-semibold' : ''}`}
+                                                originClass={getCellOriginClass?.(row.id, key as string)}
                                                 focused={keyboard.isFocused(row.id, colIdx)}
                                                 onCellFocus={() => keyboard.focus(row.id, colIdx)}
                                                 onNavigate={keyboard.navigate}
@@ -164,6 +167,7 @@ const BalanceTable = ({
                                         <EditableField
                                             value={participacion}
                                             onChange={(v) => handleChange(rowIdx, 'participacion', v)}
+                                            originClass={getCellOriginClass?.(row.id, 'participacion')}
                                         />
                                     </td>
                                     {CURRENCY_KEYS.map(key => {
@@ -177,7 +181,7 @@ const BalanceTable = ({
                                         return (
                                             <td
                                                 key={key}
-                                                className={`${T.cellValue} ${!isLast ? T.vline : ''} ${isNeg ? 'text-red-600' : ''} ${isBold ? 'font-semibold' : ''}`}
+                                                className={`${T.cellValue} ${!isLast ? T.vline : ''} ${isNeg ? 'text-red-600' : ORIGIN_CLASSES.calculated} ${isBold ? 'font-semibold' : ''}`}
                                             >
                                                 {propVal != null ? displayCurrencyCompact(propVal) : '—'}
                                             </td>

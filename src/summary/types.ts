@@ -22,4 +22,6 @@ export interface SummaryTableProps {
   }
   /** Rendered after the label text (e.g., warning icon) */
   renderLabelSuffix?: (row: SummaryRow, index: number) => ReactNode
+  /** Cell origin color class callback — receives row and column indices */
+  getCellOriginClass?: (rowIndex: number, colIndex: number) => string | undefined
 }

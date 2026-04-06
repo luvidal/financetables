@@ -12,6 +12,8 @@ import { useSoftDelete } from '../common/usesoftdelete'
 import DeleteDialog from '../common/deletedialog'
 import RecycleBin from '../common/recyclebin'
 import ClickableHeader from '../common/clickableheader'
+import ViewSourceButton from '../common/viewsourcebutton'
+import { ORIGIN_CLASSES } from '../common/cellorigin'
 import type { AssetRow, AssetTableProps, ColumnDef } from './types'
 
 function AssetTable<T extends AssetRow>({
@@ -28,6 +30,8 @@ function AssetTable<T extends AssetRow>({
     ufValue,
     conversionRules = [],
     computeRules = [],
+    onViewSource,
+    getCellOriginClass,
 }: AssetTableProps<T>) {
     const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp)
     const { getHoverProps, isHovered } = useRowHover()
@@ -117,7 +121,9 @@ function AssetTable<T extends AssetRow>({
     const renderEditableCell = (row: T, col: ColumnDef, vline = '') => {
         const colIdx = editableColIndex(col)
         const value = row[col.key] as number | null
-        const autoClass = col.autoComputedClass?.(row) || ''
+        const originClass = col.autoComputedClass?.(row)
+            ? ORIGIN_CLASSES.calculated
+            : getCellOriginClass?.(row.id, col.key)
         return (
             <EditableCell
                 key={col.key}
@@ -126,7 +132,8 @@ function AssetTable<T extends AssetRow>({
                 type={col.type as 'currency' | 'number'}
                 hasData={value !== null}
                 align={col.align}
-                className={`${autoClass} ${vline}`}
+                className={vline}
+                originClass={originClass}
                 focused={keyboard.isFocused(row.id, colIdx)}
                 onCellFocus={() => keyboard.focus(row.id, colIdx)}
                 onNavigate={keyboard.navigate}
@@ -227,11 +234,12 @@ function AssetTable<T extends AssetRow>({
                                         <td key={col.key} className={`${T.cellEdit} ${T.cellLabel} ${vline}`}>
                                             <div className="flex items-center gap-1 min-w-0">
                                                 <DeleteRowButton onClick={() => requestDelete(row.id)} isVisible={hovered} />
+                                                <ViewSourceButton sourceFileId={(row as Record<string, unknown>).sourceFileId as string | undefined} onViewSource={onViewSource} isVisible={hovered} />
                                                 <input
                                                     type="text"
                                                     value={(row[col.key] as string) || ''}
                                                     onChange={e => updateField(row.id, col.key, e.target.value)}
-                                                    className={`flex-1 min-w-0 ${T.inputLabel} pl-1`}
+                                                    className={`flex-1 min-w-0 ${T.inputLabel} pl-1 ${getCellOriginClass?.(row.id, col.key) || ''}`}
                                                     placeholder={col.placeholder || col.label}
                                                 />
                                             </div>
@@ -248,7 +256,7 @@ function AssetTable<T extends AssetRow>({
                                                 type="text"
                                                 value={(row[col.key] as string) || ''}
                                                 onChange={e => updateField(row.id, col.key, e.target.value)}
-                                                className={`w-full ${T.input} ${textAlign} ${!isRight && !isCenter ? 'pl-1' : ''}`}
+                                                className={`w-full ${T.input} ${textAlign} ${!isRight && !isCenter ? 'pl-1' : ''} ${getCellOriginClass?.(row.id, col.key) || ''}`}
                                                 style={isRight || isCenter ? { padding: 0 } : undefined}
                                                 placeholder={col.placeholder || col.label}
                                             />

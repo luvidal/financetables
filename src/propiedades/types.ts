@@ -10,6 +10,7 @@ export type PropiedadRow = {
   arriendo_real_uf: number | null
   arriendo_futuro: number | null
   arriendo_futuro_uf: number | null
+  sourceFileId?: string
 } & SoftDeletable
 
 export interface PropiedadesTableProps {
@@ -25,4 +26,6 @@ export interface PropiedadesTableProps {
   /** @deprecated Use colorScheme instead */
   headerText?: string
   title?: React.ReactNode
+  onViewSource?: (fileIds: string[]) => void
+  getCellOriginClass?: (rowId: string, colKey: string) => string | undefined
 }

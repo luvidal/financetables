@@ -17,6 +17,7 @@ const VehiculosTable = ({
     headerBg,
     headerText,
     title,
+    getCellOriginClass,
 }: VehiculosTableProps) => (
     <AssetTable<VehiculoRow>
         columns={columns}
@@ -29,6 +30,7 @@ const VehiculosTable = ({
         headerBg={headerBg}
         headerText={headerText}
         title={title}
+        getCellOriginClass={getCellOriginClass}
     />
 )
 

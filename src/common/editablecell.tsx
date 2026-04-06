@@ -38,6 +38,8 @@ interface EditableCellProps {
     requestClear?: number
     /** Initial value for type-to-edit (the character pressed to start editing) */
     editInitialValue?: string | null
+    /** Text color class based on cell origin (ai/user/calculated). Overrides default text-gray-800. */
+    originClass?: string
 }
 
 /**
@@ -66,6 +68,7 @@ const EditableCell = ({
     requestEdit = 0,
     requestClear = 0,
     editInitialValue,
+    originClass,
 }: EditableCellProps) => {
     const isMobile = useIsMobile()
     const [isEditing, setIsEditing] = useState(false)
@@ -148,10 +151,12 @@ const EditableCell = ({
 
     const displayValue = getDisplayValue()
 
-    // Color classes based on state
-    const colorClass = isDeduction && type === 'currency'
-        ? (hasData ? 'text-rose-600' : 'text-gray-300')
-        : (hasData ? 'text-gray-800' : 'text-gray-300')
+    // Color classes based on state — priority: empty → deduction → origin → default
+    const colorClass = !hasData
+        ? 'text-gray-300'
+        : isDeduction && type === 'currency'
+            ? 'text-rose-600'
+            : (originClass || 'text-gray-800')
 
     // Alignment classes
     const alignClass = align === 'left' ? 'text-left justify-start' : align === 'center' ? 'text-center justify-center' : 'text-right justify-end'

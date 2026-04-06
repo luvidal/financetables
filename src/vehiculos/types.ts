@@ -18,4 +18,5 @@ export interface VehiculosTableProps {
   /** @deprecated Use colorScheme instead */
   headerText?: string
   title?: React.ReactNode
+  getCellOriginClass?: (rowId: string, colKey: string) => string | undefined
 }

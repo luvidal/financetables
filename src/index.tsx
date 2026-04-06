@@ -51,6 +51,10 @@ export type { BalanceRow, BalanceTableProps } from './balance/types'
 export { DEFAULT_SCHEME, resolveColors } from './common/colors'
 export type { ColorScheme } from './common/colors'
 
+// Cell origin
+export { ORIGIN_CLASSES } from './common/cellorigin'
+export type { CellOrigin } from './common/cellorigin'
+
 // Common
 export { default as EditableCell } from './common/editablecell'
 export { default as EditableField } from './common/editablefield'

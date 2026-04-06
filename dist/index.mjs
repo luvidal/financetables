@@ -342,7 +342,8 @@ var EditableCell = ({
   onNavigate,
   requestEdit = 0,
   requestClear = 0,
-  editInitialValue
+  editInitialValue,
+  originClass
 }) => {
   const isMobile = useIsMobile();
   const [isEditing, setIsEditing] = useState(false);
@@ -410,7 +411,7 @@ var EditableCell = ({
     return value?.toString() || "\u2014";
   };
   const displayValue = getDisplayValue();
-  const colorClass = isDeduction && type === "currency" ? hasData ? "text-rose-600" : "text-gray-300" : hasData ? "text-gray-800" : "text-gray-300";
+  const colorClass = !hasData ? "text-gray-300" : isDeduction && type === "currency" ? "text-rose-600" : originClass || "text-gray-800";
   const alignClass = align === "left" ? "text-left justify-start" : align === "center" ? "text-center justify-center" : "text-right justify-end";
   const inputAlignClass = align === "left" ? "text-left" : align === "center" ? "text-center" : "text-right";
   const Wrapper = asDiv ? "div" : "td";
@@ -552,7 +553,8 @@ var DataRow = ({
   onDragOver,
   onDragLeave,
   onDrop,
-  onDragEnd
+  onDragEnd,
+  getCellOriginClass
 }) => {
   const indented = !!row.groupId;
   const subtract = isSubtractType(row.type);
@@ -679,6 +681,7 @@ var DataRow = ({
               hasData: row.values[p.id] !== void 0 && row.values[p.id] !== null,
               className: vline,
               type: "currency",
+              originClass: getCellOriginClass?.(p.id),
               onViewSource: p.sourceFileId && onViewSource ? () => onViewSource([p.sourceFileId]) : void 0,
               focused: cellFocused,
               onCellFocus: onCellFocus ? () => onCellFocus(mi) : void 0,
@@ -1461,7 +1464,8 @@ var RentaTable = ({
   showClassificationColumns = false,
   sourceFileIds,
   onViewSource,
-  reliquidacion
+  reliquidacion,
+  getCellOriginClass
 }) => {
   const { bg: headerBg, text: headerText } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp);
   const { getHoverProps, isHovered: isRowHovered } = useRowHover();
@@ -1680,7 +1684,8 @@ var RentaTable = ({
       onDragOver: drag.handleDragOver(r.id),
       onDragLeave: drag.handleDragLeave,
       onDrop: drag.handleDrop(rows, onRowsChange),
-      onDragEnd: drag.handleDragEnd
+      onDragEnd: drag.handleDragEnd,
+      getCellOriginClass: getCellOriginClass ? (monthId) => getCellOriginClass(r.id, monthId) : void 0
     },
     r.id
   );
@@ -2028,6 +2033,13 @@ var ClickableHeader = ({ onClick, borderColor, className, children }) => /* @__P
   }
 );
 var clickableheader_default = ClickableHeader;
+
+// src/common/cellorigin.ts
+var ORIGIN_CLASSES = {
+  ai: "text-gray-500",
+  user: "text-gray-900",
+  calculated: "text-blue-800"
+};
 var LINEAS_TC_PATTERN = /l[ií]nea|tarjeta|tc/i;
 var DeudasTable = ({
   rows,
@@ -2038,7 +2050,8 @@ var DeudasTable = ({
   colorScheme: colorSchemeProp,
   headerBg: headerBgProp,
   headerText: headerTextProp,
-  onViewSource
+  onViewSource,
+  getCellOriginClass
 }) => {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp);
   const { getHoverProps, isHovered: isRowHovered } = useRowHover();
@@ -2124,10 +2137,10 @@ var DeudasTable = ({
     if (field === "monto_cuota" && LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null) return true;
     return false;
   };
-  const cuotaClassName = (row) => {
-    if (isAutoComputed(row, "monto_cuota")) return "text-rose-400";
-    if (row.cuota_estimated) return "text-gray-400";
-    return "";
+  const cellOriginClass = (row, field) => {
+    if (isAutoComputed(row, field)) return ORIGIN_CLASSES.calculated;
+    if (field === "monto_cuota" && row.cuota_estimated) return ORIGIN_CLASSES.calculated;
+    return getCellOriginClass?.(row.id, field);
   };
   return /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none", children: /* @__PURE__ */ jsxs(
@@ -2223,7 +2236,7 @@ var DeudasTable = ({
                           type: "text",
                           value: row.institucion,
                           onChange: (e) => updateField(row.id, "institucion", e.target.value),
-                          className: `flex-1 min-w-0 ${T.inputLabel} ${hovered || showCheckbox ? "" : "pl-1"}`,
+                          className: `flex-1 min-w-0 ${T.inputLabel} ${hovered || showCheckbox ? "" : "pl-1"} ${getCellOriginClass?.(row.id, "institucion") || ""}`,
                           placeholder: "Instituci\xF3n"
                         }
                       )
@@ -2244,7 +2257,7 @@ var DeudasTable = ({
                       type: "text",
                       value: row.tipo_deuda,
                       onChange: (e) => updateField(row.id, "tipo_deuda", e.target.value),
-                      className: `w-full ${T.input} pl-1`,
+                      className: `w-full ${T.input} pl-1 ${getCellOriginClass?.(row.id, "tipo_deuda") || ""}`,
                       placeholder: "Tipo"
                     }
                   ) }),
@@ -2255,7 +2268,8 @@ var DeudasTable = ({
                       onChange: (v) => updateField(row.id, saldoKey, v),
                       type: saldoType,
                       hasData: row[saldoKey] !== null,
-                      className: `${T.vline} ${!showUF && isAutoComputed(row, "saldo_deuda_pesos") ? "text-rose-400" : ""}`,
+                      className: T.vline,
+                      originClass: cellOriginClass(row, saldoKey),
                       focused: keyboard.isFocused(row.id, 0),
                       onCellFocus: () => keyboard.focus(row.id, 0),
                       onNavigate: keyboard.navigate,
@@ -2272,13 +2286,14 @@ var DeudasTable = ({
                         onChange: (v) => updateField(row.id, "monto_cuota", v),
                         type: "currency",
                         hasData: row.monto_cuota !== null,
-                        className: cuotaClassName(row),
+                        originClass: cellOriginClass(row, "monto_cuota"),
                         focused: keyboard.isFocused(row.id, 1),
                         onCellFocus: () => keyboard.focus(row.id, 1),
                         onNavigate: keyboard.navigate,
                         requestEdit: keyboard.isFocused(row.id, 1) ? keyboard.editTrigger : 0,
                         requestClear: keyboard.isFocused(row.id, 1) ? keyboard.clearTrigger : 0,
                         editInitialValue: keyboard.isFocused(row.id, 1) ? keyboard.editInitialValue : void 0,
+                        onViewSource: row.cuota_source_file_id && onViewSource ? () => onViewSource([row.cuota_source_file_id]) : void 0,
                         asDiv: true
                       }
                     ),
@@ -2290,16 +2305,7 @@ var DeudasTable = ({
                         "% de ",
                         formatCurrency(row.saldo_deuda_pesos)
                       ] })
-                    ] }),
-                    row.cuota_source_file_id && onViewSource && /* @__PURE__ */ jsx(
-                      "button",
-                      {
-                        onClick: () => onViewSource([row.cuota_source_file_id]),
-                        className: `absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] p-0.5 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-opacity ${hovered ? "opacity-100" : "opacity-0 pointer-events-none"}`,
-                        title: "Ver documento fuente",
-                        children: /* @__PURE__ */ jsx(Eye, { size: 13 })
-                      }
-                    )
+                    ] })
                   ] }),
                   /* @__PURE__ */ jsx("td", { className: `text-center ${T.vline}`, children: row.cuota_estimated ? /* @__PURE__ */ jsx(
                     editablecell_default,
@@ -2310,6 +2316,7 @@ var DeudasTable = ({
                       hasData: true,
                       align: "center",
                       className: "bg-blue-50/50 rounded !py-0.5 !px-1.5 [&>div]:h-4 text-[11px]",
+                      originClass: cellOriginClass(row, "castigo_pct"),
                       asDiv: true,
                       focused: keyboard.isFocused(row.id, 2),
                       onCellFocus: () => keyboard.focus(row.id, 2),
@@ -2328,6 +2335,7 @@ var DeudasTable = ({
                         type: "number",
                         hasData: row.cuotas_pagadas !== null,
                         align: "center",
+                        originClass: cellOriginClass(row, "cuotas_pagadas"),
                         asDiv: true,
                         focused: keyboard.isFocused(row.id, 3),
                         onCellFocus: () => keyboard.focus(row.id, 3),
@@ -2346,6 +2354,7 @@ var DeudasTable = ({
                         type: "number",
                         hasData: row.cuotas_total !== null,
                         align: "center",
+                        originClass: cellOriginClass(row, "cuotas_total"),
                         asDiv: true,
                         focused: keyboard.isFocused(row.id, 4),
                         onCellFocus: () => keyboard.focus(row.id, 4),
@@ -2428,7 +2437,8 @@ var BoletasTable = ({
   onViewSource,
   excludedMonths,
   onToggleMonth,
-  onToggleAll
+  onToggleAll,
+  getCellOriginClass
 }) => {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp);
   const excluded = excludedMonths ?? [];
@@ -2467,7 +2477,7 @@ var BoletasTable = ({
           return /* @__PURE__ */ jsx(
             "td",
             {
-              className: `${T.cell} text-right ${m.hasData ? metric.color : "text-gray-300"} ${isExcluded ? "opacity-35" : ""}`,
+              className: `${T.cell} text-right ${m.hasData ? getCellOriginClass?.(metric.key, m.periodo) || metric.color : "text-gray-300"} ${isExcluded ? "opacity-35" : ""}`,
               children: m.hasData ? metric.format(m[metric.key]) : "\u2014"
             },
             m.periodo
@@ -2660,6 +2670,25 @@ var FinalResultsCompact = ({
   ] });
 };
 var finalresults_default = FinalResultsCompact;
+var ViewSourceButton = ({
+  sourceFileId,
+  onViewSource,
+  isVisible,
+  size = "sm"
+}) => {
+  if (!sourceFileId || !onViewSource) return null;
+  const padding = size === "sm" ? "p-0.5" : "p-1";
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      onClick: () => onViewSource([sourceFileId]),
+      className: `${padding} rounded transition-all shrink-0 ${isVisible ? "opacity-100 text-gray-400 hover:text-gray-600 hover:bg-gray-100" : "opacity-0"}`,
+      title: "Ver documento fuente",
+      children: /* @__PURE__ */ jsx(Eye, { size: 14 })
+    }
+  );
+};
+var viewsourcebutton_default = ViewSourceButton;
 function AssetTable({
   columns: columns3,
   rows,
@@ -2673,7 +2702,9 @@ function AssetTable({
   title,
   ufValue,
   conversionRules = [],
-  computeRules = []
+  computeRules = [],
+  onViewSource,
+  getCellOriginClass
 }) {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp);
   const { getHoverProps, isHovered } = useRowHover();
@@ -2746,7 +2777,7 @@ function AssetTable({
   const renderEditableCell = (row, col, vline = "") => {
     const colIdx = editableColIndex(col);
     const value = row[col.key];
-    const autoClass = col.autoComputedClass?.(row) || "";
+    const originClass = col.autoComputedClass?.(row) ? ORIGIN_CLASSES.calculated : getCellOriginClass?.(row.id, col.key);
     return /* @__PURE__ */ jsx(
       editablecell_default,
       {
@@ -2755,7 +2786,8 @@ function AssetTable({
         type: col.type,
         hasData: value !== null,
         align: col.align,
-        className: `${autoClass} ${vline}`,
+        className: vline,
+        originClass,
         focused: keyboard.isFocused(row.id, colIdx),
         onCellFocus: () => keyboard.focus(row.id, colIdx),
         onNavigate: keyboard.navigate,
@@ -2833,13 +2865,14 @@ function AssetTable({
                     if (col.isLabel) {
                       return /* @__PURE__ */ jsx("td", { className: `${T.cellEdit} ${T.cellLabel} ${vline}`, children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-1 min-w-0", children: [
                         /* @__PURE__ */ jsx(deletebutton_default, { onClick: () => requestDelete(row.id), isVisible: hovered }),
+                        /* @__PURE__ */ jsx(viewsourcebutton_default, { sourceFileId: row.sourceFileId, onViewSource, isVisible: hovered }),
                         /* @__PURE__ */ jsx(
                           "input",
                           {
                             type: "text",
                             value: row[col.key] || "",
                             onChange: (e) => updateField(row.id, col.key, e.target.value),
-                            className: `flex-1 min-w-0 ${T.inputLabel} pl-1`,
+                            className: `flex-1 min-w-0 ${T.inputLabel} pl-1 ${getCellOriginClass?.(row.id, col.key) || ""}`,
                             placeholder: col.placeholder || col.label
                           }
                         )
@@ -2855,7 +2888,7 @@ function AssetTable({
                           type: "text",
                           value: row[col.key] || "",
                           onChange: (e) => updateField(row.id, col.key, e.target.value),
-                          className: `w-full ${T.input} ${textAlign} ${!isRight && !isCenter ? "pl-1" : ""}`,
+                          className: `w-full ${T.input} ${textAlign} ${!isRight && !isCenter ? "pl-1" : ""} ${getCellOriginClass?.(row.id, col.key) || ""}`,
                           style: isRight || isCenter ? { padding: 0 } : void 0,
                           placeholder: col.placeholder || col.label
                         }
@@ -2938,7 +2971,8 @@ var VehiculosTable = ({
   colorScheme,
   headerBg,
   headerText,
-  title
+  title,
+  getCellOriginClass
 }) => /* @__PURE__ */ jsx(
   assettable_default,
   {
@@ -2951,7 +2985,8 @@ var VehiculosTable = ({
     colorScheme,
     headerBg,
     headerText,
-    title
+    title,
+    getCellOriginClass
   }
 );
 var vehiculos_default = VehiculosTable;
@@ -2968,7 +3003,8 @@ var InversionesTable = ({
   colorScheme,
   headerBg,
   headerText,
-  title
+  title,
+  getCellOriginClass
 }) => /* @__PURE__ */ jsx(
   assettable_default,
   {
@@ -2981,7 +3017,8 @@ var InversionesTable = ({
     colorScheme,
     headerBg,
     headerText,
-    title
+    title,
+    getCellOriginClass
   }
 );
 var inversiones_default = InversionesTable;
@@ -2995,7 +3032,9 @@ var PropiedadesTable = ({
   colorScheme,
   headerBg,
   headerText,
-  title
+  title,
+  onViewSource,
+  getCellOriginClass
 }) => {
   const columns3 = useMemo(() => [
     { key: "direccion", label: "Direcci\xF3n", type: "text", width: "30%", isLabel: true, placeholder: "Direcci\xF3n" },
@@ -3075,7 +3114,9 @@ var PropiedadesTable = ({
       title,
       ufValue,
       conversionRules,
-      computeRules
+      computeRules,
+      onViewSource,
+      getCellOriginClass
     }
   );
 };
@@ -3125,7 +3166,7 @@ function formatCell(v, format) {
       return { display: displayCurrencyCompact(v), title: displayCurrency(v) || void 0 };
   }
 }
-var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme }) => {
+var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass }) => {
   const colors = colorScheme ?? DEFAULT_SCHEME;
   return /* @__PURE__ */ jsx("div", { className: "overflow-x-auto border-y border-gray-200 mb-3 sm:mb-4", children: /* @__PURE__ */ jsx("table", { className: `${T.table} border-collapse`, children: /* @__PURE__ */ jsx("tbody", { children: rows.map((row, idx) => {
     if (row.type === "subheader") {
@@ -3148,11 +3189,13 @@ var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, color
       extraColumn && /* @__PURE__ */ jsx("td", { className: T.vline, children: extraColumn.render(row, idx) }),
       row.values.map((v, i) => {
         const { display, title } = formatCell(v, fmt);
+        const originClass = getCellOriginClass?.(idx, i);
+        const textClass = bold ? `${T.footerValue} ${originClass || "text-gray-800"}` : originClass || "text-gray-700";
         return /* @__PURE__ */ jsx(
           "td",
           {
             title,
-            className: `${T.cellValue} ${bold ? T.footerValue + " text-gray-800" : "text-gray-700"}${title ? " cursor-default" : ""} ${i < row.values.length - 1 ? T.vline : ""}`,
+            className: `${T.cellValue} ${textClass}${title ? " cursor-default" : ""} ${i < row.values.length - 1 ? T.vline : ""}`,
             children: display
           },
           i
@@ -3170,7 +3213,8 @@ var DeclaracionTable = ({
   formatCurrency,
   colorScheme: colorSchemeProp,
   sourceFileIds,
-  onViewSource
+  onViewSource,
+  getCellOriginClass
 }) => {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp);
   const showCodeColumn = rows.some((r) => r.code != null);
@@ -3195,7 +3239,7 @@ var DeclaracionTable = ({
           const summedRows = rows.filter((r) => r.summed);
           const hasAny = summedRows.some((r) => data[r.key]?.[col.key] != null);
           const sum = summedRows.reduce((acc, r) => acc + (data[r.key]?.[col.key] ?? 0), 0);
-          return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} text-gray-900 border-t border-gray-100`, children: hasAny ? formatCurrency(sum) : "\u2014" }, col.key);
+          return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} ${hasAny ? ORIGIN_CLASSES.calculated : "text-gray-400"} border-t border-gray-100`, children: hasAny ? formatCurrency(sum) : "\u2014" }, col.key);
         })
       ] }) : void 0,
       children: rows.map((row) => /* @__PURE__ */ jsxs("tr", { className: T.row, children: [
@@ -3203,7 +3247,7 @@ var DeclaracionTable = ({
         showCodeColumn && /* @__PURE__ */ jsx("td", { className: `${T.cell} text-gray-400 tabular-nums ${T.vline}`, children: row.code ?? "" }),
         columns3.map((col, ci) => {
           const value = data[row.key]?.[col.key];
-          return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} ${value != null ? "text-gray-900" : "text-gray-400"} ${ci < columns3.length - 1 ? T.vline : ""}`, children: value != null ? formatCurrency(value) : "\u2014" }, col.key);
+          return /* @__PURE__ */ jsx("td", { className: `${T.cellValue} ${value != null ? getCellOriginClass?.(row.key, col.key) || "text-gray-900" : "text-gray-400"} ${ci < columns3.length - 1 ? T.vline : ""}`, children: value != null ? formatCurrency(value) : "\u2014" }, col.key);
         })
       ] }, row.key))
     }
@@ -3216,7 +3260,8 @@ function EditableField({
   type = "percent",
   min = 0,
   max = 100,
-  className = ""
+  className = "",
+  originClass
 }) {
   return /* @__PURE__ */ jsx(
     editablecell_default,
@@ -3228,7 +3273,8 @@ function EditableField({
       },
       type,
       asDiv: true,
-      className: `bg-blue-50/50 rounded !py-0 !px-1 [&>div]:h-5 text-xs min-w-[48px] ${className}`
+      className: `bg-blue-50/50 rounded !py-0 !px-1 [&>div]:h-5 text-xs min-w-[48px] ${className}`,
+      originClass
     }
   );
 }
@@ -3265,7 +3311,8 @@ var BalanceTable = ({
   rows,
   onRowsChange,
   colorScheme: colorSchemeProp,
-  onViewSource
+  onViewSource,
+  getCellOriginClass
 }) => {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp);
   const { getHoverProps } = useRowHover();
@@ -3350,6 +3397,7 @@ var BalanceTable = ({
                   type: "currency",
                   hasData: val != null,
                   className: `${!isLast ? T.vline : ""} ${isNeg ? "text-red-600" : ""} ${isBold ? "font-semibold" : ""}`,
+                  originClass: getCellOriginClass?.(row.id, key),
                   focused: keyboard.isFocused(row.id, colIdx),
                   onCellFocus: () => keyboard.focus(row.id, colIdx),
                   onNavigate: keyboard.navigate,
@@ -3366,7 +3414,8 @@ var BalanceTable = ({
               EditableField,
               {
                 value: participacion,
-                onChange: (v) => handleChange(rowIdx, "participacion", v)
+                onChange: (v) => handleChange(rowIdx, "participacion", v),
+                originClass: getCellOriginClass?.(row.id, "participacion")
               }
             ) }),
             CURRENCY_KEYS.map((key) => {
@@ -3378,7 +3427,7 @@ var BalanceTable = ({
               return /* @__PURE__ */ jsx(
                 "td",
                 {
-                  className: `${T.cellValue} ${!isLast ? T.vline : ""} ${isNeg ? "text-red-600" : ""} ${isBold ? "font-semibold" : ""}`,
+                  className: `${T.cellValue} ${!isLast ? T.vline : ""} ${isNeg ? "text-red-600" : ORIGIN_CLASSES.calculated} ${isBold ? "font-semibold" : ""}`,
                   children: propVal != null ? displayCurrencyCompact(propVal) : "\u2014"
                 },
                 key
@@ -3392,6 +3441,6 @@ var BalanceTable = ({
 };
 var balance_default = BalanceTable;
 
-export { activossummary_default as ActivosSummary, assettable_default as AssetTable, balance_default as BalanceTable, boletas_default as BoletasTable, clickableheader_default as ClickableHeader, DEFAULT_SCHEME, declaracion_default as DeclaracionTable, deletedialog_default as DeleteDialog, deudas_default as DeudasTable, editablecell_default as EditableCell, EditableField, finalresults_default as FinalResultsCompact, inversiones_default as InversionesTable, MONTH_LABELS, propiedades_default as PropiedadesTable, recyclebin_default as RecycleBin, SourceIcon, summary_default as SummaryTable, tableshell_default as TableShell, vehiculos_default as VehiculosTable, applyAutoCompute, applyAutoConversions, renta_default as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, formatDeletedDate, generateId, generateLastNMonths, resolveColors, useSoftDelete };
+export { activossummary_default as ActivosSummary, assettable_default as AssetTable, balance_default as BalanceTable, boletas_default as BoletasTable, clickableheader_default as ClickableHeader, DEFAULT_SCHEME, declaracion_default as DeclaracionTable, deletedialog_default as DeleteDialog, deudas_default as DeudasTable, editablecell_default as EditableCell, EditableField, finalresults_default as FinalResultsCompact, inversiones_default as InversionesTable, MONTH_LABELS, ORIGIN_CLASSES, propiedades_default as PropiedadesTable, recyclebin_default as RecycleBin, SourceIcon, summary_default as SummaryTable, tableshell_default as TableShell, vehiculos_default as VehiculosTable, applyAutoCompute, applyAutoConversions, renta_default as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, formatDeletedDate, generateId, generateLastNMonths, resolveColors, useSoftDelete };
 //# sourceMappingURL=index.mjs.map
 //# sourceMappingURL=index.mjs.map

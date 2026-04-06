@@ -77,6 +77,9 @@ export interface RentaTableProps {
 
     // Reliquidación breakdown per month (drives info icons on summary rows)
     reliquidacion?: Record<string, ReliquidacionBreakdown>
+
+    // Cell origin color: returns a text-color class for a given cell
+    getCellOriginClass?: (rowId: string, monthId: string) => string | undefined
 }
 
 /** Reliquidación breakdown for a single month (passed from host app) */

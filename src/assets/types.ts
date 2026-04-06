@@ -41,4 +41,7 @@ export interface AssetTableProps<T extends AssetRow = AssetRow> {
     conversionRules?: AutoConvertRule[]
     /** Auto-compute rules */
     computeRules?: AutoComputeRule[]
+    /** Callback to view source document — shows Eye icon on row hover */
+    onViewSource?: (fileIds: string[]) => void
+    getCellOriginClass?: (rowId: string, colKey: string) => string | undefined
 }

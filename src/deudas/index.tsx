@@ -15,6 +15,7 @@ import DeleteRowButton from '../common/deletebutton'
 import RecycleBin from '../common/recyclebin'
 import ClickableHeader from '../common/clickableheader'
 import { useRowHover } from '../common/userowhover'
+import { ORIGIN_CLASSES } from '../common/cellorigin'
 import type { DeudaRow, DeudasTableProps } from './types'
 
 const LINEAS_TC_PATTERN = /l[ií]nea|tarjeta|tc/i
@@ -29,6 +30,7 @@ const DeudasTable = ({
     headerBg: headerBgProp,
     headerText: headerTextProp,
     onViewSource,
+    getCellOriginClass,
 }: DeudasTableProps) => {
     const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp)
     const { getHoverProps, isHovered: isRowHovered } = useRowHover()
@@ -131,11 +133,11 @@ const DeudasTable = ({
         return false
     }
 
-    /** Cuota className: rose for línea/TC auto-compute, gray for 5% fallback estimate */
-    const cuotaClassName = (row: DeudaRow): string => {
-        if (isAutoComputed(row, 'monto_cuota')) return 'text-rose-400'
-        if (row.cuota_estimated) return 'text-gray-400'
-        return ''
+    /** Resolve origin class for a given cell */
+    const cellOriginClass = (row: DeudaRow, field: string): string | undefined => {
+        if (isAutoComputed(row, field)) return ORIGIN_CLASSES.calculated
+        if (field === 'monto_cuota' && row.cuota_estimated) return ORIGIN_CLASSES.calculated
+        return getCellOriginClass?.(row.id, field)
     }
 
     return (<>
@@ -242,7 +244,7 @@ const DeudasTable = ({
                                         type="text"
                                         value={row.institucion}
                                         onChange={e => updateField(row.id, 'institucion', e.target.value)}
-                                        className={`flex-1 min-w-0 ${T.inputLabel} ${hovered || showCheckbox ? '' : 'pl-1'}`}
+                                        className={`flex-1 min-w-0 ${T.inputLabel} ${hovered || showCheckbox ? '' : 'pl-1'} ${getCellOriginClass?.(row.id, 'institucion') || ''}`}
                                         placeholder="Institución"
                                     />
                                 </div>
@@ -261,7 +263,7 @@ const DeudasTable = ({
                                     type="text"
                                     value={row.tipo_deuda}
                                     onChange={e => updateField(row.id, 'tipo_deuda', e.target.value)}
-                                    className={`w-full ${T.input} pl-1`}
+                                    className={`w-full ${T.input} pl-1 ${getCellOriginClass?.(row.id, 'tipo_deuda') || ''}`}
                                     placeholder="Tipo"
                                 />
                             </td>
@@ -270,7 +272,8 @@ const DeudasTable = ({
                                 onChange={v => updateField(row.id, saldoKey, v as number | null)}
                                 type={saldoType as 'currency' | 'number'}
                                 hasData={row[saldoKey] !== null}
-                                className={`${T.vline} ${!showUF && isAutoComputed(row, 'saldo_deuda_pesos') ? 'text-rose-400' : ''}`}
+                                className={T.vline}
+                                originClass={cellOriginClass(row, saldoKey)}
                                 focused={keyboard.isFocused(row.id, 0)}
                                 onCellFocus={() => keyboard.focus(row.id, 0)}
                                 onNavigate={keyboard.navigate}
@@ -284,13 +287,14 @@ const DeudasTable = ({
                                     onChange={v => updateField(row.id, 'monto_cuota', v as number | null)}
                                     type="currency"
                                     hasData={row.monto_cuota !== null}
-                                    className={cuotaClassName(row)}
+                                    originClass={cellOriginClass(row, 'monto_cuota')}
                                     focused={keyboard.isFocused(row.id, 1)}
                                     onCellFocus={() => keyboard.focus(row.id, 1)}
                                     onNavigate={keyboard.navigate}
                                     requestEdit={keyboard.isFocused(row.id, 1) ? keyboard.editTrigger : 0}
                                     requestClear={keyboard.isFocused(row.id, 1) ? keyboard.clearTrigger : 0}
                                     editInitialValue={keyboard.isFocused(row.id, 1) ? keyboard.editInitialValue : undefined}
+                                    onViewSource={row.cuota_source_file_id && onViewSource ? () => onViewSource([row.cuota_source_file_id!]) : undefined}
                                     asDiv
                                 />
                                 {row.cuota_estimated && row.saldo_deuda_pesos != null && !row.castigo_pct && (
@@ -303,15 +307,6 @@ const DeudasTable = ({
                                         </div>
                                     </div>
                                 )}
-                                {row.cuota_source_file_id && onViewSource && (
-                                    <button
-                                        onClick={() => onViewSource([row.cuota_source_file_id!])}
-                                        className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] p-0.5 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-opacity ${hovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                                        title="Ver documento fuente"
-                                    >
-                                        <Eye size={13} />
-                                    </button>
-                                )}
                             </td>
                             <td className={`text-center ${T.vline}`}>
                                 {row.cuota_estimated ? (
@@ -322,6 +317,7 @@ const DeudasTable = ({
                                         hasData={true}
                                         align="center"
                                         className="bg-blue-50/50 rounded !py-0.5 !px-1.5 [&>div]:h-4 text-[11px]"
+                                        originClass={cellOriginClass(row, 'castigo_pct')}
                                         asDiv
                                         focused={keyboard.isFocused(row.id, 2)}
                                         onCellFocus={() => keyboard.focus(row.id, 2)}
@@ -342,6 +338,7 @@ const DeudasTable = ({
                                         type="number"
                                         hasData={row.cuotas_pagadas !== null}
                                         align="center"
+                                        originClass={cellOriginClass(row, 'cuotas_pagadas')}
                                         asDiv
                                         focused={keyboard.isFocused(row.id, 3)}
                                         onCellFocus={() => keyboard.focus(row.id, 3)}
@@ -357,6 +354,7 @@ const DeudasTable = ({
                                         type="number"
                                         hasData={row.cuotas_total !== null}
                                         align="center"
+                                        originClass={cellOriginClass(row, 'cuotas_total')}
                                         asDiv
                                         focused={keyboard.isFocused(row.id, 4)}
                                         onCellFocus={() => keyboard.focus(row.id, 4)}

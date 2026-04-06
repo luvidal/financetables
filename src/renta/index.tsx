@@ -116,6 +116,7 @@ const RentaTable = ({
     sourceFileIds,
     onViewSource,
     reliquidacion,
+    getCellOriginClass,
 }: RentaTableProps) => {
     const { bg: headerBg, text: headerText } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp)
     const { getHoverProps, isHovered: isRowHovered } = useRowHover()
@@ -374,6 +375,7 @@ const RentaTable = ({
             onDragLeave={drag.handleDragLeave}
             onDrop={drag.handleDrop(rows, onRowsChange)}
             onDragEnd={drag.handleDragEnd}
+            getCellOriginClass={getCellOriginClass ? (monthId) => getCellOriginClass(r.id, monthId) : undefined}
         />
     )
 

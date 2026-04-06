@@ -22,4 +22,5 @@ export interface BalanceTableProps {
   onRowsChange: (rows: BalanceRow[]) => void
   colorScheme?: ColorScheme
   onViewSource?: (fileIds: string[]) => void
+  getCellOriginClass?: (rowId: string, field: string) => string | undefined
 }

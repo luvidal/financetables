@@ -22,6 +22,8 @@ interface EditableFieldProps {
     max?: number
     /** Extra Tailwind classes appended to the wrapper */
     className?: string
+    /** Text color class based on cell origin */
+    originClass?: string
 }
 
 export default function EditableField({
@@ -31,6 +33,7 @@ export default function EditableField({
     min = 0,
     max = 100,
     className = '',
+    originClass,
 }: EditableFieldProps) {
     return (
         <EditableCell
@@ -42,6 +45,7 @@ export default function EditableField({
             type={type}
             asDiv
             className={`bg-blue-50/50 rounded !py-0 !px-1 [&>div]:h-5 text-xs min-w-[48px] ${className}`}
+            originClass={originClass}
         />
     )
 }

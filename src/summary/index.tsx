@@ -20,7 +20,7 @@ function formatCell(v: number | null, format: SummaryRowFormat): { display: stri
   }
 }
 
-const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme }: SummaryTableProps) => {
+const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass }: SummaryTableProps) => {
   const colors = colorScheme ?? DEFAULT_SCHEME
 
   return (
@@ -63,11 +63,15 @@ const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, col
                 )}
                 {row.values.map((v, i) => {
                   const { display, title } = formatCell(v, fmt)
+                  const originClass = getCellOriginClass?.(idx, i)
+                  const textClass = bold
+                    ? `${T.footerValue} ${originClass || 'text-gray-800'}`
+                    : (originClass || 'text-gray-700')
                   return (
                     <td
                       key={i}
                       title={title}
-                      className={`${T.cellValue} ${bold ? T.footerValue + ' text-gray-800' : 'text-gray-700'}${title ? ' cursor-default' : ''} ${i < row.values.length - 1 ? T.vline : ''}`}
+                      className={`${T.cellValue} ${textClass}${title ? ' cursor-default' : ''} ${i < row.values.length - 1 ? T.vline : ''}`}
                     >
                       {display}
                     </td>

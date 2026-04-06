@@ -73,6 +73,8 @@ interface DataRowProps {
     onDrop?: (e: React.DragEvent) => void
     /** Drag reorder: drag end handler */
     onDragEnd?: () => void
+    /** Cell origin color class callback */
+    getCellOriginClass?: (monthId: string) => string | undefined
 }
 
 const DataRow = ({
@@ -106,6 +108,7 @@ const DataRow = ({
     onDragLeave,
     onDrop,
     onDragEnd,
+    getCellOriginClass,
 }: DataRowProps) => {
     const indented = !!row.groupId
     const subtract = isSubtractType(row.type)
@@ -222,6 +225,7 @@ const DataRow = ({
                         hasData={row.values[p.id] !== undefined && row.values[p.id] !== null}
                         className={vline}
                         type="currency"
+                        originClass={getCellOriginClass?.(p.id)}
                         onViewSource={p.sourceFileId && onViewSource ? () => onViewSource([p.sourceFileId!]) : undefined}
                         focused={cellFocused}
                         onCellFocus={onCellFocus ? () => onCellFocus(mi) : undefined}

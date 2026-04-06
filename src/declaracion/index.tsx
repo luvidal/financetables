@@ -1,4 +1,5 @@
 import { T } from '../common/styles'
+import { ORIGIN_CLASSES } from '../common/cellorigin'
 import { resolveColors } from '../common/colors'
 import TableShell, { SourceIcon } from '../common/tableshell'
 import type { DeclaracionTableProps } from './types'
@@ -12,6 +13,7 @@ const DeclaracionTable = ({
     colorScheme: colorSchemeProp,
     sourceFileIds,
     onViewSource,
+    getCellOriginClass,
 }: DeclaracionTableProps) => {
     const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp)
 
@@ -52,7 +54,7 @@ const DeclaracionTable = ({
                             const hasAny = summedRows.some(r => data[r.key]?.[col.key] != null)
                             const sum = summedRows.reduce((acc, r) => acc + (data[r.key]?.[col.key] ?? 0), 0)
                             return (
-                                <td key={col.key} className={`${T.cellValue} text-gray-900 border-t border-gray-100`}>
+                                <td key={col.key} className={`${T.cellValue} ${hasAny ? ORIGIN_CLASSES.calculated : 'text-gray-400'} border-t border-gray-100`}>
                                     {hasAny ? formatCurrency(sum) : '—'}
                                 </td>
                             )
@@ -69,7 +71,7 @@ const DeclaracionTable = ({
                         {columns.map((col, ci) => {
                             const value = data[row.key]?.[col.key]
                             return (
-                                <td key={col.key} className={`${T.cellValue} ${value != null ? 'text-gray-900' : 'text-gray-400'} ${ci < columns.length - 1 ? T.vline : ''}`}>
+                                <td key={col.key} className={`${T.cellValue} ${value != null ? (getCellOriginClass?.(row.key, col.key) || 'text-gray-900') : 'text-gray-400'} ${ci < columns.length - 1 ? T.vline : ''}`}>
                                     {value != null ? formatCurrency(value) : '—'}
                                 </td>
                             )

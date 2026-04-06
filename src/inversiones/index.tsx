@@ -17,6 +17,7 @@ const InversionesTable = ({
     headerBg,
     headerText,
     title,
+    getCellOriginClass,
 }: InversionesTableProps) => (
     <AssetTable<InversionRow>
         columns={columns}
@@ -29,6 +30,7 @@ const InversionesTable = ({
         headerBg={headerBg}
         headerText={headerText}
         title={title}
+        getCellOriginClass={getCellOriginClass}
     />
 )
 

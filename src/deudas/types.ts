@@ -27,4 +27,5 @@ export interface DeudasTableProps {
   /** @deprecated Use colorScheme instead */
   headerText?: string
   onViewSource?: (fileIds: string[]) => void
+  getCellOriginClass?: (rowId: string, field: string) => string | undefined
 }

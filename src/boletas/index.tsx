@@ -42,6 +42,7 @@ export interface BoletasTableProps {
     onToggleMonth?: (periodo: string) => void
     /** Toggle all months at once (year-level select/deselect) */
     onToggleAll?: () => void
+    getCellOriginClass?: (metricKey: string, periodo: string) => string | undefined
 }
 
 // ============================================================================
@@ -81,6 +82,7 @@ const BoletasTable = ({
     excludedMonths,
     onToggleMonth,
     onToggleAll,
+    getCellOriginClass,
 }: BoletasTableProps) => {
     const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp)
     const excluded = excludedMonths ?? []
@@ -131,7 +133,7 @@ const BoletasTable = ({
                         return (
                             <td
                                 key={m.periodo}
-                                className={`${T.cell} text-right ${m.hasData ? metric.color : 'text-gray-300'} ${isExcluded ? 'opacity-35' : ''}`}
+                                className={`${T.cell} text-right ${m.hasData ? (getCellOriginClass?.(metric.key, m.periodo) || metric.color) : 'text-gray-300'} ${isExcluded ? 'opacity-35' : ''}`}
                             >
                                 {m.hasData ? metric.format(m[metric.key]) : '—'}
                             </td>

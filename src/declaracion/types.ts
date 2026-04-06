@@ -25,4 +25,5 @@ export interface DeclaracionTableProps {
   colorScheme?: ColorScheme
   sourceFileIds?: string[]
   onViewSource?: (fileIds: string[]) => void
+  getCellOriginClass?: (rowKey: string, colKey: string) => string | undefined
 }

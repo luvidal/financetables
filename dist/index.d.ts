@@ -68,6 +68,7 @@ interface RentaTableProps {
     sourceFileIds?: string[];
     onViewSource?: (fileIds: string[]) => void;
     reliquidacion?: Record<string, ReliquidacionBreakdown>;
+    getCellOriginClass?: (rowId: string, monthId: string) => string | undefined;
 }
 /** Reliquidación breakdown for a single month (passed from host app) */
 interface ReliquidacionBreakdown {
@@ -85,7 +86,7 @@ interface ReliquidacionBreakdown {
     liquidoTotal: number;
 }
 
-declare const RentaTable: ({ title, months, rows, onRowsChange, sections, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, forceExpanded, formatValue, calculateTotal, showVariableColumn, showClassificationColumns, sourceFileIds, onViewSource, reliquidacion, }: RentaTableProps) => react_jsx_runtime.JSX.Element;
+declare const RentaTable: ({ title, months, rows, onRowsChange, sections, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, forceExpanded, formatValue, calculateTotal, showVariableColumn, showClassificationColumns, sourceFileIds, onViewSource, reliquidacion, getCellOriginClass, }: RentaTableProps) => react_jsx_runtime.JSX.Element;
 
 declare const generateLastNMonths: (count: number) => Month[];
 
@@ -120,9 +121,10 @@ interface DeudasTableProps {
     /** @deprecated Use colorScheme instead */
     headerText?: string;
     onViewSource?: (fileIds: string[]) => void;
+    getCellOriginClass?: (rowId: string, field: string) => string | undefined;
 }
 
-declare const DeudasTable: ({ rows, onRowsChange, formatCurrency, ufValue, castigo, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, onViewSource, }: DeudasTableProps) => react_jsx_runtime.JSX.Element;
+declare const DeudasTable: ({ rows, onRowsChange, formatCurrency, ufValue, castigo, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, onViewSource, getCellOriginClass, }: DeudasTableProps) => react_jsx_runtime.JSX.Element;
 
 type BoletaMonth = {
     periodo: string;
@@ -156,8 +158,9 @@ interface BoletasTableProps {
     onToggleMonth?: (periodo: string) => void;
     /** Toggle all months at once (year-level select/deselect) */
     onToggleAll?: () => void;
+    getCellOriginClass?: (metricKey: string, periodo: string) => string | undefined;
 }
-declare const BoletasTable: ({ title, months, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, sourceFileIds, onViewSource, excludedMonths, onToggleMonth, onToggleAll, }: BoletasTableProps) => react_jsx_runtime.JSX.Element;
+declare const BoletasTable: ({ title, months, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, sourceFileIds, onViewSource, excludedMonths, onToggleMonth, onToggleAll, getCellOriginClass, }: BoletasTableProps) => react_jsx_runtime.JSX.Element;
 
 interface FinalResultsValues {
     renta_liquida_ajustada_comprador?: number | null;
@@ -212,9 +215,10 @@ interface VehiculosTableProps {
     /** @deprecated Use colorScheme instead */
     headerText?: string;
     title?: React.ReactNode;
+    getCellOriginClass?: (rowId: string, colKey: string) => string | undefined;
 }
 
-declare const VehiculosTable: ({ rows, onRowsChange, formatCurrency, colorScheme, headerBg, headerText, title, }: VehiculosTableProps) => react_jsx_runtime.JSX.Element;
+declare const VehiculosTable: ({ rows, onRowsChange, formatCurrency, colorScheme, headerBg, headerText, title, getCellOriginClass, }: VehiculosTableProps) => react_jsx_runtime.JSX.Element;
 
 type InversionRow = {
     id: string;
@@ -233,9 +237,10 @@ interface InversionesTableProps {
     /** @deprecated Use colorScheme instead */
     headerText?: string;
     title?: React.ReactNode;
+    getCellOriginClass?: (rowId: string, colKey: string) => string | undefined;
 }
 
-declare const InversionesTable: ({ rows, onRowsChange, formatCurrency, colorScheme, headerBg, headerText, title, }: InversionesTableProps) => react_jsx_runtime.JSX.Element;
+declare const InversionesTable: ({ rows, onRowsChange, formatCurrency, colorScheme, headerBg, headerText, title, getCellOriginClass, }: InversionesTableProps) => react_jsx_runtime.JSX.Element;
 
 type PropiedadRow = {
     id: string;
@@ -247,6 +252,7 @@ type PropiedadRow = {
     arriendo_real_uf: number | null;
     arriendo_futuro: number | null;
     arriendo_futuro_uf: number | null;
+    sourceFileId?: string;
 } & SoftDeletable;
 interface PropiedadesTableProps {
     rows: PropiedadRow[];
@@ -261,9 +267,11 @@ interface PropiedadesTableProps {
     /** @deprecated Use colorScheme instead */
     headerText?: string;
     title?: React.ReactNode;
+    onViewSource?: (fileIds: string[]) => void;
+    getCellOriginClass?: (rowId: string, colKey: string) => string | undefined;
 }
 
-declare const PropiedadesTable: ({ rows, onRowsChange, formatCurrency, ufValue, capRate, factorDescuento, colorScheme, headerBg, headerText, title, }: PropiedadesTableProps) => react_jsx_runtime.JSX.Element;
+declare const PropiedadesTable: ({ rows, onRowsChange, formatCurrency, ufValue, capRate, factorDescuento, colorScheme, headerBg, headerText, title, onViewSource, getCellOriginClass, }: PropiedadesTableProps) => react_jsx_runtime.JSX.Element;
 
 type AutoConvertRule = {
     source: string;
@@ -330,9 +338,12 @@ interface AssetTableProps<T extends AssetRow = AssetRow> {
     conversionRules?: AutoConvertRule[];
     /** Auto-compute rules */
     computeRules?: AutoComputeRule[];
+    /** Callback to view source document — shows Eye icon on row hover */
+    onViewSource?: (fileIds: string[]) => void;
+    getCellOriginClass?: (rowId: string, colKey: string) => string | undefined;
 }
 
-declare function AssetTable<T extends AssetRow>({ columns, rows, onRowsChange, idPrefix, addPlaceholder, formatCurrency, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, title, ufValue, conversionRules, computeRules, }: AssetTableProps<T>): react_jsx_runtime.JSX.Element;
+declare function AssetTable<T extends AssetRow>({ columns, rows, onRowsChange, idPrefix, addPlaceholder, formatCurrency, colorScheme: colorSchemeProp, headerBg: headerBgProp, headerText: headerTextProp, title, ufValue, conversionRules, computeRules, onViewSource, getCellOriginClass, }: AssetTableProps<T>): react_jsx_runtime.JSX.Element;
 
 interface ActivosSummaryItem {
     label: string;
@@ -372,9 +383,11 @@ interface SummaryTableProps {
     };
     /** Rendered after the label text (e.g., warning icon) */
     renderLabelSuffix?: (row: SummaryRow, index: number) => ReactNode;
+    /** Cell origin color class callback — receives row and column indices */
+    getCellOriginClass?: (rowIndex: number, colIndex: number) => string | undefined;
 }
 
-declare const SummaryTable: ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme }: SummaryTableProps) => react_jsx_runtime.JSX.Element;
+declare const SummaryTable: ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass }: SummaryTableProps) => react_jsx_runtime.JSX.Element;
 
 interface DeclaracionColumn {
     key: string;
@@ -399,9 +412,10 @@ interface DeclaracionTableProps {
     colorScheme?: ColorScheme;
     sourceFileIds?: string[];
     onViewSource?: (fileIds: string[]) => void;
+    getCellOriginClass?: (rowKey: string, colKey: string) => string | undefined;
 }
 
-declare const DeclaracionTable: ({ columns, rows, data, totalLabel, formatCurrency, colorScheme: colorSchemeProp, sourceFileIds, onViewSource, }: DeclaracionTableProps) => react_jsx_runtime.JSX.Element;
+declare const DeclaracionTable: ({ columns, rows, data, totalLabel, formatCurrency, colorScheme: colorSchemeProp, sourceFileIds, onViewSource, getCellOriginClass, }: DeclaracionTableProps) => react_jsx_runtime.JSX.Element;
 
 interface BalanceRow {
     id: string;
@@ -424,9 +438,13 @@ interface BalanceTableProps {
     onRowsChange: (rows: BalanceRow[]) => void;
     colorScheme?: ColorScheme;
     onViewSource?: (fileIds: string[]) => void;
+    getCellOriginClass?: (rowId: string, field: string) => string | undefined;
 }
 
-declare const BalanceTable: ({ rows, onRowsChange, colorScheme: colorSchemeProp, onViewSource, }: BalanceTableProps) => react_jsx_runtime.JSX.Element | null;
+declare const BalanceTable: ({ rows, onRowsChange, colorScheme: colorSchemeProp, onViewSource, getCellOriginClass, }: BalanceTableProps) => react_jsx_runtime.JSX.Element | null;
+
+type CellOrigin = 'ai' | 'user' | 'calculated';
+declare const ORIGIN_CLASSES: Record<CellOrigin, string>;
 
 interface EditableCellProps {
     value: number | string | null | undefined;
@@ -453,6 +471,8 @@ interface EditableCellProps {
     requestClear?: number;
     /** Initial value for type-to-edit (the character pressed to start editing) */
     editInitialValue?: string | null;
+    /** Text color class based on cell origin (ai/user/calculated). Overrides default text-gray-800. */
+    originClass?: string;
 }
 /**
  * EditableCell - An inline-editable table cell
@@ -463,7 +483,7 @@ interface EditableCellProps {
  * within a fixed-height container so clicking to edit does NOT scramble/shift
  * the table layout.
  */
-declare const EditableCell: ({ value, onChange, type, isDeduction, hasData, className, align, placeholder, onViewSource, asDiv, focused, onCellFocus, onNavigate, requestEdit, requestClear, editInitialValue, }: EditableCellProps) => react_jsx_runtime.JSX.Element;
+declare const EditableCell: ({ value, onChange, type, isDeduction, hasData, className, align, placeholder, onViewSource, asDiv, focused, onCellFocus, onNavigate, requestEdit, requestClear, editInitialValue, originClass, }: EditableCellProps) => react_jsx_runtime.JSX.Element;
 
 /**
  * EditableField — a compact inline-editable field for use outside table grids.
@@ -486,8 +506,10 @@ interface EditableFieldProps {
     max?: number;
     /** Extra Tailwind classes appended to the wrapper */
     className?: string;
+    /** Text color class based on cell origin */
+    originClass?: string;
 }
-declare function EditableField({ value, onChange, type, min, max, className, }: EditableFieldProps): react_jsx_runtime.JSX.Element;
+declare function EditableField({ value, onChange, type, min, max, className, originClass, }: EditableFieldProps): react_jsx_runtime.JSX.Element;
 
 interface DeleteDialogProps {
     count: number;
@@ -566,4 +588,4 @@ declare const ClickableHeader: ({ onClick, borderColor, className, children }: {
     children: React$1.ReactNode;
 }) => react_jsx_runtime.JSX.Element;
 
-export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, AssetTable, type AssetTableProps, type AutoComputeRule, type AutoConvertRule, type BalanceRow, BalanceTable, type BalanceTableProps, type BoletaMonth, BoletasTable, type BoletasTableProps, ClickableHeader, type CodeudorIncomeInfo, type ColorScheme, type ColumnDef, DEFAULT_SCHEME, type DeclaracionColumn, type DeclaracionRow, DeclaracionTable, type DeclaracionTableProps, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, EditableCell, EditableField, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type InversionRow, InversionesTable, type InversionesTableProps, MONTH_LABELS, type Month, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, type SummaryRow, type SummaryRowFormat, type SummaryRowType, SummaryTable, type SummaryTableProps, TableShell, type TableShellProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, formatDeletedDate, generateId, generateLastNMonths, resolveColors, useSoftDelete };
+export { ActivosSummary, type ActivosSummaryItem, type ActivosSummaryProps, AssetTable, type AssetTableProps, type AutoComputeRule, type AutoConvertRule, type BalanceRow, BalanceTable, type BalanceTableProps, type BoletaMonth, BoletasTable, type BoletasTableProps, type CellOrigin, ClickableHeader, type CodeudorIncomeInfo, type ColorScheme, type ColumnDef, DEFAULT_SCHEME, type DeclaracionColumn, type DeclaracionRow, DeclaracionTable, type DeclaracionTableProps, DeleteDialog, type DeudaRow, DeudasTable, type DeudasTableProps, EditableCell, EditableField, FinalResultsCompact, type FinalResultsCompactProps, type FinalResultsValues, type InversionRow, InversionesTable, type InversionesTableProps, MONTH_LABELS, type Month, ORIGIN_CLASSES, type PromptOptions, type PropiedadRow, PropiedadesTable, type PropiedadesTableProps, RecycleBin, type ReliquidacionBreakdown, type RentaTableProps, type RowData, type RowType, type SoftDeletable, SourceIcon, type SummaryRow, type SummaryRowFormat, type SummaryRowType, SummaryTable, type SummaryTableProps, TableShell, type TableShellProps, type VehiculoRow, VehiculosTable, type VehiculosTableProps, applyAutoCompute, applyAutoConversions, RentaTable as default, defaultFormatCurrency, displayCurrency, displayCurrencyCompact, formatDeletedDate, generateId, generateLastNMonths, resolveColors, useSoftDelete };

@@ -16,6 +16,8 @@ const PropiedadesTable = ({
     headerBg,
     headerText,
     title,
+    onViewSource,
+    getCellOriginClass,
 }: PropiedadesTableProps) => {
     const columns: ColumnDef[] = useMemo(() => [
         { key: 'direccion', label: 'Dirección', type: 'text', width: '30%', isLabel: true, placeholder: 'Dirección' },
@@ -83,6 +85,8 @@ const PropiedadesTable = ({
             ufValue={ufValue}
             conversionRules={conversionRules}
             computeRules={computeRules}
+            onViewSource={onViewSource}
+            getCellOriginClass={getCellOriginClass}
         />
     )
 }
