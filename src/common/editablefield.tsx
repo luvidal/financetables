@@ -41,7 +41,7 @@ export default function EditableField({
             }}
             type={type}
             asDiv
-            className={`bg-blue-50/50 rounded !py-0.5 !px-1.5 [&>div]:h-4 text-[11px] ${className}`}
+            className={`bg-blue-50/50 rounded !py-0 !px-1 [&>div]:h-5 text-xs min-w-[48px] ${className}`}
         />
     )
 }

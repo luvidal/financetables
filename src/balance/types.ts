@@ -5,6 +5,8 @@ export interface BalanceRow {
   empresa: string
   rut: string
   periodo: string
+  from_date?: string | null
+  to_date?: string | null
   total_activos: number | null
   total_pasivos: number | null
   patrimonio: number | null
