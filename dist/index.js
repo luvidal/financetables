@@ -2807,7 +2807,7 @@ function AssetTable({
     );
   };
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntime.jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none", children: /* @__PURE__ */ jsxRuntime.jsxs(
+    /* @__PURE__ */ jsxRuntime.jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none mb-4 sm:mb-6", children: /* @__PURE__ */ jsxRuntime.jsxs(
       tableshell_default,
       {
         colorScheme: colorSchemeProp,

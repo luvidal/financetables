@@ -145,7 +145,7 @@ function AssetTable<T extends AssetRow>({
     }
 
     return (<>
-        <div onKeyDown={keyboard.handleContainerKeyDown} tabIndex={0} className="outline-none">
+        <div onKeyDown={keyboard.handleContainerKeyDown} tabIndex={0} className="outline-none mb-4 sm:mb-6">
             <TableShell
                 colorScheme={colorSchemeProp}
                 headerClassName={`border-t ${borderColor} ${headerText}`}

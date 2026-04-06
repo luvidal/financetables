@@ -2799,7 +2799,7 @@ function AssetTable({
     );
   };
   return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none", children: /* @__PURE__ */ jsxs(
+    /* @__PURE__ */ jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none mb-4 sm:mb-6", children: /* @__PURE__ */ jsxs(
       tableshell_default,
       {
         colorScheme: colorSchemeProp,
