@@ -1919,116 +1919,6 @@ var RentaTable = ({
   );
 };
 var renta_default = RentaTable;
-
-// src/common/autoconvert.ts
-function applyAutoConversions(row, editedField, editedValue, rules, params) {
-  let result = { ...row, [editedField]: editedValue };
-  for (const rule of rules) {
-    if (rule.source === editedField && typeof editedValue === "number") {
-      const precision = rule.precision ?? 0;
-      const converted = rule.formula(editedValue, params);
-      result[rule.target] = precision === 0 ? Math.round(converted) : Math.round(converted * Math.pow(10, precision)) / Math.pow(10, precision);
-    }
-  }
-  return result;
-}
-function applyAutoCompute(row, editedField, rules, params) {
-  let result = { ...row };
-  for (const rule of rules) {
-    if (rule.depends.includes(editedField)) {
-      if (!rule.condition || rule.condition(result)) {
-        result[rule.target] = rule.formula(result, params);
-      }
-    }
-  }
-  return result;
-}
-function useSoftDelete(rows, onRowsChange) {
-  const [deleteTargetId, setDeleteTargetId] = React3.useState(null);
-  const activeRows = React3.useMemo(() => rows.filter((r) => !r.deletedAt), [rows]);
-  const deletedRows = React3.useMemo(() => rows.filter((r) => !!r.deletedAt), [rows]);
-  const requestDelete = React3.useCallback((id) => {
-    setDeleteTargetId(id);
-  }, []);
-  const confirmDelete = React3.useCallback((reason) => {
-    if (!deleteTargetId) return;
-    const now = (/* @__PURE__ */ new Date()).toISOString();
-    onRowsChange(rows.map(
-      (r) => r.id === deleteTargetId ? { ...r, deletedAt: now, deletionReason: reason || void 0 } : r
-    ));
-    setDeleteTargetId(null);
-  }, [deleteTargetId, rows, onRowsChange]);
-  const cancelDelete = React3.useCallback(() => {
-    setDeleteTargetId(null);
-  }, []);
-  const restoreRow = React3.useCallback((id) => {
-    onRowsChange(rows.map((r) => {
-      if (r.id !== id) return r;
-      const { deletedAt: _, deletionReason: __, ...rest } = r;
-      return rest;
-    }));
-  }, [rows, onRowsChange]);
-  return { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow };
-}
-var useDragReorder2 = () => {
-  const [dragRowId, setDragRowId] = React3.useState(null);
-  const [dropTargetId, setDropTargetId] = React3.useState(null);
-  const [dropPosition, setDropPosition] = React3.useState(null);
-  const handleDragStart = React3.useCallback((rowId) => (e) => {
-    setDragRowId(rowId);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", rowId);
-  }, []);
-  const handleDragOver = React3.useCallback((rowId) => (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    if (rowId === dragRowId) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const midY = rect.top + rect.height / 2;
-    setDropTargetId(rowId);
-    setDropPosition(e.clientY < midY ? "above" : "below");
-  }, [dragRowId]);
-  const handleDrop = React3.useCallback((rows, onRowsChange) => (e) => {
-    e.preventDefault();
-    const sourceId = e.dataTransfer.getData("text/plain");
-    if (!sourceId || !dropTargetId || sourceId === dropTargetId) {
-      resetState();
-      return;
-    }
-    const sourceIdx = rows.findIndex((r) => r.id === sourceId);
-    const targetIdx = rows.findIndex((r) => r.id === dropTargetId);
-    if (sourceIdx === -1 || targetIdx === -1) {
-      resetState();
-      return;
-    }
-    const result = rows.filter((r) => r.id !== sourceId);
-    const insertIdx = dropPosition === "below" ? result.findIndex((r) => r.id === dropTargetId) + 1 : result.findIndex((r) => r.id === dropTargetId);
-    result.splice(insertIdx, 0, rows[sourceIdx]);
-    onRowsChange(result);
-    resetState();
-  }, [dropTargetId, dropPosition]);
-  const handleDragEnd = React3.useCallback(() => {
-    resetState();
-  }, []);
-  function resetState() {
-    setDragRowId(null);
-    setDropTargetId(null);
-    setDropPosition(null);
-  }
-  return {
-    dragRowId,
-    dropTargetId,
-    dropPosition,
-    handleDragStart,
-    handleDragOver,
-    handleDragLeave: React3.useCallback(() => {
-      setDropTargetId(null);
-      setDropPosition(null);
-    }, []),
-    handleDrop,
-    handleDragEnd
-  };
-};
 var ClickableHeader = ({ onClick, borderColor, className, children }) => /* @__PURE__ */ jsxRuntime.jsx(
   "span",
   {
@@ -2041,381 +1931,6 @@ var ClickableHeader = ({ onClick, borderColor, className, children }) => /* @__P
   }
 );
 var clickableheader_default = ClickableHeader;
-
-// src/common/cellorigin.ts
-var ORIGIN_CLASSES = {
-  ai: "text-gray-500",
-  user: "text-gray-900",
-  calculated: "text-blue-800"
-};
-var LINEAS_TC_PATTERN = /l[ií]nea|tarjeta|tc/i;
-var DeudasTable = ({
-  rows,
-  onRowsChange,
-  formatCurrency = defaultFormatCurrency,
-  ufValue,
-  castigo = 0.05,
-  colorScheme: colorSchemeProp,
-  headerBg: headerBgProp,
-  headerText: headerTextProp,
-  onViewSource,
-  getCellOriginClass
-}) => {
-  const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp);
-  const { getHoverProps, isHovered: isRowHovered } = useRowHover();
-  const [selectedRows, setSelectedRows] = React3.useState(/* @__PURE__ */ new Set());
-  const [newRow, setNewRow] = React3.useState({ institucion: "", tipo_deuda: "" });
-  const [showUF, setShowUF] = React3.useState(false);
-  const { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow } = useSoftDelete(rows, onRowsChange);
-  const visibleRowIds = React3.useMemo(() => activeRows.map((r) => r.id), [activeRows]);
-  const keyboard = useGridKeyboard({ visibleRowIds, colCount: 5 });
-  const drag = useDragReorder2();
-  const anySelected = selectedRows.size > 0;
-  const toggleSelect = React3.useCallback((rowId) => {
-    setSelectedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(rowId)) next.delete(rowId);
-      else next.add(rowId);
-      return next;
-    });
-  }, []);
-  const clearSelection = React3.useCallback(() => setSelectedRows(/* @__PURE__ */ new Set()), []);
-  const requestDeleteSelected = React3.useCallback(() => {
-    for (const id of selectedRows) requestDelete(id);
-    clearSelection();
-  }, [selectedRows, requestDelete, clearSelection]);
-  const handleRowClick = React3.useCallback((e, rowId) => {
-    if (!(e.metaKey || e.ctrlKey)) return;
-    const target = e.target;
-    if (target.closest('input, button, [role="button"]')) return;
-    e.preventDefault();
-    toggleSelect(rowId);
-  }, [toggleSelect]);
-  const conversionRules = ufValue ? [
-    { source: "saldo_deuda_uf", target: "saldo_deuda_pesos", formula: (v) => v * ufValue, precision: 0 },
-    { source: "saldo_deuda_pesos", target: "saldo_deuda_uf", formula: (v) => v / ufValue, precision: 2 }
-  ] : [];
-  const computeRules = [
-    {
-      target: "monto_cuota",
-      depends: ["saldo_deuda_uf", "saldo_deuda_pesos", "tipo_deuda", "castigo_pct"],
-      condition: (row) => LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null,
-      formula: (row) => Math.round((row.saldo_deuda_pesos ?? 0) * (row.castigo_pct ?? castigo))
-    },
-    {
-      target: "monto_cuota",
-      depends: ["saldo_deuda_uf", "saldo_deuda_pesos", "castigo_pct"],
-      condition: (row) => row.cuota_estimated === true && !LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null,
-      formula: (row) => Math.round((row.saldo_deuda_pesos ?? 0) * (row.castigo_pct ?? castigo))
-    }
-  ];
-  const updateField = (id, field, value) => {
-    onRowsChange(rows.map((r) => {
-      if (r.id !== id) return r;
-      let next = applyAutoConversions(r, field, value, conversionRules, {});
-      next = applyAutoCompute(next, field, computeRules, {});
-      if (field === "monto_cuota") next = { ...next, cuota_estimated: false, castigo_pct: void 0 };
-      return next;
-    }));
-  };
-  const addRow = () => {
-    if (!newRow.institucion.trim()) return;
-    const row = {
-      id: generateId("dc"),
-      institucion: newRow.institucion.trim(),
-      tipo_deuda: newRow.tipo_deuda.trim(),
-      saldo_deuda_uf: null,
-      saldo_deuda_pesos: null,
-      monto_cuota: null,
-      cuotas_pagadas: null,
-      cuotas_total: null
-    };
-    setNewRow({ institucion: "", tipo_deuda: "" });
-    onRowsChange([...rows, row]);
-  };
-  const totalSaldoPesos = activeRows.reduce((s, r) => s + (r.saldo_deuda_pesos || 0), 0);
-  const totalSaldoUF = activeRows.reduce((s, r) => s + (r.saldo_deuda_uf || 0), 0);
-  const totalMontoCuota = activeRows.reduce((s, r) => s + (r.monto_cuota || 0), 0);
-  const canToggleSaldo = ufValue != null;
-  const saldoKey = showUF ? "saldo_deuda_uf" : "saldo_deuda_pesos";
-  const saldoLabel = showUF ? "Saldo UF" : "Saldo $";
-  const saldoType = showUF ? "number" : "currency";
-  const isAutoComputed = (row, field) => {
-    if (field === "saldo_deuda_pesos" && row.saldo_deuda_uf != null && ufValue) return true;
-    if (field === "monto_cuota" && LINEAS_TC_PATTERN.test(row.tipo_deuda) && row.saldo_deuda_pesos != null) return true;
-    return false;
-  };
-  const cellOriginClass = (row, field) => {
-    if (isAutoComputed(row, field)) return ORIGIN_CLASSES.calculated;
-    if (field === "monto_cuota" && row.cuota_estimated) return ORIGIN_CLASSES.calculated;
-    return getCellOriginClass?.(row.id, field);
-  };
-  return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-    /* @__PURE__ */ jsxRuntime.jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none", children: /* @__PURE__ */ jsxRuntime.jsxs(
-      tableshell_default,
-      {
-        colorScheme: colorSchemeProp,
-        headerClassName: `border-t ${borderColor} ${headerText}`,
-        rowCount: activeRows.length,
-        renderHeader: () => anySelected ? /* @__PURE__ */ jsxRuntime.jsx("th", { colSpan: 7, className: `${T.headerCell} text-left`, onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "text-xs text-rose-600", children: [
-            selectedRows.size,
-            " fila",
-            selectedRows.size !== 1 ? "s" : ""
-          ] }),
-          /* @__PURE__ */ jsxRuntime.jsxs(
-            "button",
-            {
-              onClick: requestDeleteSelected,
-              className: "text-xs px-3 py-1 rounded-full text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1",
-              title: "Eliminar filas seleccionadas",
-              children: [
-                /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Trash2, { size: 12 }),
-                "Eliminar"
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsxRuntime.jsx(
-            "button",
-            {
-              onClick: clearSelection,
-              className: "text-xs px-2 py-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors",
-              children: "Cancelar"
-            }
-          )
-        ] }) }) : /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} text-left ${T.th} normal-case ${headerText} ${T.vline}`, children: "Instituci\xF3n" }),
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} text-left ${T.th} normal-case ${headerText} ${T.vline}`, children: "Tipo Deuda" }),
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} text-right ${T.th} normal-case ${headerText} ${T.vline}`, children: canToggleSaldo ? /* @__PURE__ */ jsxRuntime.jsx(clickableheader_default, { onClick: () => setShowUF((prev) => !prev), borderColor, children: saldoLabel }) : saldoLabel }),
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} text-right ${T.th} normal-case ${headerText} ${T.vline}`, children: "Cuota $" }),
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} text-center ${T.th} normal-case ${headerText} ${T.vline}`, children: "%" }),
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: `${T.headerCell} text-center ${T.th} normal-case ${headerText}`, children: "Cuotas" }),
-          /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol })
-        ] }),
-        renderFooter: () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold text-xs", children: [
-          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: 2, className: `${T.totalCell} ${T.totalLabel} border-t border-gray-100`, children: "TOTAL" }),
-          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} border-t border-gray-100`, children: showUF ? totalSaldoUF ? totalSaldoUF.toLocaleString("es-CL", { maximumFractionDigits: 2 }) : "" : totalSaldoPesos ? formatCurrency(totalSaldoPesos) : "" }),
-          /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right ${T.totalValue} border-t border-gray-100`, children: totalMontoCuota ? formatCurrency(totalMontoCuota) : "" }),
-          /* @__PURE__ */ jsxRuntime.jsx("td", { colSpan: 3, className: "border-t border-gray-100" })
-        ] }),
-        renderAfterContent: () => /* @__PURE__ */ jsxRuntime.jsx(recyclebin_default, { deletedRows, getLabel: (r) => r.institucion, onRestore: restoreRow }),
-        children: [
-          activeRows.map((row) => {
-            const hovered = isRowHovered(row.id);
-            const selected = selectedRows.has(row.id);
-            const showCheckbox = anySelected || hovered;
-            const isDragging = drag.dragRowId === row.id;
-            const dropBorder = drag.dropTargetId === row.id ? drag.dropPosition === "above" ? "border-t-2 border-t-blue-400" : "border-b-2 border-b-blue-400" : "";
-            return /* @__PURE__ */ jsxRuntime.jsxs(
-              "tr",
-              {
-                className: `${T.rowBorder} ${selected ? "bg-rose-50/60" : T.rowHover} ${isDragging ? "opacity-40" : ""} ${dropBorder}`,
-                ...getHoverProps(row.id),
-                onClick: (e) => handleRowClick(e, row.id),
-                onDragOver: drag.handleDragOver(row.id),
-                onDragLeave: drag.handleDragLeave,
-                onDrop: drag.handleDrop(rows, onRowsChange),
-                children: [
-                  /* @__PURE__ */ jsxRuntime.jsxs("td", { className: `${T.cellEditLabel} ${T.cellLabel} ${T.vline} relative`, children: [
-                    /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-0.5 min-w-0", children: [
-                      /* @__PURE__ */ jsxRuntime.jsx(
-                        "span",
-                        {
-                          draggable: hovered,
-                          onDragStart: drag.handleDragStart(row.id),
-                          onDragEnd: drag.handleDragEnd,
-                          className: `shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-opacity ${hovered && !anySelected ? "opacity-100" : "opacity-0 pointer-events-none"}`,
-                          title: "Arrastrar para reordenar",
-                          children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.GripVertical, { size: 14 })
-                        }
-                      ),
-                      /* @__PURE__ */ jsxRuntime.jsx(
-                        "input",
-                        {
-                          type: "checkbox",
-                          checked: selected,
-                          onChange: () => toggleSelect(row.id),
-                          className: `shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-rose-600 focus:ring-rose-500 cursor-pointer transition-opacity ${showCheckbox ? "opacity-100" : "opacity-0 pointer-events-none"}`
-                        }
-                      ),
-                      /* @__PURE__ */ jsxRuntime.jsx(
-                        "input",
-                        {
-                          type: "text",
-                          value: row.institucion,
-                          onChange: (e) => updateField(row.id, "institucion", e.target.value),
-                          className: `flex-1 min-w-0 ${T.inputLabel} ${hovered || showCheckbox ? "" : "pl-1"} ${getCellOriginClass?.(row.id, "institucion") || ""}`,
-                          placeholder: "Instituci\xF3n"
-                        }
-                      )
-                    ] }),
-                    row.sourceFileId && onViewSource && /* @__PURE__ */ jsxRuntime.jsx(
-                      "button",
-                      {
-                        onClick: () => onViewSource([row.sourceFileId]),
-                        className: `absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] p-0.5 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-opacity ${hovered ? "opacity-100" : "opacity-0 pointer-events-none"}`,
-                        title: "Ver documento fuente",
-                        children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Eye, { size: 14 })
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx(
-                    "input",
-                    {
-                      type: "text",
-                      value: row.tipo_deuda,
-                      onChange: (e) => updateField(row.id, "tipo_deuda", e.target.value),
-                      className: `w-full ${T.input} pl-1 ${getCellOriginClass?.(row.id, "tipo_deuda") || ""}`,
-                      placeholder: "Tipo"
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxRuntime.jsx(
-                    editablecell_default,
-                    {
-                      value: row[saldoKey],
-                      onChange: (v) => updateField(row.id, saldoKey, v),
-                      type: saldoType,
-                      hasData: row[saldoKey] !== null,
-                      className: T.vline,
-                      originClass: cellOriginClass(row, saldoKey),
-                      focused: keyboard.isFocused(row.id, 0),
-                      onCellFocus: () => keyboard.focus(row.id, 0),
-                      onNavigate: keyboard.navigate,
-                      requestEdit: keyboard.isFocused(row.id, 0) ? keyboard.editTrigger : 0,
-                      requestClear: keyboard.isFocused(row.id, 0) ? keyboard.clearTrigger : 0,
-                      editInitialValue: keyboard.isFocused(row.id, 0) ? keyboard.editInitialValue : void 0
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntime.jsxs("td", { className: `relative ${T.vline}`, children: [
-                    /* @__PURE__ */ jsxRuntime.jsx(
-                      editablecell_default,
-                      {
-                        value: row.monto_cuota,
-                        onChange: (v) => updateField(row.id, "monto_cuota", v),
-                        type: "currency",
-                        hasData: row.monto_cuota !== null,
-                        originClass: cellOriginClass(row, "monto_cuota"),
-                        focused: keyboard.isFocused(row.id, 1),
-                        onCellFocus: () => keyboard.focus(row.id, 1),
-                        onNavigate: keyboard.navigate,
-                        requestEdit: keyboard.isFocused(row.id, 1) ? keyboard.editTrigger : 0,
-                        requestClear: keyboard.isFocused(row.id, 1) ? keyboard.clearTrigger : 0,
-                        editInitialValue: keyboard.isFocused(row.id, 1) ? keyboard.editInitialValue : void 0,
-                        onViewSource: row.cuota_source_file_id && onViewSource ? () => onViewSource([row.cuota_source_file_id]) : void 0,
-                        asDiv: true
-                      }
-                    ),
-                    row.cuota_estimated && row.saldo_deuda_pesos != null && !row.castigo_pct && /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `absolute right-0 top-1/2 -translate-y-1/2 translate-x-[2px] group/info transition-opacity ${hovered ? "opacity-100" : "opacity-0 pointer-events-none"}`, children: [
-                      /* @__PURE__ */ jsxRuntime.jsx("button", { className: "p-0.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100", children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Info, { size: 13 }) }),
-                      /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "hidden group-hover/info:block absolute bottom-full right-0 mb-1 px-2 py-1 rounded bg-gray-800 text-white text-[10px] whitespace-nowrap z-50 shadow-lg", children: [
-                        "Estimado: ",
-                        Math.round((row.castigo_pct ?? castigo) * 100),
-                        "% de ",
-                        formatCurrency(row.saldo_deuda_pesos)
-                      ] })
-                    ] })
-                  ] }),
-                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: `text-center ${T.vline}`, children: row.cuota_estimated ? /* @__PURE__ */ jsxRuntime.jsx(
-                    editablecell_default,
-                    {
-                      value: row.castigo_pct != null ? Math.round(row.castigo_pct * 100) : Math.round(castigo * 100),
-                      onChange: (v) => updateField(row.id, "castigo_pct", v != null ? v / 100 : castigo),
-                      type: "number",
-                      hasData: true,
-                      align: "center",
-                      className: "bg-blue-50/50 rounded !py-0.5 !px-1.5 [&>div]:h-4 text-[11px]",
-                      originClass: cellOriginClass(row, "castigo_pct"),
-                      asDiv: true,
-                      focused: keyboard.isFocused(row.id, 2),
-                      onCellFocus: () => keyboard.focus(row.id, 2),
-                      onNavigate: keyboard.navigate,
-                      requestEdit: keyboard.isFocused(row.id, 2) ? keyboard.editTrigger : 0,
-                      requestClear: keyboard.isFocused(row.id, 2) ? keyboard.clearTrigger : 0,
-                      editInitialValue: keyboard.isFocused(row.id, 2) ? keyboard.editInitialValue : void 0
-                    }
-                  ) : /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-[11px] text-gray-300", children: "\u2014" }) }),
-                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: "text-center text-xs text-gray-500", children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center justify-center gap-0.5", children: [
-                    /* @__PURE__ */ jsxRuntime.jsx(
-                      editablecell_default,
-                      {
-                        value: row.cuotas_pagadas,
-                        onChange: (v) => updateField(row.id, "cuotas_pagadas", v),
-                        type: "number",
-                        hasData: row.cuotas_pagadas !== null,
-                        align: "center",
-                        originClass: cellOriginClass(row, "cuotas_pagadas"),
-                        asDiv: true,
-                        focused: keyboard.isFocused(row.id, 3),
-                        onCellFocus: () => keyboard.focus(row.id, 3),
-                        onNavigate: keyboard.navigate,
-                        requestEdit: keyboard.isFocused(row.id, 3) ? keyboard.editTrigger : 0,
-                        requestClear: keyboard.isFocused(row.id, 3) ? keyboard.clearTrigger : 0,
-                        editInitialValue: keyboard.isFocused(row.id, 3) ? keyboard.editInitialValue : void 0
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-gray-400", children: "/" }),
-                    /* @__PURE__ */ jsxRuntime.jsx(
-                      editablecell_default,
-                      {
-                        value: row.cuotas_total,
-                        onChange: (v) => updateField(row.id, "cuotas_total", v),
-                        type: "number",
-                        hasData: row.cuotas_total !== null,
-                        align: "center",
-                        originClass: cellOriginClass(row, "cuotas_total"),
-                        asDiv: true,
-                        focused: keyboard.isFocused(row.id, 4),
-                        onCellFocus: () => keyboard.focus(row.id, 4),
-                        onNavigate: keyboard.navigate,
-                        requestEdit: keyboard.isFocused(row.id, 4) ? keyboard.editTrigger : 0,
-                        requestClear: keyboard.isFocused(row.id, 4) ? keyboard.clearTrigger : 0,
-                        editInitialValue: keyboard.isFocused(row.id, 4) ? keyboard.editInitialValue : void 0
-                      }
-                    )
-                  ] }) }),
-                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: `text-center ${T.actionCol}`, children: /* @__PURE__ */ jsxRuntime.jsx(deletebutton_default, { onClick: () => requestDelete(row.id), isVisible: hovered && !anySelected }) })
-                ]
-              },
-              row.id
-            );
-          }),
-          /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: `border-b border-dashed ${borderColor.replace("200", "100")} ${headerBg}/20`, children: [
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx(
-              "input",
-              {
-                type: "text",
-                placeholder: "Agregar deuda...",
-                value: newRow.institucion,
-                onChange: (e) => setNewRow((prev) => ({ ...prev, institucion: e.target.value })),
-                className: `w-full ${T.inputPlaceholder}`,
-                onKeyDown: (e) => {
-                  if (e.key === "Enter" && newRow.institucion.trim()) addRow();
-                }
-              }
-            ) }),
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${T.vline}`, children: /* @__PURE__ */ jsxRuntime.jsx(
-              "input",
-              {
-                type: "text",
-                placeholder: "Tipo",
-                value: newRow.tipo_deuda,
-                onChange: (e) => setNewRow((prev) => ({ ...prev, tipo_deuda: e.target.value })),
-                className: `w-full ${T.inputPlaceholder}`
-              }
-            ) }),
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.vline }),
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.vline }),
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.vline }),
-            /* @__PURE__ */ jsxRuntime.jsx("td", {}),
-            /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
-          ] })
-        ]
-      }
-    ) }),
-    deleteTargetId && /* @__PURE__ */ jsxRuntime.jsx(deletedialog_default, { count: 1, onConfirm: confirmDelete, onCancel: cancelDelete })
-  ] });
-};
-var deudas_default = DeudasTable;
 var SHORT_MONTHS = {
   enero: "Ene",
   febrero: "Feb",
@@ -2678,6 +2193,122 @@ var FinalResultsCompact = ({
   ] });
 };
 var finalresults_default = FinalResultsCompact;
+
+// src/common/autoconvert.ts
+function buildUfPair(ufKey, pesosKey, ufValue, ufPrecision = 2, pesosPrecision = 0) {
+  return [
+    { source: ufKey, target: pesosKey, formula: (v) => v * ufValue, precision: pesosPrecision },
+    { source: pesosKey, target: ufKey, formula: (v) => v / ufValue, precision: ufPrecision }
+  ];
+}
+function applyAutoConversions(row, editedField, editedValue, rules, params) {
+  let result = { ...row, [editedField]: editedValue };
+  for (const rule of rules) {
+    if (rule.source === editedField && typeof editedValue === "number") {
+      const precision = rule.precision ?? 0;
+      const converted = rule.formula(editedValue, params);
+      result[rule.target] = precision === 0 ? Math.round(converted) : Math.round(converted * Math.pow(10, precision)) / Math.pow(10, precision);
+    }
+  }
+  return result;
+}
+function applyAutoCompute(row, editedField, rules, params) {
+  let result = { ...row };
+  for (const rule of rules) {
+    if (rule.depends.includes(editedField)) {
+      if (!rule.condition || rule.condition(result)) {
+        result[rule.target] = rule.formula(result, params);
+      }
+    }
+  }
+  return result;
+}
+function useSoftDelete(rows, onRowsChange) {
+  const [deleteTargetId, setDeleteTargetId] = React3.useState(null);
+  const activeRows = React3.useMemo(() => rows.filter((r) => !r.deletedAt), [rows]);
+  const deletedRows = React3.useMemo(() => rows.filter((r) => !!r.deletedAt), [rows]);
+  const requestDelete = React3.useCallback((id) => {
+    setDeleteTargetId(id);
+  }, []);
+  const confirmDelete = React3.useCallback((reason) => {
+    if (!deleteTargetId) return;
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    onRowsChange(rows.map(
+      (r) => r.id === deleteTargetId ? { ...r, deletedAt: now, deletionReason: reason || void 0 } : r
+    ));
+    setDeleteTargetId(null);
+  }, [deleteTargetId, rows, onRowsChange]);
+  const cancelDelete = React3.useCallback(() => {
+    setDeleteTargetId(null);
+  }, []);
+  const restoreRow = React3.useCallback((id) => {
+    onRowsChange(rows.map((r) => {
+      if (r.id !== id) return r;
+      const { deletedAt: _, deletionReason: __, ...rest } = r;
+      return rest;
+    }));
+  }, [rows, onRowsChange]);
+  return { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow };
+}
+var useDragReorder2 = () => {
+  const [dragRowId, setDragRowId] = React3.useState(null);
+  const [dropTargetId, setDropTargetId] = React3.useState(null);
+  const [dropPosition, setDropPosition] = React3.useState(null);
+  const handleDragStart = React3.useCallback((rowId) => (e) => {
+    setDragRowId(rowId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", rowId);
+  }, []);
+  const handleDragOver = React3.useCallback((rowId) => (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (rowId === dragRowId) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    setDropTargetId(rowId);
+    setDropPosition(e.clientY < midY ? "above" : "below");
+  }, [dragRowId]);
+  const handleDrop = React3.useCallback((rows, onRowsChange) => (e) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData("text/plain");
+    if (!sourceId || !dropTargetId || sourceId === dropTargetId) {
+      resetState();
+      return;
+    }
+    const sourceIdx = rows.findIndex((r) => r.id === sourceId);
+    const targetIdx = rows.findIndex((r) => r.id === dropTargetId);
+    if (sourceIdx === -1 || targetIdx === -1) {
+      resetState();
+      return;
+    }
+    const result = rows.filter((r) => r.id !== sourceId);
+    const insertIdx = dropPosition === "below" ? result.findIndex((r) => r.id === dropTargetId) + 1 : result.findIndex((r) => r.id === dropTargetId);
+    result.splice(insertIdx, 0, rows[sourceIdx]);
+    onRowsChange(result);
+    resetState();
+  }, [dropTargetId, dropPosition]);
+  const handleDragEnd = React3.useCallback(() => {
+    resetState();
+  }, []);
+  function resetState() {
+    setDragRowId(null);
+    setDropTargetId(null);
+    setDropPosition(null);
+  }
+  return {
+    dragRowId,
+    dropTargetId,
+    dropPosition,
+    handleDragStart,
+    handleDragOver,
+    handleDragLeave: React3.useCallback(() => {
+      setDropTargetId(null);
+      setDropPosition(null);
+    }, []),
+    handleDrop,
+    handleDragEnd
+  };
+};
 var ViewSourceButton = ({
   sourceFileId,
   onViewSource,
@@ -2697,8 +2328,15 @@ var ViewSourceButton = ({
   );
 };
 var viewsourcebutton_default = ViewSourceButton;
+
+// src/common/cellorigin.ts
+var ORIGIN_CLASSES = {
+  ai: "text-gray-500",
+  user: "text-gray-900",
+  calculated: "text-blue-800"
+};
 function AssetTable({
-  columns: columns3,
+  columns,
   rows,
   onRowsChange,
   idPrefix,
@@ -2711,14 +2349,23 @@ function AssetTable({
   ufValue,
   conversionRules = [],
   computeRules = [],
+  sideEffects = [],
   onViewSource,
-  getCellOriginClass
+  getCellOriginClass,
+  selectable = false,
+  reorderable = false
 }) {
   const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp);
   const { getHoverProps, isHovered } = useRowHover();
   const [toggledCols, setToggledCols] = React3.useState(/* @__PURE__ */ new Set());
   const { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow } = useSoftDelete(rows, onRowsChange);
+  const [selectedRows, setSelectedRows] = React3.useState(/* @__PURE__ */ new Set());
+  const [newRowValues, setNewRowValues] = React3.useState({});
+  const drag = useDragReorder2();
+  const anySelected = selectable && selectedRows.size > 0;
   const canToggleCurrency = ufValue != null;
+  const hasAutoConvert = conversionRules.length > 0 || computeRules.length > 0 || sideEffects.length > 0;
+  const actionColDelete = selectable || reorderable;
   const toggleColumn = (key) => {
     setToggledCols((prev) => {
       const next = new Set(prev);
@@ -2728,7 +2375,7 @@ function AssetTable({
     });
   };
   const resolvedColumns = React3.useMemo(() => {
-    return columns3.map((col) => {
+    return columns.map((col) => {
       if (col.ufPair && toggledCols.has(col.key)) {
         const pairLabel = col.ufPairLabel || col.label;
         const pairType = col.ufPairType || "currency";
@@ -2736,23 +2383,51 @@ function AssetTable({
       }
       return col;
     });
-  }, [columns3, toggledCols]);
-  const editableCols = React3.useMemo(
-    () => resolvedColumns.filter((c) => c.type !== "text"),
-    [resolvedColumns]
-  );
+  }, [columns, toggledCols]);
+  const { keyToPosition, kbColCount } = React3.useMemo(() => {
+    const map = {};
+    let pos = 0;
+    for (const col of resolvedColumns) {
+      if (col.type === "text") continue;
+      map[col.key] = pos++;
+      if (col.compound) map[col.compound.key] = pos++;
+    }
+    return { keyToPosition: map, kbColCount: pos };
+  }, [resolvedColumns]);
   const visibleRowIds = React3.useMemo(() => activeRows.map((r) => r.id), [activeRows]);
-  const keyboard = useGridKeyboard({ visibleRowIds, colCount: editableCols.length });
-  resolvedColumns.filter((c) => c.type === "text");
+  const keyboard = useGridKeyboard({ visibleRowIds, colCount: kbColCount });
   const labelCol = resolvedColumns.find((c) => c.isLabel) || resolvedColumns[0];
-  const [newRowValues, setNewRowValues] = React3.useState({});
-  const hasAutoConvert = conversionRules.length > 0 || computeRules.length > 0;
+  const toggleSelect = React3.useCallback((rowId) => {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(rowId)) next.delete(rowId);
+      else next.add(rowId);
+      return next;
+    });
+  }, []);
+  const clearSelection = React3.useCallback(() => setSelectedRows(/* @__PURE__ */ new Set()), []);
+  const requestDeleteSelected = React3.useCallback(() => {
+    for (const id of selectedRows) requestDelete(id);
+    clearSelection();
+  }, [selectedRows, requestDelete, clearSelection]);
+  const handleRowClick = React3.useCallback((e, rowId) => {
+    if (!(e.metaKey || e.ctrlKey)) return;
+    const target = e.target;
+    if (target.closest('input, button, [role="button"]')) return;
+    e.preventDefault();
+    toggleSelect(rowId);
+  }, [toggleSelect]);
   const updateField = (id, field, value) => {
     onRowsChange(rows.map((r) => {
       if (r.id !== id) return r;
       if (hasAutoConvert) {
         let next = applyAutoConversions(r, field, value, conversionRules, {});
         next = applyAutoCompute(next, field, computeRules, {});
+        for (const effect of sideEffects) {
+          if (effect.trigger === field) {
+            next = { ...next, ...effect.apply(next, value) };
+          }
+        }
         return next;
       }
       return { ...r, [field]: value };
@@ -2760,13 +2435,14 @@ function AssetTable({
   };
   const addRow = (overrides) => {
     const base = { id: generateId(idPrefix) };
-    for (const col of columns3) {
+    for (const col of columns) {
       if (col.type === "text") {
         base[col.key] = (newRowValues[col.key] || "").trim();
       } else {
         base[col.key] = null;
       }
       if (col.ufPair) base[col.ufPair] = null;
+      if (col.compound) base[col.compound.key] = null;
     }
     const row = { ...base, ...overrides };
     setNewRowValues({});
@@ -2778,33 +2454,28 @@ function AssetTable({
       if (col.type === "currency" || col.type === "number") {
         result[col.key] = activeRows.reduce((s, r) => s + (r[col.key] || 0), 0);
       }
+      if (col.compound) {
+        result[col.compound.key] = activeRows.reduce((s, r) => s + (r[col.compound.key] || 0), 0);
+      }
     }
     return result;
   }, [activeRows, resolvedColumns]);
-  const editableColIndex = (col) => editableCols.indexOf(col);
-  const renderEditableCell = (row, col, vline = "") => {
-    const colIdx = editableColIndex(col);
-    const value = row[col.key];
-    const originClass = col.autoComputedClass?.(row) ? ORIGIN_CLASSES.calculated : getCellOriginClass?.(row.id, col.key);
-    return /* @__PURE__ */ jsxRuntime.jsx(
-      editablecell_default,
-      {
-        value,
-        onChange: (v) => updateField(row.id, col.key, v),
-        type: col.type,
-        hasData: value !== null,
-        align: col.align,
-        className: vline,
-        originClass,
-        focused: keyboard.isFocused(row.id, colIdx),
-        onCellFocus: () => keyboard.focus(row.id, colIdx),
-        onNavigate: keyboard.navigate,
-        requestEdit: keyboard.isFocused(row.id, colIdx) ? keyboard.editTrigger : 0,
-        requestClear: keyboard.isFocused(row.id, colIdx) ? keyboard.clearTrigger : 0,
-        editInitialValue: keyboard.isFocused(row.id, colIdx) ? keyboard.editInitialValue : void 0
-      },
-      col.key
-    );
+  const cellOrigin = (row, key, col) => {
+    if (col.autoComputedClass?.(row)) return ORIGIN_CLASSES.calculated;
+    return getCellOriginClass?.(row.id, key);
+  };
+  const kbProps = (rowId, key) => {
+    const pos = keyToPosition[key];
+    if (pos === void 0) return {};
+    const focused = keyboard.isFocused(rowId, pos);
+    return {
+      focused,
+      onCellFocus: () => keyboard.focus(rowId, pos),
+      onNavigate: keyboard.navigate,
+      requestEdit: focused ? keyboard.editTrigger : 0,
+      requestClear: focused ? keyboard.clearTrigger : 0,
+      editInitialValue: focused ? keyboard.editInitialValue : void 0
+    };
   };
   return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
     /* @__PURE__ */ jsxRuntime.jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none mb-4 sm:mb-6", children: /* @__PURE__ */ jsxRuntime.jsxs(
@@ -2813,12 +2484,39 @@ function AssetTable({
         colorScheme: colorSchemeProp,
         headerClassName: `border-t ${borderColor} ${headerText}`,
         rowCount: activeRows.length,
-        renderHeader: () => /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+        renderHeader: () => anySelected ? /* @__PURE__ */ jsxRuntime.jsx("th", { colSpan: resolvedColumns.length + 1, className: `${T.headerCell} text-left`, onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxRuntime.jsxs("span", { className: "text-xs text-rose-600", children: [
+            selectedRows.size,
+            " fila",
+            selectedRows.size !== 1 ? "s" : ""
+          ] }),
+          /* @__PURE__ */ jsxRuntime.jsxs(
+            "button",
+            {
+              onClick: requestDeleteSelected,
+              className: "text-xs px-3 py-1 rounded-full text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1",
+              title: "Eliminar filas seleccionadas",
+              children: [
+                /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Trash2, { size: 12 }),
+                "Eliminar"
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntime.jsx(
+            "button",
+            {
+              onClick: clearSelection,
+              className: "text-xs px-2 py-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors",
+              children: "Cancelar"
+            }
+          )
+        ] }) }) : /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
           resolvedColumns.map((col, i) => {
-            const effectiveAlign = col.align ?? (col.type === "currency" || col.type === "number" ? "right" : "left");
+            const isNumeric = col.type === "currency" || col.type === "number";
+            const effectiveAlign = col.align ?? (isNumeric ? "right" : col.type === "percent" ? "center" : "left");
             const vline = i < resolvedColumns.length - 1 ? T.vline : "";
             const label = col === labelCol && title ? title : col.label;
-            const origCol = columns3[i];
+            const origCol = columns[i];
             const isToggleable = canToggleCurrency && origCol?.ufPair;
             return /* @__PURE__ */ jsxRuntime.jsx(
               "th",
@@ -2840,6 +2538,15 @@ function AssetTable({
             if (col.type === "text") {
               return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} border-t border-gray-100` }, col.key);
             }
+            if (col.type === "percent") {
+              return /* @__PURE__ */ jsxRuntime.jsx("td", { className: "border-t border-gray-100" }, col.key);
+            }
+            if (col.compound) {
+              const sep = col.compound.separator ?? "/";
+              const v1 = totals[col.key];
+              const v2 = totals[col.compound.key];
+              return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-center ${T.totalValue} border-t border-gray-100`, children: v1 || v2 ? `${v1 || 0} ${sep} ${v2 || 0}` : "" }, col.key);
+            }
             return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${col.align === "center" ? "text-center" : "text-right"} ${T.totalValue} border-t border-gray-100`, children: totals[col.key] ? col.type === "number" ? totals[col.key].toLocaleString("es-CL", { maximumFractionDigits: 2 }) : formatCurrency(totals[col.key]) : "" }, col.key);
           }),
           /* @__PURE__ */ jsxRuntime.jsx("td", { className: "border-t border-gray-100" })
@@ -2850,29 +2557,66 @@ function AssetTable({
             deletedRows,
             getLabel: (r) => r[labelCol.key] || "",
             onRestore: restoreRow,
-            renderCells: (row) => /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
-              editableCols.map((col, i) => {
-                const v = row[col.key];
-                return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right tabular-nums ${i < editableCols.length - 1 ? T.vline : ""}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} ${v != null ? "text-gray-400" : "text-gray-200"}`, children: v != null ? col.type === "number" ? String(v) : formatCurrency(v) : "\u2014" }) }, col.key);
-              }),
-              /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
-            ] })
+            renderCells: (row) => {
+              const editableCols = resolvedColumns.filter((c) => c.type !== "text");
+              return /* @__PURE__ */ jsxRuntime.jsxs(jsxRuntime.Fragment, { children: [
+                editableCols.map((col, i) => {
+                  if (col.compound) {
+                    const sep = col.compound.separator ?? "/";
+                    const v1 = row[col.key];
+                    const v2 = row[col.compound.key];
+                    return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-center tabular-nums ${i < editableCols.length - 1 ? T.vline : ""}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} ${v1 != null || v2 != null ? "text-gray-400" : "text-gray-200"}`, children: v1 != null || v2 != null ? `${v1 ?? "\u2014"} ${sep} ${v2 ?? "\u2014"}` : "\u2014" }) }, col.key);
+                  }
+                  const v = row[col.key];
+                  return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} text-right tabular-nums ${i < editableCols.length - 1 ? T.vline : ""}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: `${T.totalValue} ${v != null ? "text-gray-400" : "text-gray-200"}`, children: v != null ? col.type === "number" ? String(v) : col.type === "percent" ? `${Math.round(v * 100)}%` : formatCurrency(v) : "\u2014" }) }, col.key);
+                }),
+                /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
+              ] });
+            }
           }
         ),
         children: [
           activeRows.map((row) => {
             const hovered = isHovered(row.id);
+            const selected = selectable && selectedRows.has(row.id);
+            const showCheckbox = selectable && (anySelected || hovered);
+            const isDragging = reorderable && drag.dragRowId === row.id;
+            const dropBorder = reorderable && drag.dropTargetId === row.id ? drag.dropPosition === "above" ? "border-t-2 border-t-blue-400" : "border-b-2 border-b-blue-400" : "";
             return /* @__PURE__ */ jsxRuntime.jsxs(
               "tr",
               {
-                className: `${T.rowBorder} ${T.rowHover}`,
+                className: `${T.rowBorder} ${selected ? "bg-rose-50/60" : T.rowHover} ${isDragging ? "opacity-40" : ""} ${dropBorder}`,
                 ...getHoverProps(row.id),
+                onClick: selectable ? (e) => handleRowClick(e, row.id) : void 0,
+                onDragOver: reorderable ? drag.handleDragOver(row.id) : void 0,
+                onDragLeave: reorderable ? drag.handleDragLeave : void 0,
+                onDrop: reorderable ? drag.handleDrop(rows, onRowsChange) : void 0,
                 children: [
                   resolvedColumns.map((col, i) => {
                     const vline = i < resolvedColumns.length - 1 ? T.vline : "";
                     if (col.isLabel) {
-                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${T.cellLabel} ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-1 min-w-0", children: [
-                        /* @__PURE__ */ jsxRuntime.jsx(deletebutton_default, { onClick: () => requestDelete(row.id), isVisible: hovered }),
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${actionColDelete ? T.cellEditLabel : T.cellEdit} ${T.cellLabel} ${vline} ${onViewSource ? "relative" : ""}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center gap-0.5 min-w-0", children: [
+                        reorderable && /* @__PURE__ */ jsxRuntime.jsx(
+                          "span",
+                          {
+                            draggable: hovered,
+                            onDragStart: drag.handleDragStart(row.id),
+                            onDragEnd: drag.handleDragEnd,
+                            className: `shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-opacity ${hovered && !anySelected ? "opacity-100" : "opacity-0 pointer-events-none"}`,
+                            title: "Arrastrar para reordenar",
+                            children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.GripVertical, { size: 14 })
+                          }
+                        ),
+                        selectable && /* @__PURE__ */ jsxRuntime.jsx(
+                          "input",
+                          {
+                            type: "checkbox",
+                            checked: selected,
+                            onChange: () => toggleSelect(row.id),
+                            className: `shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-rose-600 focus:ring-rose-500 cursor-pointer transition-opacity ${showCheckbox ? "opacity-100" : "opacity-0 pointer-events-none"}`
+                          }
+                        ),
+                        !actionColDelete && /* @__PURE__ */ jsxRuntime.jsx(deletebutton_default, { onClick: () => requestDelete(row.id), isVisible: hovered }),
                         /* @__PURE__ */ jsxRuntime.jsx(viewsourcebutton_default, { sourceFileId: row.sourceFileId, onViewSource, isVisible: hovered }),
                         /* @__PURE__ */ jsxRuntime.jsx(
                           "input",
@@ -2880,7 +2624,7 @@ function AssetTable({
                             type: "text",
                             value: row[col.key] || "",
                             onChange: (e) => updateField(row.id, col.key, e.target.value),
-                            className: `flex-1 min-w-0 ${T.inputLabel} pl-1 ${getCellOriginClass?.(row.id, col.key) || ""}`,
+                            className: `flex-1 min-w-0 ${T.inputLabel} ${hovered || showCheckbox ? "" : "pl-1"} ${getCellOriginClass?.(row.id, col.key) || ""}`,
                             placeholder: col.placeholder || col.label
                           }
                         )
@@ -2902,9 +2646,99 @@ function AssetTable({
                         }
                       ) }, col.key);
                     }
-                    return renderEditableCell(row, col, vline);
+                    if (col.visible && !col.visible(row)) {
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} text-center ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-[11px] text-gray-300", children: "\u2014" }) }, col.key);
+                    }
+                    if (col.readOnly?.(row)) {
+                      const v = row[col.key];
+                      const isNumeric = col.type === "currency" || col.type === "number";
+                      const effectiveAlign = col.align ?? (isNumeric ? "right" : "center");
+                      const alignCls = effectiveAlign === "left" ? "justify-start" : effectiveAlign === "center" ? "justify-center" : "justify-end";
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: `h-5 flex items-center ${alignCls} text-xs tabular-nums text-gray-800`, children: v != null ? col.type === "number" ? String(v) : formatCurrency(v) : "\u2014" }) }, col.key);
+                    }
+                    if (col.compound) {
+                      const sep = col.compound.separator ?? "/";
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `text-center text-xs text-gray-500 ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: "flex items-center justify-center gap-0.5", children: [
+                        /* @__PURE__ */ jsxRuntime.jsx(
+                          editablecell_default,
+                          {
+                            value: row[col.key],
+                            onChange: (v) => updateField(row.id, col.key, v),
+                            type: col.type,
+                            hasData: row[col.key] !== null,
+                            align: "center",
+                            originClass: cellOrigin(row, col.key, col),
+                            asDiv: true,
+                            ...kbProps(row.id, col.key)
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-gray-400", children: sep }),
+                        /* @__PURE__ */ jsxRuntime.jsx(
+                          editablecell_default,
+                          {
+                            value: row[col.compound.key],
+                            onChange: (v) => updateField(row.id, col.compound.key, v),
+                            type: col.type,
+                            hasData: row[col.compound.key] !== null,
+                            align: "center",
+                            originClass: cellOrigin(row, col.compound.key, col),
+                            asDiv: true,
+                            ...kbProps(row.id, col.compound.key)
+                          }
+                        )
+                      ] }) }, col.key);
+                    }
+                    if (col.type === "percent") {
+                      const rawValue = row[col.key];
+                      const displayValue = rawValue != null ? Math.round(rawValue * 100) : null;
+                      return /* @__PURE__ */ jsxRuntime.jsx(
+                        editablecell_default,
+                        {
+                          value: displayValue,
+                          onChange: (v) => updateField(row.id, col.key, v != null ? v / 100 : null),
+                          type: "percent",
+                          hasData: displayValue !== null,
+                          align: col.align || "center",
+                          className: vline,
+                          originClass: cellOrigin(row, col.key, col),
+                          ...kbProps(row.id, col.key)
+                        },
+                        col.key
+                      );
+                    }
+                    const value = row[col.key];
+                    const tip = col.tooltip?.(row);
+                    if (tip) {
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: vline, title: tip, children: /* @__PURE__ */ jsxRuntime.jsx(
+                        editablecell_default,
+                        {
+                          value,
+                          onChange: (v) => updateField(row.id, col.key, v),
+                          type: col.type,
+                          hasData: value !== null,
+                          align: col.align,
+                          originClass: cellOrigin(row, col.key, col),
+                          asDiv: true,
+                          ...kbProps(row.id, col.key)
+                        }
+                      ) }, col.key);
+                    }
+                    return /* @__PURE__ */ jsxRuntime.jsx(
+                      editablecell_default,
+                      {
+                        value,
+                        onChange: (v) => updateField(row.id, col.key, v),
+                        type: col.type,
+                        hasData: value !== null,
+                        align: col.align,
+                        className: vline,
+                        originClass: cellOrigin(row, col.key, col),
+                        ...kbProps(row.id, col.key)
+                      },
+                      col.key
+                    );
                   }),
-                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: T.actionCol })
+                  /* @__PURE__ */ jsxRuntime.jsx("td", { className: `text-center ${T.actionCol}`, children: actionColDelete ? /* @__PURE__ */ jsxRuntime.jsx(deletebutton_default, { onClick: () => requestDelete(row.id), isVisible: hovered && !anySelected }) : null })
                 ]
               },
               row.id
@@ -2944,6 +2778,9 @@ function AssetTable({
                   }
                 ) }, col.key);
               }
+              if (col.compound || col.type === "percent") {
+                return /* @__PURE__ */ jsxRuntime.jsx("td", { className: vline }, col.key);
+              }
               return /* @__PURE__ */ jsxRuntime.jsx(
                 editablecell_default,
                 {
@@ -2966,169 +2803,6 @@ function AssetTable({
   ] });
 }
 var assettable_default = AssetTable;
-var columns = [
-  { key: "marca", label: "Marca", type: "text", width: "30%", isLabel: true, placeholder: "Marca" },
-  { key: "modelo", label: "Modelo", type: "text", width: "30%", placeholder: "Modelo" },
-  { key: "anio", label: "A\xF1o", type: "number", width: "20%", align: "center" },
-  { key: "monto", label: "Monto $", type: "currency", width: "20%" }
-];
-var VehiculosTable = ({
-  rows,
-  onRowsChange,
-  formatCurrency,
-  colorScheme,
-  headerBg,
-  headerText,
-  title,
-  getCellOriginClass
-}) => /* @__PURE__ */ jsxRuntime.jsx(
-  assettable_default,
-  {
-    columns,
-    rows,
-    onRowsChange,
-    idPrefix: "vh",
-    addPlaceholder: "Agregar veh\xEDculo...",
-    formatCurrency,
-    colorScheme,
-    headerBg,
-    headerText,
-    title,
-    getCellOriginClass
-  }
-);
-var vehiculos_default = VehiculosTable;
-var columns2 = [
-  { key: "institucion", label: "Instituci\xF3n", type: "text", width: "30%", isLabel: true, placeholder: "Instituci\xF3n" },
-  { key: "tipo", label: "Tipo Inversi\xF3n", type: "text", width: "30%", placeholder: "Tipo" },
-  { key: "fecha", label: "Fecha", type: "text", width: "20%", align: "center", placeholder: "-" },
-  { key: "monto", label: "Monto $", type: "currency", width: "20%" }
-];
-var InversionesTable = ({
-  rows,
-  onRowsChange,
-  formatCurrency,
-  colorScheme,
-  headerBg,
-  headerText,
-  title,
-  getCellOriginClass
-}) => /* @__PURE__ */ jsxRuntime.jsx(
-  assettable_default,
-  {
-    columns: columns2,
-    rows,
-    onRowsChange,
-    idPrefix: "inv",
-    addPlaceholder: "Agregar inversi\xF3n...",
-    formatCurrency,
-    colorScheme,
-    headerBg,
-    headerText,
-    title,
-    getCellOriginClass
-  }
-);
-var inversiones_default = InversionesTable;
-var PropiedadesTable = ({
-  rows,
-  onRowsChange,
-  formatCurrency,
-  ufValue,
-  capRate = 0.05,
-  factorDescuento = 0.1,
-  colorScheme,
-  headerBg,
-  headerText,
-  title,
-  onViewSource,
-  getCellOriginClass
-}) => {
-  const columns3 = React3.useMemo(() => [
-    { key: "direccion", label: "Direcci\xF3n", type: "text", width: "30%", isLabel: true, placeholder: "Direcci\xF3n" },
-    { key: "comuna", label: "Comuna", type: "text", width: "25%", placeholder: "Comuna" },
-    {
-      key: "valor_pesos",
-      label: "Valor $",
-      type: "currency",
-      width: "15%",
-      ufPair: "valor_uf",
-      ufPairLabel: "Valor UF",
-      ufPairType: "number",
-      autoComputedClass: (row) => ufValue && row.valor_uf != null && row.valor_pesos != null ? "text-amber-500" : ""
-    },
-    {
-      key: "arriendo_real",
-      label: "Arr. Real $",
-      type: "currency",
-      width: "15%",
-      ufPair: "arriendo_real_uf",
-      ufPairLabel: "Arr. Real UF",
-      ufPairType: "number"
-    },
-    {
-      key: "arriendo_futuro",
-      label: "Arr. Fut $",
-      type: "currency",
-      width: "15%",
-      ufPair: "arriendo_futuro_uf",
-      ufPairLabel: "Arr. Fut UF",
-      ufPairType: "number",
-      autoComputedClass: (row) => ufValue && row.valor_uf != null ? "text-amber-500" : ""
-    }
-  ], [ufValue]);
-  const conversionRules = React3.useMemo(() => ufValue ? [
-    { source: "valor_uf", target: "valor_pesos", formula: (v) => v * ufValue, precision: 0 },
-    { source: "valor_pesos", target: "valor_uf", formula: (v) => v / ufValue, precision: 2 },
-    { source: "arriendo_real", target: "arriendo_real_uf", formula: (v) => v / ufValue, precision: 2 },
-    { source: "arriendo_real_uf", target: "arriendo_real", formula: (v) => v * ufValue, precision: 0 },
-    { source: "arriendo_futuro", target: "arriendo_futuro_uf", formula: (v) => v / ufValue, precision: 2 },
-    { source: "arriendo_futuro_uf", target: "arriendo_futuro", formula: (v) => v * ufValue, precision: 0 }
-  ] : [], [ufValue]);
-  const computeRules = React3.useMemo(() => ufValue ? [
-    {
-      target: "arriendo_futuro",
-      depends: ["valor_uf", "valor_pesos"],
-      condition: (row) => row.arriendo_futuro == null,
-      formula: (row) => {
-        const valorUf = row.valor_uf;
-        if (!valorUf || !capRate) return null;
-        return Math.round(valorUf * capRate / 12 * (1 - factorDescuento) * ufValue);
-      }
-    },
-    {
-      target: "arriendo_futuro_uf",
-      depends: ["valor_uf", "valor_pesos"],
-      condition: (row) => row.arriendo_futuro == null,
-      formula: (row) => {
-        const valorUf = row.valor_uf;
-        if (!valorUf || !capRate) return null;
-        return Math.round(valorUf * capRate / 12 * (1 - factorDescuento) * 100) / 100;
-      }
-    }
-  ] : [], [ufValue, capRate, factorDescuento]);
-  return /* @__PURE__ */ jsxRuntime.jsx(
-    assettable_default,
-    {
-      columns: columns3,
-      rows,
-      onRowsChange,
-      idPrefix: "br",
-      addPlaceholder: "Agregar propiedad...",
-      formatCurrency,
-      colorScheme,
-      headerBg,
-      headerText,
-      title,
-      ufValue,
-      conversionRules,
-      computeRules,
-      onViewSource,
-      getCellOriginClass
-    }
-  );
-};
-var propiedades_default = PropiedadesTable;
 var defaultColorScheme = {
   totalBg: "bg-cyan-50",
   totalBorder: "border-cyan-200",
@@ -3214,7 +2888,7 @@ var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, color
 };
 var summary_default = SummaryTable;
 var DeclaracionTable = ({
-  columns: columns3,
+  columns,
   rows,
   data,
   totalLabel = "Suma Total",
@@ -3238,12 +2912,12 @@ var DeclaracionTable = ({
           /* @__PURE__ */ jsxRuntime.jsx(SourceIcon, { fileIds: sourceFileIds, onViewSource, className: headerText })
         ] }) }),
         showCodeColumn && /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-left ${T.cell} font-medium ${headerText} ${T.vline}`, children: "C\xF3digo" }),
-        columns3.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-right ${T.cell} font-medium ${headerText} ${i < columns3.length - 1 ? T.vline : ""}`, children: col.label }, col.key))
+        columns.map((col, i) => /* @__PURE__ */ jsxRuntime.jsx("th", { className: `text-right ${T.cell} font-medium ${headerText} ${i < columns.length - 1 ? T.vline : ""}`, children: col.label }, col.key))
       ] }),
       renderFooter: totalLabel ? () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold", children: [
         /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-gray-800 border-t border-gray-100`, children: totalLabel }),
         showCodeColumn && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} border-t border-gray-100` }),
-        columns3.map((col) => {
+        columns.map((col) => {
           const summedRows = rows.filter((r) => r.summed);
           const hasAny = summedRows.some((r) => data[r.key]?.[col.key] != null);
           const sum = summedRows.reduce((acc, r) => acc + (data[r.key]?.[col.key] ?? 0), 0);
@@ -3253,9 +2927,9 @@ var DeclaracionTable = ({
       children: rows.map((row) => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: T.row, children: [
         /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-gray-700 ${T.vline}`, children: row.label }),
         showCodeColumn && /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cell} text-gray-400 tabular-nums ${T.vline}`, children: row.code ?? "" }),
-        columns3.map((col, ci) => {
+        columns.map((col, ci) => {
           const value = data[row.key]?.[col.key];
-          return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellValue} ${value != null ? getCellOriginClass?.(row.key, col.key) || "text-gray-900" : "text-gray-400"} ${ci < columns3.length - 1 ? T.vline : ""}`, children: value != null ? formatCurrency(value) : "\u2014" }, col.key);
+          return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellValue} ${value != null ? getCellOriginClass?.(row.key, col.key) || "text-gray-900" : "text-gray-400"} ${ci < columns.length - 1 ? T.vline : ""}`, children: value != null ? formatCurrency(value) : "\u2014" }, col.key);
         })
       ] }, row.key))
     }
@@ -3454,24 +3128,22 @@ exports.AssetTable = assettable_default;
 exports.BalanceTable = balance_default;
 exports.BoletasTable = boletas_default;
 exports.ClickableHeader = clickableheader_default;
+exports.CrudTable = assettable_default;
 exports.DEFAULT_SCHEME = DEFAULT_SCHEME;
 exports.DeclaracionTable = declaracion_default;
 exports.DeleteDialog = deletedialog_default;
-exports.DeudasTable = deudas_default;
 exports.EditableCell = editablecell_default;
 exports.EditableField = EditableField;
 exports.FinalResultsCompact = finalresults_default;
-exports.InversionesTable = inversiones_default;
 exports.MONTH_LABELS = MONTH_LABELS;
 exports.ORIGIN_CLASSES = ORIGIN_CLASSES;
-exports.PropiedadesTable = propiedades_default;
 exports.RecycleBin = recyclebin_default;
 exports.SourceIcon = SourceIcon;
 exports.SummaryTable = summary_default;
 exports.TableShell = tableshell_default;
-exports.VehiculosTable = vehiculos_default;
 exports.applyAutoCompute = applyAutoCompute;
 exports.applyAutoConversions = applyAutoConversions;
+exports.buildUfPair = buildUfPair;
 exports.default = renta_default;
 exports.defaultFormatCurrency = defaultFormatCurrency;
 exports.displayCurrency = displayCurrency;

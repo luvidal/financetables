@@ -1,4 +1,4 @@
-// Auto-conversion and auto-computation engine for UF↔CLP tables
+// Auto-conversion, auto-computation, and side-effect engine for UF↔CLP tables
 
 export type AutoConvertRule = {
   source: string          // field being edited
@@ -12,6 +12,28 @@ export type AutoComputeRule = {
   depends: string[]       // fields that trigger recomputation
   condition?: (row: Record<string, any>) => boolean
   formula: (row: Record<string, any>, params: Record<string, number>) => number | null
+}
+
+export type SideEffect = {
+  trigger: string         // field that was edited
+  apply: (row: Record<string, any>, newValue: unknown) => Record<string, any>  // partial update
+}
+
+/**
+ * Generate a bidirectional UF↔CLP conversion rule pair.
+ * Usage: ...buildUfPair('valor_uf', 'valor_pesos', ufValue)
+ */
+export function buildUfPair(
+  ufKey: string,
+  pesosKey: string,
+  ufValue: number,
+  ufPrecision = 2,
+  pesosPrecision = 0,
+): AutoConvertRule[] {
+  return [
+    { source: ufKey, target: pesosKey, formula: (v) => v * ufValue, precision: pesosPrecision },
+    { source: pesosKey, target: ufKey, formula: (v) => v / ufValue, precision: ufPrecision },
+  ]
 }
 
 /**

@@ -45,20 +45,9 @@ src/
 │   ├── floatingaction.tsx # HeaderSelectionBar + ContextMenu
 │   ├── usekeyboard.ts    # Grid keyboard navigation hook wrapper
 │   └── usedragreorder.ts # Drag-and-drop reorder hook
-├── assets/                # AssetTable — generic column-driven CRUD table
-│   ├── assettable.tsx     # AssetTable component
-│   └── types.ts           # ColumnDef, AssetTableProps, AssetRow
-├── vehiculos/             # VehiculosTable (thin wrapper around AssetTable)
-│   ├── index.tsx
-│   └── types.ts
-├── inversiones/           # InversionesTable (thin wrapper around AssetTable)
-│   ├── index.tsx
-│   └── types.ts
-├── propiedades/           # PropiedadesTable (AssetTable + UF/$ toggle)
-│   ├── index.tsx
-│   └── types.ts
-├── deudas/                # DeudasTable — see deudas/README.md
-│   └── index.tsx
+├── assets/                # CrudTable — universal column-driven CRUD table engine
+│   ├── assettable.tsx     # CrudTable component (selectable, reorderable, compound, tooltips)
+│   └── types.ts           # ColumnDef, AssetTableProps, AssetRow, TablePreset, SideEffect
 ├── boletas/               # BoletasTable — see boletas/README.md
 │   └── index.tsx
 ├── tributario/            # TributarioTable — see tributario/README.md
@@ -118,73 +107,51 @@ Month, RowData, RowType, MonthlyTableProps
 // Named function exports
 generateLastNMonths
 
-// Table components (named exports)
-DebtsTable, BoletasTable, TributarioTable
-VehiculosTable, InversionesTable, PropiedadesTable
-AssetTable  // generic column-driven CRUD table
+// CrudTable — universal engine for all asset-type tables
+CrudTable, AssetTable  // AssetTable is an alias for CrudTable
 
-// Table type exports
-DebtEntry, DebtsTableProps
-BoletaMonth, BoletasTableProps
-TributarioEntry, TributarioTableProps
-VehiculoRow, VehiculosTableProps
-InversionRow, InversionesTableProps
-PropiedadRow, PropiedadesTableProps
-ColumnDef, AssetTableProps
+// Other table components
+BoletasTable, SummaryTable, DeclaracionTable, BalanceTable
+ActivosSummary, FinalResultsCompact
 
-// Common components (named exports)
-DeleteDialog, RecycleBin, TableShell, SourceIcon, EditableCell, CurrencyToggle
+// CrudTable type exports
+ColumnDef, AssetTableProps, AssetRow, TablePreset
 
-// Common hooks/utils (named exports)
-useSoftDelete, applyAutoConversions, applyAutoCompute
+// Auto-conversion/compute helpers
+applyAutoConversions, applyAutoCompute, buildUfPair
+AutoConvertRule, AutoComputeRule, SideEffect
+
+// Common components
+DeleteDialog, RecycleBin, TableShell, SourceIcon, EditableCell, ClickableHeader
+
+// Common hooks/utils
+useSoftDelete
 defaultFormatCurrency, displayCurrency, displayCurrencyCompact
 generateId, formatDeletedDate, MONTH_LABELS
 
 // Common type exports
-SoftDeletable, TableShellProps, AutoConvertRule, AutoComputeRule
+SoftDeletable, TableShellProps, ColorScheme, CellOrigin
 ```
 
 ## Consumer Setup (jogi)
 
-```ts
-// jogi/lib/reports/monthlytable.tsx
-export { default } from '@avd/financetables'
-export type { Month, RowData, RowType, MonthlyTableProps } from '@avd/financetables'
+```tsx
+// jogi/app/reports/situacion/tables/vehiculos.ts — declarative config
+import type { ColumnDef, TablePreset } from '@jogi/tables'
 
-// jogi/lib/reports/debtstable.tsx
-export { DebtsTable as default } from '@avd/financetables'
-export type { DebtEntry, DebtsTableProps } from '@avd/financetables'
+const columns: ColumnDef[] = [
+  { key: 'marca', label: 'Marca', type: 'text', width: '30%', isLabel: true },
+  { key: 'modelo', label: 'Modelo', type: 'text', width: '30%' },
+  { key: 'anio', label: 'Año', type: 'number', width: '20%', align: 'center' },
+  { key: 'monto', label: 'Monto $', type: 'currency', width: '20%' },
+]
+export const VEHICULOS: TablePreset = { columns, idPrefix: 'vh', addPlaceholder: 'Agregar vehículo...' }
 
-// jogi/lib/reports/boletastable.tsx
-export { BoletasTable as default } from '@avd/financetables'
-export type { BoletaMonth, BoletasTableProps } from '@avd/financetables'
-
-// jogi/lib/reports/tributariotable.tsx
-export { TributarioTable as default } from '@avd/financetables'
-export type { TributarioEntry, TributarioTableProps } from '@avd/financetables'
-
-// jogi/lib/reports/vehiculostable.tsx
-export { VehiculosTable as default } from '@avd/financetables'
-export type { VehiculoRow, VehiculosTableProps } from '@avd/financetables'
-
-// jogi/lib/reports/inversionestable.tsx
-export { InversionesTable as default } from '@avd/financetables'
-export type { InversionRow, InversionesTableProps } from '@avd/financetables'
-
-// jogi/lib/reports/propiedadestable.tsx
-export { PropiedadesTable as default } from '@avd/financetables'
-export type { PropiedadRow, PropiedadesTableProps } from '@avd/financetables'
+// Usage:
+<CrudTable {...VEHICULOS} rows={rows} onRowsChange={onChange} colorScheme={cs} />
 ```
 
-```ts
-// jogi/tailwind.config.ts — content array
-'./node_modules/@avd/financetables/dist/**/*.{js,mjs}'
-```
-
-```json
-// jogi/package.json — dependencies
-"@avd/financetables": "github:luvidal/financetables"
-```
+Domain row types (VehiculoRow, DeudaRow, etc.) live in jogi, not in @jogi/tables.
 
 ## Inlined Dependencies
 

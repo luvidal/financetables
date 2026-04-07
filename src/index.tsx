@@ -3,10 +3,6 @@ export { default } from './renta'
 export type { Month, RowData, RowType, RentaTableProps, ReliquidacionBreakdown } from './renta/types'
 export { generateLastNMonths } from './renta/helpers'
 
-// DeudasTable
-export { default as DeudasTable } from './deudas'
-export type { DeudaRow, DeudasTableProps } from './deudas/types'
-
 // BoletasTable
 export { default as BoletasTable } from './boletas'
 export type { BoletaMonth, BoletasTableProps } from './boletas'
@@ -15,21 +11,11 @@ export type { BoletaMonth, BoletasTableProps } from './boletas'
 export { default as FinalResultsCompact } from './finalresults'
 export type { FinalResultsCompactProps, FinalResultsValues, CodeudorIncomeInfo, PromptOptions } from './finalresults'
 
-// VehiculosTable
-export { default as VehiculosTable } from './vehiculos'
-export type { VehiculoRow, VehiculosTableProps } from './vehiculos/types'
-
-// InversionesTable
-export { default as InversionesTable } from './inversiones'
-export type { InversionRow, InversionesTableProps } from './inversiones/types'
-
-// PropiedadesTable
-export { default as PropiedadesTable } from './propiedades'
-export type { PropiedadRow, PropiedadesTableProps } from './propiedades/types'
-
-// AssetTable (generic column-driven CRUD table used by vehiculos, inversiones, propiedades)
+// CrudTable (generic column-driven CRUD table — universal engine for all asset-type tables)
+export { default as CrudTable } from './assets/assettable'
+// AssetTable (alias for CrudTable — backward compatibility)
 export { default as AssetTable } from './assets/assettable'
-export type { ColumnDef, AssetTableProps } from './assets/types'
+export type { ColumnDef, AssetTableProps, AssetRow, TablePreset } from './assets/types'
 
 // ActivosSummary
 export { default as ActivosSummary } from './activossummary'
@@ -64,7 +50,7 @@ export { useSoftDelete } from './common/usesoftdelete'
 export type { SoftDeletable } from './common/softdeletetypes'
 export { default as TableShell, SourceIcon } from './common/tableshell'
 export type { TableShellProps } from './common/tableshell'
-export { applyAutoConversions, applyAutoCompute } from './common/autoconvert'
-export type { AutoConvertRule, AutoComputeRule } from './common/autoconvert'
+export { applyAutoConversions, applyAutoCompute, buildUfPair } from './common/autoconvert'
+export type { AutoConvertRule, AutoComputeRule, SideEffect } from './common/autoconvert'
 export { defaultFormatCurrency, displayCurrency, displayCurrencyCompact, generateId, formatDeletedDate, MONTH_LABELS } from './common/utils'
 export { default as ClickableHeader } from './common/clickableheader'

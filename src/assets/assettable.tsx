@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
+import { GripVertical, Trash2 } from 'lucide-react'
 import EditableCell from '../common/editablecell'
 import DeleteRowButton from '../common/deletebutton'
 import { T } from '../common/styles'
@@ -9,6 +10,7 @@ import { useGridKeyboard } from '../common/usegridkeyboard'
 import { applyAutoConversions, applyAutoCompute } from '../common/autoconvert'
 import { defaultFormatCurrency, generateId } from '../common/utils'
 import { useSoftDelete } from '../common/usesoftdelete'
+import { useDragReorder } from '../common/usedragreorder'
 import DeleteDialog from '../common/deletedialog'
 import RecycleBin from '../common/recyclebin'
 import ClickableHeader from '../common/clickableheader'
@@ -30,16 +32,25 @@ function AssetTable<T extends AssetRow>({
     ufValue,
     conversionRules = [],
     computeRules = [],
+    sideEffects = [],
     onViewSource,
     getCellOriginClass,
+    selectable = false,
+    reorderable = false,
 }: AssetTableProps<T>) {
     const { bg: headerBg, text: headerText, border: borderColor } = resolveColors(colorSchemeProp, headerBgProp, headerTextProp)
     const { getHoverProps, isHovered } = useRowHover()
-    // Per-column currency state: tracks which toggleable columns are showing their pair
     const [toggledCols, setToggledCols] = useState<Set<string>>(new Set())
     const { activeRows, deletedRows, deleteTargetId, requestDelete, confirmDelete, cancelDelete, restoreRow } = useSoftDelete(rows, onRowsChange)
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+    const [newRowValues, setNewRowValues] = useState<Record<string, string>>({})
+    const drag = useDragReorder()
 
+    const anySelected = selectable && selectedRows.size > 0
     const canToggleCurrency = ufValue != null
+    const hasAutoConvert = conversionRules.length > 0 || computeRules.length > 0 || sideEffects.length > 0
+    // When selectable or reorderable, delete button moves to action column
+    const actionColDelete = selectable || reorderable
 
     const toggleColumn = (key: string) => {
         setToggledCols(prev => {
@@ -55,34 +66,66 @@ function AssetTable<T extends AssetRow>({
             if (col.ufPair && toggledCols.has(col.key)) {
                 const pairLabel = col.ufPairLabel || col.label
                 const pairType = col.ufPairType || 'currency'
-                return { ...col, key: col.ufPair, type: pairType as 'currency' | 'number', label: pairLabel }
+                return { ...col, key: col.ufPair, type: pairType as ColumnDef['type'], label: pairLabel }
             }
             return col
         })
     }, [columns, toggledCols])
 
-    // EditableCell columns for keyboard nav
-    const editableCols = useMemo(() =>
-        resolvedColumns.filter(c => c.type !== 'text'),
-    [resolvedColumns])
+    // Build keyboard position map: field key → position index (compound columns get 2 positions)
+    const { keyToPosition, kbColCount } = useMemo(() => {
+        const map: Record<string, number> = {}
+        let pos = 0
+        for (const col of resolvedColumns) {
+            if (col.type === 'text') continue
+            map[col.key] = pos++
+            if (col.compound) map[col.compound.key] = pos++
+        }
+        return { keyToPosition: map, kbColCount: pos }
+    }, [resolvedColumns])
 
     const visibleRowIds = useMemo(() => activeRows.map(r => r.id), [activeRows])
-    const keyboard = useGridKeyboard({ visibleRowIds, colCount: editableCols.length })
+    const keyboard = useGridKeyboard({ visibleRowIds, colCount: kbColCount })
 
-    // Text columns are the first N columns of type 'text'
-    const textCols = resolvedColumns.filter(c => c.type === 'text')
     const labelCol = resolvedColumns.find(c => c.isLabel) || resolvedColumns[0]
-    // New row state: one entry per text column
-    const [newRowValues, setNewRowValues] = useState<Record<string, string>>({})
 
-    const hasAutoConvert = conversionRules.length > 0 || computeRules.length > 0
+    // --- Selection ---
+    const toggleSelect = useCallback((rowId: string) => {
+        setSelectedRows(prev => {
+            const next = new Set(prev)
+            if (next.has(rowId)) next.delete(rowId)
+            else next.add(rowId)
+            return next
+        })
+    }, [])
 
+    const clearSelection = useCallback(() => setSelectedRows(new Set()), [])
+
+    const requestDeleteSelected = useCallback(() => {
+        for (const id of selectedRows) requestDelete(id)
+        clearSelection()
+    }, [selectedRows, requestDelete, clearSelection])
+
+    const handleRowClick = useCallback((e: React.MouseEvent, rowId: string) => {
+        if (!(e.metaKey || e.ctrlKey)) return
+        const target = e.target as HTMLElement
+        if (target.closest('input, button, [role="button"]')) return
+        e.preventDefault()
+        toggleSelect(rowId)
+    }, [toggleSelect])
+
+    // --- Field update with conversions, compute, and side effects ---
     const updateField = (id: string, field: string, value: string | number | null) => {
         onRowsChange(rows.map(r => {
             if (r.id !== id) return r
             if (hasAutoConvert) {
                 let next = applyAutoConversions(r, field, value, conversionRules, {})
                 next = applyAutoCompute(next, field, computeRules, {})
+                for (const effect of sideEffects) {
+                    if (effect.trigger === field) {
+                        next = { ...next, ...effect.apply(next, value) }
+                    }
+                }
                 return next as T
             }
             return { ...r, [field]: value } as T
@@ -98,52 +141,48 @@ function AssetTable<T extends AssetRow>({
                 base[col.key] = null
             }
             if (col.ufPair) base[col.ufPair] = null
+            if (col.compound) base[col.compound.key] = null
         }
         const row = { ...base, ...overrides } as T
         setNewRowValues({})
         onRowsChange([...rows, row])
     }
 
-    // Compute totals for currency/number columns
+    // --- Totals ---
     const totals = useMemo(() => {
         const result: Record<string, number> = {}
         for (const col of resolvedColumns) {
             if (col.type === 'currency' || col.type === 'number') {
                 result[col.key] = activeRows.reduce((s, r) => s + ((r[col.key] as number) || 0), 0)
             }
+            if (col.compound) {
+                result[col.compound.key] = activeRows.reduce((s, r) => s + ((r[col.compound!.key] as number) || 0), 0)
+            }
         }
         return result
     }, [activeRows, resolvedColumns])
 
-    // Map from editable column index to resolved column
-    const editableColIndex = (col: ColumnDef): number => editableCols.indexOf(col)
-
-    const renderEditableCell = (row: T, col: ColumnDef, vline = '') => {
-        const colIdx = editableColIndex(col)
-        const value = row[col.key] as number | null
-        const originClass = col.autoComputedClass?.(row)
-            ? ORIGIN_CLASSES.calculated
-            : getCellOriginClass?.(row.id, col.key)
-        return (
-            <EditableCell
-                key={col.key}
-                value={value}
-                onChange={v => updateField(row.id, col.key, v as number | null)}
-                type={col.type as 'currency' | 'number'}
-                hasData={value !== null}
-                align={col.align}
-                className={vline}
-                originClass={originClass}
-                focused={keyboard.isFocused(row.id, colIdx)}
-                onCellFocus={() => keyboard.focus(row.id, colIdx)}
-                onNavigate={keyboard.navigate}
-                requestEdit={keyboard.isFocused(row.id, colIdx) ? keyboard.editTrigger : 0}
-                requestClear={keyboard.isFocused(row.id, colIdx) ? keyboard.clearTrigger : 0}
-                editInitialValue={keyboard.isFocused(row.id, colIdx) ? keyboard.editInitialValue : undefined}
-            />
-        )
+    // --- Cell helpers ---
+    const cellOrigin = (row: T, key: string, col: ColumnDef): string | undefined => {
+        if (col.autoComputedClass?.(row)) return ORIGIN_CLASSES.calculated
+        return getCellOriginClass?.(row.id, key)
     }
 
+    const kbProps = (rowId: string, key: string) => {
+        const pos = keyToPosition[key]
+        if (pos === undefined) return {}
+        const focused = keyboard.isFocused(rowId, pos)
+        return {
+            focused,
+            onCellFocus: () => keyboard.focus(rowId, pos),
+            onNavigate: keyboard.navigate,
+            requestEdit: focused ? keyboard.editTrigger : 0,
+            requestClear: focused ? keyboard.clearTrigger : 0,
+            editInitialValue: focused ? keyboard.editInitialValue : undefined,
+        }
+    }
+
+    // --- Render ---
     return (<>
         <div onKeyDown={keyboard.handleContainerKeyDown} tabIndex={0} className="outline-none mb-4 sm:mb-6">
             <TableShell
@@ -151,28 +190,54 @@ function AssetTable<T extends AssetRow>({
                 headerClassName={`border-t ${borderColor} ${headerText}`}
                 rowCount={activeRows.length}
                 renderHeader={() => (
-                    <>
-                        {resolvedColumns.map((col, i) => {
-                            const effectiveAlign = col.align ?? (col.type === 'currency' || col.type === 'number' ? 'right' : 'left')
-                            const vline = i < resolvedColumns.length - 1 ? T.vline : ''
-                            const label = col === labelCol && title ? title : col.label
-                            const origCol = columns[i]
-                            const isToggleable = canToggleCurrency && origCol?.ufPair
-                            return (
-                            <th
-                                key={col.key}
-                                style={col.width ? { width: col.width } : undefined}
-                                className={`${T.headerCell} ${effectiveAlign === 'right' ? 'text-right' : effectiveAlign === 'center' ? 'text-center' : 'text-left'} ${T.th} normal-case ${headerText} ${vline}`}
-                            >
-                                {isToggleable ? (
-                                    <ClickableHeader onClick={() => toggleColumn(origCol.key)} borderColor={borderColor}>
-                                        {label}
-                                    </ClickableHeader>
-                                ) : label}
-                            </th>
-                        )})}
-                        <th className={T.actionCol}></th>
-                    </>
+                    anySelected ? (
+                        <th colSpan={resolvedColumns.length + 1} className={`${T.headerCell} text-left`} onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-rose-600">
+                                    {selectedRows.size} fila{selectedRows.size !== 1 ? 's' : ''}
+                                </span>
+                                <button
+                                    onClick={requestDeleteSelected}
+                                    className="text-xs px-3 py-1 rounded-full text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1"
+                                    title="Eliminar filas seleccionadas"
+                                >
+                                    <Trash2 size={12} />
+                                    Eliminar
+                                </button>
+                                <button
+                                    onClick={clearSelection}
+                                    className="text-xs px-2 py-1 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
+                        </th>
+                    ) : (
+                        <>
+                            {resolvedColumns.map((col, i) => {
+                                const isNumeric = col.type === 'currency' || col.type === 'number'
+                                const effectiveAlign = col.align ?? (isNumeric ? 'right' : col.type === 'percent' ? 'center' : 'left')
+                                const vline = i < resolvedColumns.length - 1 ? T.vline : ''
+                                const label = col === labelCol && title ? title : col.label
+                                const origCol = columns[i]
+                                const isToggleable = canToggleCurrency && origCol?.ufPair
+                                return (
+                                    <th
+                                        key={col.key}
+                                        style={col.width ? { width: col.width } : undefined}
+                                        className={`${T.headerCell} ${effectiveAlign === 'right' ? 'text-right' : effectiveAlign === 'center' ? 'text-center' : 'text-left'} ${T.th} normal-case ${headerText} ${vline}`}
+                                    >
+                                        {isToggleable ? (
+                                            <ClickableHeader onClick={() => toggleColumn(origCol.key)} borderColor={borderColor}>
+                                                {label}
+                                            </ClickableHeader>
+                                        ) : label}
+                                    </th>
+                                )
+                            })}
+                            <th className={T.actionCol}></th>
+                        </>
+                    )
                 )}
                 renderFooter={() => (
                     <tr className="font-semibold text-xs">
@@ -182,6 +247,19 @@ function AssetTable<T extends AssetRow>({
                             }
                             if (col.type === 'text') {
                                 return <td key={col.key} className={`${T.totalCell} border-t border-gray-100`} />
+                            }
+                            if (col.type === 'percent') {
+                                return <td key={col.key} className="border-t border-gray-100" />
+                            }
+                            if (col.compound) {
+                                const sep = col.compound.separator ?? '/'
+                                const v1 = totals[col.key]
+                                const v2 = totals[col.compound.key]
+                                return (
+                                    <td key={col.key} className={`${T.totalCell} text-center ${T.totalValue} border-t border-gray-100`}>
+                                        {(v1 || v2) ? `${v1 || 0} ${sep} ${v2 || 0}` : ''}
+                                    </td>
+                                )
                             }
                             return (
                                 <td key={col.key} className={`${T.totalCell} ${col.align === 'center' ? 'text-center' : 'text-right'} ${T.totalValue} border-t border-gray-100`}>
@@ -201,51 +279,101 @@ function AssetTable<T extends AssetRow>({
                         deletedRows={deletedRows}
                         getLabel={(r) => (r[labelCol.key] as string) || ''}
                         onRestore={restoreRow}
-                        renderCells={(row) => (
-                            <>
-                                {editableCols.map((col, i) => {
-                                    const v = row[col.key] as number | null
-                                    return (
-                                        <td key={col.key} className={`${T.totalCell} text-right tabular-nums ${i < editableCols.length - 1 ? T.vline : ''}`}>
-                                            <span className={`${T.totalValue} ${v != null ? 'text-gray-400' : 'text-gray-200'}`}>
-                                                {v != null ? (col.type === 'number' ? String(v) : formatCurrency(v)) : '—'}
-                                            </span>
-                                        </td>
-                                    )
-                                })}
-                                <td className={T.actionCol} />
-                            </>
-                        )}
+                        renderCells={(row) => {
+                            const editableCols = resolvedColumns.filter(c => c.type !== 'text')
+                            return (
+                                <>
+                                    {editableCols.map((col, i) => {
+                                        if (col.compound) {
+                                            const sep = col.compound.separator ?? '/'
+                                            const v1 = row[col.key] as number | null
+                                            const v2 = row[col.compound.key] as number | null
+                                            return (
+                                                <td key={col.key} className={`${T.totalCell} text-center tabular-nums ${i < editableCols.length - 1 ? T.vline : ''}`}>
+                                                    <span className={`${T.totalValue} ${v1 != null || v2 != null ? 'text-gray-400' : 'text-gray-200'}`}>
+                                                        {v1 != null || v2 != null ? `${v1 ?? '—'} ${sep} ${v2 ?? '—'}` : '—'}
+                                                    </span>
+                                                </td>
+                                            )
+                                        }
+                                        const v = row[col.key] as number | null
+                                        return (
+                                            <td key={col.key} className={`${T.totalCell} text-right tabular-nums ${i < editableCols.length - 1 ? T.vline : ''}`}>
+                                                <span className={`${T.totalValue} ${v != null ? 'text-gray-400' : 'text-gray-200'}`}>
+                                                    {v != null ? (col.type === 'number' ? String(v) : col.type === 'percent' ? `${Math.round(v * 100)}%` : formatCurrency(v)) : '—'}
+                                                </span>
+                                            </td>
+                                        )
+                                    })}
+                                    <td className={T.actionCol} />
+                                </>
+                            )
+                        }}
                     />
                 )}
             >
                 {activeRows.map(row => {
                     const hovered = isHovered(row.id)
+                    const selected = selectable && selectedRows.has(row.id)
+                    const showCheckbox = selectable && (anySelected || hovered)
+                    const isDragging = reorderable && drag.dragRowId === row.id
+                    const dropBorder = reorderable && drag.dropTargetId === row.id
+                        ? drag.dropPosition === 'above' ? 'border-t-2 border-t-blue-400' : 'border-b-2 border-b-blue-400'
+                        : ''
                     return (
                         <tr
                             key={row.id}
-                            className={`${T.rowBorder} ${T.rowHover}`}
+                            className={`${T.rowBorder} ${selected ? 'bg-rose-50/60' : T.rowHover} ${isDragging ? 'opacity-40' : ''} ${dropBorder}`}
                             {...getHoverProps(row.id)}
+                            onClick={selectable ? (e) => handleRowClick(e, row.id) : undefined}
+                            onDragOver={reorderable ? drag.handleDragOver(row.id) : undefined}
+                            onDragLeave={reorderable ? drag.handleDragLeave : undefined}
+                            onDrop={reorderable ? drag.handleDrop(rows, onRowsChange) : undefined}
                         >
                             {resolvedColumns.map((col, i) => {
                                 const vline = i < resolvedColumns.length - 1 ? T.vline : ''
+
+                                // --- Label column ---
                                 if (col.isLabel) {
                                     return (
-                                        <td key={col.key} className={`${T.cellEdit} ${T.cellLabel} ${vline}`}>
-                                            <div className="flex items-center gap-1 min-w-0">
-                                                <DeleteRowButton onClick={() => requestDelete(row.id)} isVisible={hovered} />
+                                        <td key={col.key} className={`${actionColDelete ? T.cellEditLabel : T.cellEdit} ${T.cellLabel} ${vline} ${onViewSource ? 'relative' : ''}`}>
+                                            <div className="flex items-center gap-0.5 min-w-0">
+                                                {reorderable && (
+                                                    <span
+                                                        draggable={hovered}
+                                                        onDragStart={drag.handleDragStart(row.id)}
+                                                        onDragEnd={drag.handleDragEnd}
+                                                        className={`shrink-0 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-opacity ${hovered && !anySelected ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                                        title="Arrastrar para reordenar"
+                                                    >
+                                                        <GripVertical size={14} />
+                                                    </span>
+                                                )}
+                                                {selectable && (
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selected}
+                                                        onChange={() => toggleSelect(row.id)}
+                                                        className={`shrink-0 w-3.5 h-3.5 rounded border-gray-300 text-rose-600 focus:ring-rose-500 cursor-pointer transition-opacity ${showCheckbox ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                                    />
+                                                )}
+                                                {!actionColDelete && (
+                                                    <DeleteRowButton onClick={() => requestDelete(row.id)} isVisible={hovered} />
+                                                )}
                                                 <ViewSourceButton sourceFileId={(row as Record<string, unknown>).sourceFileId as string | undefined} onViewSource={onViewSource} isVisible={hovered} />
                                                 <input
                                                     type="text"
                                                     value={(row[col.key] as string) || ''}
                                                     onChange={e => updateField(row.id, col.key, e.target.value)}
-                                                    className={`flex-1 min-w-0 ${T.inputLabel} pl-1 ${getCellOriginClass?.(row.id, col.key) || ''}`}
+                                                    className={`flex-1 min-w-0 ${T.inputLabel} ${hovered || showCheckbox ? '' : 'pl-1'} ${getCellOriginClass?.(row.id, col.key) || ''}`}
                                                     placeholder={col.placeholder || col.label}
                                                 />
                                             </div>
                                         </td>
                                     )
                                 }
+
+                                // --- Text column ---
                                 if (col.type === 'text') {
                                     const isRight = col.align === 'right'
                                     const isCenter = col.align === 'center'
@@ -263,9 +391,120 @@ function AssetTable<T extends AssetRow>({
                                         </td>
                                     )
                                 }
-                                return renderEditableCell(row, col, vline)
+
+                                // --- Conditional visibility ---
+                                if (col.visible && !col.visible(row)) {
+                                    return (
+                                        <td key={col.key} className={`${T.cellEdit} text-center ${vline}`}>
+                                            <span className="text-[11px] text-gray-300">—</span>
+                                        </td>
+                                    )
+                                }
+
+                                // --- Read-only ---
+                                if (col.readOnly?.(row)) {
+                                    const v = row[col.key] as number | null
+                                    const isNumeric = col.type === 'currency' || col.type === 'number'
+                                    const effectiveAlign = col.align ?? (isNumeric ? 'right' : 'center')
+                                    const alignCls = effectiveAlign === 'left' ? 'justify-start' : effectiveAlign === 'center' ? 'justify-center' : 'justify-end'
+                                    return (
+                                        <td key={col.key} className={`${T.cellEdit} ${vline}`}>
+                                            <div className={`h-5 flex items-center ${alignCls} text-xs tabular-nums text-gray-800`}>
+                                                {v != null ? (col.type === 'number' ? String(v) : formatCurrency(v)) : '—'}
+                                            </div>
+                                        </td>
+                                    )
+                                }
+
+                                // --- Compound column (two EditableCells with separator) ---
+                                if (col.compound) {
+                                    const sep = col.compound.separator ?? '/'
+                                    return (
+                                        <td key={col.key} className={`text-center text-xs text-gray-500 ${vline}`}>
+                                            <div className="flex items-center justify-center gap-0.5">
+                                                <EditableCell
+                                                    value={row[col.key] as number | null}
+                                                    onChange={v => updateField(row.id, col.key, v as number | null)}
+                                                    type={col.type as 'currency' | 'number'}
+                                                    hasData={(row[col.key] as number | null) !== null}
+                                                    align="center"
+                                                    originClass={cellOrigin(row, col.key, col)}
+                                                    asDiv
+                                                    {...kbProps(row.id, col.key)}
+                                                />
+                                                <span className="text-gray-400">{sep}</span>
+                                                <EditableCell
+                                                    value={row[col.compound.key] as number | null}
+                                                    onChange={v => updateField(row.id, col.compound!.key, v as number | null)}
+                                                    type={col.type as 'currency' | 'number'}
+                                                    hasData={(row[col.compound.key] as number | null) !== null}
+                                                    align="center"
+                                                    originClass={cellOrigin(row, col.compound.key, col)}
+                                                    asDiv
+                                                    {...kbProps(row.id, col.compound.key)}
+                                                />
+                                            </div>
+                                        </td>
+                                    )
+                                }
+
+                                // --- Percent column (stored as decimal, displayed as integer %) ---
+                                if (col.type === 'percent') {
+                                    const rawValue = row[col.key] as number | null
+                                    const displayValue = rawValue != null ? Math.round(rawValue * 100) : null
+                                    return (
+                                        <EditableCell
+                                            key={col.key}
+                                            value={displayValue}
+                                            onChange={v => updateField(row.id, col.key, v != null ? (v as number) / 100 : null)}
+                                            type="percent"
+                                            hasData={displayValue !== null}
+                                            align={col.align || 'center'}
+                                            className={vline}
+                                            originClass={cellOrigin(row, col.key, col)}
+                                            {...kbProps(row.id, col.key)}
+                                        />
+                                    )
+                                }
+
+                                // --- Regular editable cell (currency / number) ---
+                                const value = row[col.key] as number | null
+                                const tip = col.tooltip?.(row)
+                                if (tip) {
+                                    return (
+                                        <td key={col.key} className={vline} title={tip}>
+                                            <EditableCell
+                                                value={value}
+                                                onChange={v => updateField(row.id, col.key, v as number | null)}
+                                                type={col.type as 'currency' | 'number'}
+                                                hasData={value !== null}
+                                                align={col.align}
+                                                originClass={cellOrigin(row, col.key, col)}
+                                                asDiv
+                                                {...kbProps(row.id, col.key)}
+                                            />
+                                        </td>
+                                    )
+                                }
+                                return (
+                                    <EditableCell
+                                        key={col.key}
+                                        value={value}
+                                        onChange={v => updateField(row.id, col.key, v as number | null)}
+                                        type={col.type as 'currency' | 'number'}
+                                        hasData={value !== null}
+                                        align={col.align}
+                                        className={vline}
+                                        originClass={cellOrigin(row, col.key, col)}
+                                        {...kbProps(row.id, col.key)}
+                                    />
+                                )
                             })}
-                            <td className={T.actionCol}></td>
+                            <td className={`text-center ${T.actionCol}`}>
+                                {actionColDelete ? (
+                                    <DeleteRowButton onClick={() => requestDelete(row.id)} isVisible={hovered && !anySelected} />
+                                ) : null}
+                            </td>
                         </tr>
                     )
                 })}
@@ -306,6 +545,9 @@ function AssetTable<T extends AssetRow>({
                                     />
                                 </td>
                             )
+                        }
+                        if (col.compound || col.type === 'percent') {
+                            return <td key={col.key} className={vline}></td>
                         }
                         return (
                             <EditableCell
