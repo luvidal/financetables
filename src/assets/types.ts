@@ -32,6 +32,8 @@ export interface ColumnDef {
     tooltip?: (row: Record<string, unknown>) => string | null
     /** Per-row read-only condition — true renders display-only */
     readOnly?: (row: Record<string, unknown>) => boolean
+    /** Row field key that holds the source file ID for this column's value — shows Eye icon on hover */
+    sourceFileIdKey?: string
 }
 
 export interface AssetTableProps<T extends AssetRow = AssetRow> {

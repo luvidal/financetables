@@ -469,6 +469,8 @@ function AssetTable<T extends AssetRow>({
 
                                 // --- Regular editable cell (currency / number) ---
                                 const value = row[col.key] as number | null
+                                const cellSourceFileId = col.sourceFileIdKey ? (row as Record<string, unknown>)[col.sourceFileIdKey] as string | undefined : undefined
+                                const cellViewSource = cellSourceFileId && onViewSource ? () => onViewSource([cellSourceFileId]) : undefined
                                 const tip = col.tooltip?.(row)
                                 if (tip) {
                                     return (
@@ -480,6 +482,7 @@ function AssetTable<T extends AssetRow>({
                                                 hasData={value !== null}
                                                 align={col.align}
                                                 originClass={cellOrigin(row, col.key, col)}
+                                                onViewSource={cellViewSource}
                                                 asDiv
                                                 {...kbProps(row.id, col.key)}
                                             />
@@ -496,6 +499,7 @@ function AssetTable<T extends AssetRow>({
                                         align={col.align}
                                         className={vline}
                                         originClass={cellOrigin(row, col.key, col)}
+                                        onViewSource={cellViewSource}
                                         {...kbProps(row.id, col.key)}
                                     />
                                 )

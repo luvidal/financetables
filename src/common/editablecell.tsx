@@ -203,18 +203,6 @@ const EditableCell = ({
             onMouseLeave={() => setIsHovered(false)}
         >
             <div className={`h-5 flex items-center ${alignClass} gap-1 relative`}>
-                {onViewSource && (isMobile || isHovered) && !isEditing && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation()
-                            onViewSource()
-                        }}
-                        className={`p-0.5 rounded hover:bg-gray-200 transition-all shrink-0 ${isMobile ? 'opacity-100' : ''}`}
-                        title="Ver documento fuente"
-                    >
-                        <Eye size={14} className="text-gray-400" />
-                    </button>
-                )}
                 {isEditing && (
                     <input
                         ref={inputRef}
@@ -234,6 +222,18 @@ const EditableCell = ({
                 >
                     {displayValue}
                 </span>
+                {onViewSource && (isMobile || isHovered) && !isEditing && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            onViewSource()
+                        }}
+                        className={`p-0.5 rounded hover:bg-gray-200 transition-all shrink-0 ${isMobile ? 'opacity-100' : ''}`}
+                        title="Ver documento fuente"
+                    >
+                        <Eye size={14} className="text-gray-400" />
+                    </button>
+                )}
             </div>
         </Wrapper>
     )

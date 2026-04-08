@@ -8,7 +8,7 @@ Shared components, hooks, and utilities used across all table components. Everyt
 |------|-------------|
 | `styles.ts` | `T` object with Tailwind class tokens for consistent table styling (incl. `rowBorder`, `rowHover`) |
 | `utils.ts` | Currency formatting (`displayCurrency`, `displayCurrencyCompact`, `defaultFormatCurrency`), `generateId`, `formatDeletedDate`, `MONTH_LABELS` |
-| `editablecell.tsx` | Inline-editable table cell with currency, number, text, and percent modes |
+| `editablecell.tsx` | Inline-editable table cell with currency, number, text, and percent modes. Eye icon (onViewSource) renders AFTER value span — next to the number, not above it. |
 | `clickableheader.tsx` | `ClickableHeader` — pill-styled clickable wrapper for header content. Used by AssetTable (UF/CLP toggle) and BoletasTable (month toggle) |
 | `tableshell.tsx` | `TableShell` — single-table wrapper with colored header row + `SourceIcon` |
 | `deletebutton.tsx` | `DeleteRowButton` — red X button with opacity-on-hover transition |

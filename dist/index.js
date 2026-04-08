@@ -454,18 +454,6 @@ var EditableCell = ({
       onMouseEnter: () => setIsHovered(true),
       onMouseLeave: () => setIsHovered(false),
       children: /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `h-5 flex items-center ${alignClass} gap-1 relative`, children: [
-        onViewSource && (isMobile || isHovered) && !isEditing && /* @__PURE__ */ jsxRuntime.jsx(
-          "button",
-          {
-            onClick: (e) => {
-              e.stopPropagation();
-              onViewSource();
-            },
-            className: `p-0.5 rounded hover:bg-gray-200 transition-all shrink-0 ${isMobile ? "opacity-100" : ""}`,
-            title: "Ver documento fuente",
-            children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Eye, { size: 14, className: "text-gray-400" })
-          }
-        ),
         isEditing && /* @__PURE__ */ jsxRuntime.jsx(
           "input",
           {
@@ -486,6 +474,18 @@ var EditableCell = ({
             className: `text-xs tabular-nums ${colorClass} ${!hasData ? "text-gray-300" : ""} ${isEditing ? "invisible" : ""}`,
             title: type === "currency" && hasData ? displayCurrency(value) : void 0,
             children: displayValue
+          }
+        ),
+        onViewSource && (isMobile || isHovered) && !isEditing && /* @__PURE__ */ jsxRuntime.jsx(
+          "button",
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              onViewSource();
+            },
+            className: `p-0.5 rounded hover:bg-gray-200 transition-all shrink-0 ${isMobile ? "opacity-100" : ""}`,
+            title: "Ver documento fuente",
+            children: /* @__PURE__ */ jsxRuntime.jsx(lucideReact.Eye, { size: 14, className: "text-gray-400" })
           }
         )
       ] })
@@ -2707,6 +2707,8 @@ function AssetTable({
                       );
                     }
                     const value = row[col.key];
+                    const cellSourceFileId = col.sourceFileIdKey ? row[col.sourceFileIdKey] : void 0;
+                    const cellViewSource = cellSourceFileId && onViewSource ? () => onViewSource([cellSourceFileId]) : void 0;
                     const tip = col.tooltip?.(row);
                     if (tip) {
                       return /* @__PURE__ */ jsxRuntime.jsx("td", { className: vline, title: tip, children: /* @__PURE__ */ jsxRuntime.jsx(
@@ -2718,6 +2720,7 @@ function AssetTable({
                           hasData: value !== null,
                           align: col.align,
                           originClass: cellOrigin(row, col.key, col),
+                          onViewSource: cellViewSource,
                           asDiv: true,
                           ...kbProps(row.id, col.key)
                         }
@@ -2733,6 +2736,7 @@ function AssetTable({
                         align: col.align,
                         className: vline,
                         originClass: cellOrigin(row, col.key, col),
+                        onViewSource: cellViewSource,
                         ...kbProps(row.id, col.key)
                       },
                       col.key

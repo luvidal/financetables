@@ -29,6 +29,7 @@ const columns: ColumnDef[] = [
 | `isLabel` | `boolean` | First column with delete button |
 | `ufPair` | `string` | Key of paired UF/CLP field (enables toggle) |
 | `autoComputedClass` | `(row) => string` | CSS class for auto-computed values |
+| `sourceFileIdKey` | `string` | Row field key holding source file ID — shows per-cell Eye icon on hover |
 
 ## UF/$ Toggle
 
