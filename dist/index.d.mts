@@ -330,9 +330,11 @@ interface SummaryTableProps {
     renderLabelSuffix?: (row: SummaryRow, index: number) => ReactNode;
     /** Cell origin color class callback — receives row and column indices */
     getCellOriginClass?: (rowIndex: number, colIndex: number) => string | undefined;
+    /** Custom cell renderer — return ReactNode to replace default cell content, null for default */
+    renderCell?: (row: SummaryRow, colIndex: number, formattedValue: string) => ReactNode | null;
 }
 
-declare const SummaryTable: ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass }: SummaryTableProps) => react_jsx_runtime.JSX.Element;
+declare const SummaryTable: ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass, renderCell }: SummaryTableProps) => react_jsx_runtime.JSX.Element;
 
 interface DeclaracionColumn {
     key: string;

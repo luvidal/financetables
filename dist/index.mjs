@@ -2942,7 +2942,7 @@ function formatCell(v, format) {
       return { display: displayCurrencyCompact(v), title: displayCurrency(v) || void 0 };
   }
 }
-var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass }) => {
+var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass, renderCell }) => {
   const colors = colorScheme ?? DEFAULT_SCHEME;
   return /* @__PURE__ */ jsx("div", { className: "overflow-x-auto border-y border-gray-200 mb-3 sm:mb-4", children: /* @__PURE__ */ jsx("table", { className: `${T.table} border-collapse`, children: /* @__PURE__ */ jsx("tbody", { children: rows.map((row, idx) => {
     if (row.type === "subheader") {
@@ -2965,14 +2965,15 @@ var SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, color
       extraColumn && /* @__PURE__ */ jsx("td", { className: T.vline, children: extraColumn.render(row, idx) }),
       row.values.map((v, i) => {
         const { display, title } = formatCell(v, fmt);
+        const custom = renderCell?.(row, i, display);
         const originClass = getCellOriginClass?.(idx, i);
         const textClass = bold ? `${T.footerValue} ${originClass || "text-gray-800"}` : originClass || "text-gray-700";
         return /* @__PURE__ */ jsx(
           "td",
           {
-            title,
-            className: `${T.cellValue} ${textClass}${title ? " cursor-default" : ""} ${i < row.values.length - 1 ? T.vline : ""}`,
-            children: display
+            title: custom ? void 0 : title,
+            className: `${T.cellValue} ${custom ? "" : textClass}${!custom && title ? " cursor-default" : ""} ${i < row.values.length - 1 ? T.vline : ""}`,
+            children: custom ?? display
           },
           i
         );

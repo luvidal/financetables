@@ -20,7 +20,7 @@ function formatCell(v: number | null, format: SummaryRowFormat): { display: stri
   }
 }
 
-const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass }: SummaryTableProps) => {
+const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, colorScheme, getCellOriginClass, renderCell }: SummaryTableProps) => {
   const colors = colorScheme ?? DEFAULT_SCHEME
 
   return (
@@ -63,6 +63,7 @@ const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, col
                 )}
                 {row.values.map((v, i) => {
                   const { display, title } = formatCell(v, fmt)
+                  const custom = renderCell?.(row, i, display)
                   const originClass = getCellOriginClass?.(idx, i)
                   const textClass = bold
                     ? `${T.footerValue} ${originClass || 'text-gray-800'}`
@@ -70,10 +71,10 @@ const SummaryTable = ({ columnHeaders, rows, extraColumn, renderLabelSuffix, col
                   return (
                     <td
                       key={i}
-                      title={title}
-                      className={`${T.cellValue} ${textClass}${title ? ' cursor-default' : ''} ${i < row.values.length - 1 ? T.vline : ''}`}
+                      title={custom ? undefined : title}
+                      className={`${T.cellValue} ${custom ? '' : textClass}${!custom && title ? ' cursor-default' : ''} ${i < row.values.length - 1 ? T.vline : ''}`}
                     >
-                      {display}
+                      {custom ?? display}
                     </td>
                   )
                 })}
