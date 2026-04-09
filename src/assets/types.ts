@@ -32,8 +32,9 @@ export interface ColumnDef {
     tooltip?: (row: Record<string, unknown>) => string | null
     /** Per-row read-only condition — true renders display-only */
     readOnly?: (row: Record<string, unknown>) => boolean
-    /** Render as EditableField (pill-styled) instead of EditableCell (grid cell) */
-    asField?: boolean
+    /** Inline EditableField pill — renders pill in front of this column's display value.
+     *  `key` is the row field for the pill value; the column's own value becomes `displayValue`. */
+    field?: { key: string; min?: number; max?: number; symbol?: string; defaultValue?: number }
     /** Row field key that holds the source file ID for this column's value — shows Eye icon on hover */
     sourceFileIdKey?: string
 }

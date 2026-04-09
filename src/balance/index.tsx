@@ -167,6 +167,8 @@ const BalanceTable = ({
                                         <EditableField
                                             value={participacion}
                                             onChange={(v) => handleChange(rowIdx, 'participacion', v)}
+                                            type="percent"
+                                            symbol="%"
                                             originClass={getCellOriginClass?.(row.id, 'participacion')}
                                         />
                                     </td>

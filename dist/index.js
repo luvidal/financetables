@@ -2196,24 +2196,80 @@ var finalresults_default = FinalResultsCompact;
 function EditableField({
   value,
   onChange,
-  type = "percent",
+  displayValue,
+  defaultValue,
+  type = "number",
   min = 0,
   max = 100,
-  className = "",
-  originClass
+  symbol = "\xD7",
+  originClass,
+  className = ""
 }) {
-  return /* @__PURE__ */ jsxRuntime.jsx(
-    editablecell_default,
+  const [isEditing, setIsEditing] = React3.useState(false);
+  const [editValue, setEditValue] = React3.useState("");
+  const inputRef = React3.useRef(null);
+  const hidden = defaultValue != null && value === defaultValue;
+  const startEdit = () => {
+    setEditValue(value?.toString() ?? "");
+    setIsEditing(true);
+  };
+  React3.useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+  const commitEdit = () => {
+    setIsEditing(false);
+    const parsed = type === "percent" ? parseFloat(editValue) : parseInt(editValue, 10);
+    if (editValue !== "" && !isNaN(parsed)) {
+      const clamped = Math.max(min, Math.min(max, Math.round(parsed)));
+      if (clamped !== value) onChange(clamped);
+    }
+  };
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      commitEdit();
+    } else if (e.key === "Escape") {
+      setIsEditing(false);
+    }
+  };
+  const handleClick = () => {
+    if (!isEditing) startEdit();
+  };
+  return /* @__PURE__ */ jsxRuntime.jsxs(
+    "div",
     {
-      value,
-      onChange: (v) => {
-        const n = typeof v === "number" ? v : 0;
-        onChange(Math.max(min, Math.min(max, Math.round(n))));
-      },
-      type,
-      asDiv: true,
-      className: `bg-blue-50/50 rounded !py-0 !px-1 [&>div]:h-5 text-xs min-w-[48px] ${className}`,
-      originClass
+      className: `group/field inline-flex items-center gap-1.5 rounded-md cursor-pointer
+                hover:bg-gray-50 transition-colors ${className}`,
+      onClick: handleClick,
+      children: [
+        /* @__PURE__ */ jsxRuntime.jsxs("div", { className: `
+                shrink-0 relative inline-flex items-center gap-0.5 justify-center
+                bg-blue-50/50 rounded-md py-0 px-1.5 h-5 text-xs min-w-[48px] text-center
+                transition-opacity
+                ${hidden ? "opacity-0 group-hover/field:opacity-30 group-focus-within/field:!opacity-100" : ""}
+            `, children: [
+          isEditing && /* @__PURE__ */ jsxRuntime.jsx(
+            "input",
+            {
+              ref: inputRef,
+              type: "text",
+              inputMode: "numeric",
+              value: editValue,
+              onChange: (e) => setEditValue(e.target.value),
+              onBlur: commitEdit,
+              onKeyDown: handleKeyDown,
+              className: "absolute inset-0 text-center text-xs tabular-nums bg-transparent border-none outline-none ring-0 shadow-none px-1.5 z-10",
+              autoComplete: "off"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntime.jsx("span", { className: `tabular-nums ${isEditing ? "invisible" : ""} ${originClass || "text-gray-800"}`, children: value?.toString() ?? "\u2014" }),
+          symbol && /* @__PURE__ */ jsxRuntime.jsx("span", { className: `text-gray-400 ${isEditing ? "invisible" : ""}`, children: symbol })
+        ] }),
+        displayValue != null && /* @__PURE__ */ jsxRuntime.jsx("span", { className: "text-xs tabular-nums whitespace-nowrap", children: displayValue })
+      ]
     }
   );
 }
@@ -2678,21 +2734,25 @@ function AssetTable({
                       const isNumeric = col.type === "currency" || col.type === "number";
                       const effectiveAlign = col.align ?? (isNumeric ? "right" : "center");
                       const alignCls = effectiveAlign === "left" ? "justify-start" : effectiveAlign === "center" ? "justify-center" : "justify-end";
-                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: `h-5 flex items-center ${alignCls} text-xs tabular-nums text-gray-800`, children: v != null ? col.type === "number" ? String(v) : formatCurrency(v) : "\u2014" }) }, col.key);
-                    }
-                    if (col.asField) {
-                      const fieldValue = row[col.key];
-                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: "flex items-center justify-center", children: /* @__PURE__ */ jsxRuntime.jsx(
-                        EditableField,
-                        {
-                          value: fieldValue,
-                          onChange: (v) => updateField(row.id, col.key, v),
-                          type: "number",
-                          min: 0,
-                          max: 99,
-                          originClass: cellOrigin(row, col.key, col)
-                        }
-                      ) }) }, col.key);
+                      const displayStr = v != null ? col.type === "number" ? String(v) : formatCurrency(v) : "\u2014";
+                      if (col.field && v != null) {
+                        const f = col.field;
+                        return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx(
+                          EditableField,
+                          {
+                            value: row[f.key],
+                            onChange: (v2) => updateField(row.id, f.key, v2),
+                            displayValue: displayStr,
+                            defaultValue: f.defaultValue,
+                            symbol: f.symbol ?? "\xD7",
+                            min: f.min ?? 0,
+                            max: f.max ?? 99,
+                            originClass: cellOrigin(row, f.key, col),
+                            className: alignCls
+                          }
+                        ) }, col.key);
+                      }
+                      return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.cellEdit} ${vline}`, children: /* @__PURE__ */ jsxRuntime.jsx("div", { className: `h-5 flex items-center ${alignCls} text-xs tabular-nums text-gray-800`, children: displayStr }) }, col.key);
                     }
                     if (col.compound) {
                       const sep = col.compound.separator ?? "/";
@@ -3115,6 +3175,8 @@ var BalanceTable = ({
               {
                 value: participacion,
                 onChange: (v) => handleChange(rowIdx, "participacion", v),
+                type: "percent",
+                symbol: "%",
                 originClass: getCellOriginClass?.(row.id, "participacion")
               }
             ) }),

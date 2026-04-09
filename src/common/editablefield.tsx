@@ -1,52 +1,130 @@
 /**
- * EditableField — a compact inline-editable field for use outside table grids.
+ * EditableField V2 — a compact inline-editable pill with optional display value.
  *
- * Wraps EditableCell with a light-blue pill styling (bg-blue-50/50, rounded,
- * compact padding). Designed for percentage inputs like castigo rates.
+ * DIRECTIVE: EditableField must always render NEXT TO the main value it modifies,
+ * never in a separate column. Use `displayValue` to show the main value inline.
  *
- * Unlike EditableCell used inside grids (with keyboard nav, focus ring, etc.),
- * EditableField is a standalone field — click to select, double-click to edit.
+ * Renders the entire interactive region — pill + symbol + display value — as one
+ * clickable/hoverable unit. Single-click anywhere starts editing the pill.
+ *
+ * Use cases:
+ *   Factor Avalúo: <EditableField value={2} onChange={...} displayValue="$167.794" />                              → [2 ×] $167.794
+ *   Castigo:       <EditableField value={15} onChange={...} type="percent" symbol="%" displayValue="$800.000" />   → [15 %] $800.000
+ *   MonthPill:     <EditableField value={8} onChange={...} symbol="m" displayValue="$4.5M" defaultValue={12} />    → [8 m] $4.5M
  */
 
-import EditableCell from './editablecell'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 
 interface EditableFieldProps {
-    /** Current value (0–100 for percent) */
+    /** Current value of the editable field */
     value: number | null
-    /** Called with the new value after edit */
+    /** Called with new value after edit */
     onChange: (v: number) => void
-    /** Input type — defaults to 'percent' */
+    /** The main display value — rendered after the pill, read-only */
+    displayValue?: ReactNode
+    /** Default value — pill is hidden when value === defaultValue */
+    defaultValue?: number
+    /** Input type — defaults to 'number' */
     type?: 'percent' | 'number'
-    /** Clamp range [min, max] — defaults to [0, 100] */
+    /** Clamp range [min, max] */
     min?: number
     max?: number
-    /** Extra Tailwind classes appended to the wrapper */
-    className?: string
+    /** Symbol inside pill after value. Default "×". Pass null to hide. */
+    symbol?: string | null
     /** Text color class based on cell origin */
     originClass?: string
+    /** Extra Tailwind classes */
+    className?: string
 }
 
 export default function EditableField({
     value,
     onChange,
-    type = 'percent',
+    displayValue,
+    defaultValue,
+    type = 'number',
     min = 0,
     max = 100,
-    className = '',
+    symbol = '×',
     originClass,
+    className = '',
 }: EditableFieldProps) {
+    const [isEditing, setIsEditing] = useState(false)
+    const [editValue, setEditValue] = useState('')
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    const hidden = defaultValue != null && value === defaultValue
+
+    const startEdit = () => {
+        setEditValue(value?.toString() ?? '')
+        setIsEditing(true)
+    }
+
+    useEffect(() => {
+        if (isEditing && inputRef.current) {
+            inputRef.current.focus()
+            inputRef.current.select()
+        }
+    }, [isEditing])
+
+    const commitEdit = () => {
+        setIsEditing(false)
+        const parsed = type === 'percent'
+            ? parseFloat(editValue)
+            : parseInt(editValue, 10)
+        if (editValue !== '' && !isNaN(parsed)) {
+            const clamped = Math.max(min, Math.min(max, Math.round(parsed)))
+            if (clamped !== value) onChange(clamped)
+        }
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault()
+            commitEdit()
+        } else if (e.key === 'Escape') {
+            setIsEditing(false)
+        }
+    }
+
+    const handleClick = () => {
+        if (!isEditing) startEdit()
+    }
+
     return (
-        <EditableCell
-            value={value}
-            onChange={(v) => {
-                const n = typeof v === 'number' ? v : 0
-                onChange(Math.max(min, Math.min(max, Math.round(n))))
-            }}
-            type={type}
-            asDiv
-            // DIRECTIVE: bg-blue-50/50 is the signature light-blue pill color — do not remove or change
-            className={`bg-blue-50/50 rounded !py-0 !px-1 [&>div]:h-5 text-xs min-w-[48px] ${className}`}
-            originClass={originClass}
-        />
+        <div
+            className={`group/field inline-flex items-center gap-1.5 rounded-md cursor-pointer
+                hover:bg-gray-50 transition-colors ${className}`}
+            onClick={handleClick}
+        >
+            {/* DIRECTIVE: bg-blue-50/50 is the signature light-blue pill color — do not remove or change */}
+            <div className={`
+                shrink-0 relative inline-flex items-center gap-0.5 justify-center
+                bg-blue-50/50 rounded-md py-0 px-1.5 h-5 text-xs min-w-[48px] text-center
+                transition-opacity
+                ${hidden ? 'opacity-0 group-hover/field:opacity-30 group-focus-within/field:!opacity-100' : ''}
+            `}>
+                {isEditing && (
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        inputMode="numeric"
+                        value={editValue}
+                        onChange={e => setEditValue(e.target.value)}
+                        onBlur={commitEdit}
+                        onKeyDown={handleKeyDown}
+                        className="absolute inset-0 text-center text-xs tabular-nums bg-transparent border-none outline-none ring-0 shadow-none px-1.5 z-10"
+                        autoComplete="off"
+                    />
+                )}
+                <span className={`tabular-nums ${isEditing ? 'invisible' : ''} ${originClass || 'text-gray-800'}`}>
+                    {value?.toString() ?? '—'}
+                </span>
+                {symbol && <span className={`text-gray-400 ${isEditing ? 'invisible' : ''}`}>{symbol}</span>}
+            </div>
+            {displayValue != null && (
+                <span className="text-xs tabular-nums whitespace-nowrap">{displayValue}</span>
+            )}
+        </div>
     )
 }

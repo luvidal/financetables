@@ -232,8 +232,15 @@ interface ColumnDef {
     tooltip?: (row: Record<string, unknown>) => string | null;
     /** Per-row read-only condition — true renders display-only */
     readOnly?: (row: Record<string, unknown>) => boolean;
-    /** Render as EditableField (pill-styled) instead of EditableCell (grid cell) */
-    asField?: boolean;
+    /** Inline EditableField pill — renders pill in front of this column's display value.
+     *  `key` is the row field for the pill value; the column's own value becomes `displayValue`. */
+    field?: {
+        key: string;
+        min?: number;
+        max?: number;
+        symbol?: string;
+        defaultValue?: number;
+    };
     /** Row field key that holds the source file ID for this column's value — shows Eye icon on hover */
     sourceFileIdKey?: string;
 }
@@ -423,31 +430,28 @@ interface EditableCellProps {
  */
 declare const EditableCell: ({ value, onChange, type, isDeduction, hasData, className, align, placeholder, onViewSource, asDiv, focused, onCellFocus, onNavigate, requestEdit, requestClear, editInitialValue, originClass, }: EditableCellProps) => react_jsx_runtime.JSX.Element;
 
-/**
- * EditableField — a compact inline-editable field for use outside table grids.
- *
- * Wraps EditableCell with a light-blue pill styling (bg-blue-50/50, rounded,
- * compact padding). Designed for percentage inputs like castigo rates.
- *
- * Unlike EditableCell used inside grids (with keyboard nav, focus ring, etc.),
- * EditableField is a standalone field — click to select, double-click to edit.
- */
 interface EditableFieldProps {
-    /** Current value (0–100 for percent) */
+    /** Current value of the editable field */
     value: number | null;
-    /** Called with the new value after edit */
+    /** Called with new value after edit */
     onChange: (v: number) => void;
-    /** Input type — defaults to 'percent' */
+    /** The main display value — rendered after the pill, read-only */
+    displayValue?: ReactNode;
+    /** Default value — pill is hidden when value === defaultValue */
+    defaultValue?: number;
+    /** Input type — defaults to 'number' */
     type?: 'percent' | 'number';
-    /** Clamp range [min, max] — defaults to [0, 100] */
+    /** Clamp range [min, max] */
     min?: number;
     max?: number;
-    /** Extra Tailwind classes appended to the wrapper */
-    className?: string;
+    /** Symbol inside pill after value. Default "×". Pass null to hide. */
+    symbol?: string | null;
     /** Text color class based on cell origin */
     originClass?: string;
+    /** Extra Tailwind classes */
+    className?: string;
 }
-declare function EditableField({ value, onChange, type, min, max, className, originClass, }: EditableFieldProps): react_jsx_runtime.JSX.Element;
+declare function EditableField({ value, onChange, displayValue, defaultValue, type, min, max, symbol, originClass, className, }: EditableFieldProps): react_jsx_runtime.JSX.Element;
 
 interface DeleteDialogProps {
     count: number;

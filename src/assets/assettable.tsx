@@ -402,35 +402,37 @@ function AssetTable<T extends AssetRow>({
                                     )
                                 }
 
-                                // --- Read-only ---
+                                // --- Read-only (with optional inline field pill) ---
                                 if (col.readOnly?.(row)) {
                                     const v = row[col.key] as number | null
                                     const isNumeric = col.type === 'currency' || col.type === 'number'
                                     const effectiveAlign = col.align ?? (isNumeric ? 'right' : 'center')
                                     const alignCls = effectiveAlign === 'left' ? 'justify-start' : effectiveAlign === 'center' ? 'justify-center' : 'justify-end'
+                                    const displayStr = v != null ? (col.type === 'number' ? String(v) : formatCurrency(v)) : '—'
+
+                                    if (col.field && v != null) {
+                                        const f = col.field
+                                        return (
+                                            <td key={col.key} className={`${T.cellEdit} ${vline}`}>
+                                                <EditableField
+                                                    value={row[f.key] as number | null}
+                                                    onChange={v => updateField(row.id, f.key, v)}
+                                                    displayValue={displayStr}
+                                                    defaultValue={f.defaultValue}
+                                                    symbol={f.symbol ?? '×'}
+                                                    min={f.min ?? 0}
+                                                    max={f.max ?? 99}
+                                                    originClass={cellOrigin(row, f.key, col)}
+                                                    className={alignCls}
+                                                />
+                                            </td>
+                                        )
+                                    }
+
                                     return (
                                         <td key={col.key} className={`${T.cellEdit} ${vline}`}>
                                             <div className={`h-5 flex items-center ${alignCls} text-xs tabular-nums text-gray-800`}>
-                                                {v != null ? (col.type === 'number' ? String(v) : formatCurrency(v)) : '—'}
-                                            </div>
-                                        </td>
-                                    )
-                                }
-
-                                // --- EditableField (pill-styled) ---
-                                if (col.asField) {
-                                    const fieldValue = row[col.key] as number | null
-                                    return (
-                                        <td key={col.key} className={`${T.cellEdit} ${vline}`}>
-                                            <div className="flex items-center justify-center">
-                                                <EditableField
-                                                    value={fieldValue}
-                                                    onChange={v => updateField(row.id, col.key, v)}
-                                                    type="number"
-                                                    min={0}
-                                                    max={99}
-                                                    originClass={cellOrigin(row, col.key, col)}
-                                                />
+                                                {displayStr}
                                             </div>
                                         </td>
                                     )
