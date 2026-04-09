@@ -160,7 +160,7 @@ var defaultFormatCurrency = (value) => {
 var displayCurrencyCompact = (value, isDeduction = false) => {
   if (value === void 0 || value === null) return "\u2014";
   const abs = Math.abs(value);
-  const sign = isDeduction && value > 0 ? "-" : "";
+  const sign = isDeduction && value > 0 || value < 0 ? "-" : "";
   const thousands = Math.round(abs / 1e3);
   return `${sign}$${thousands.toLocaleString("es-CL")}`;
 };

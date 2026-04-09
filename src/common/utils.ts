@@ -44,7 +44,7 @@ export const defaultFormatCurrency = (value: number | null | undefined): string 
 export const displayCurrencyCompact = (value: number | undefined | null, isDeduction = false): string => {
     if (value === undefined || value === null) return '—'
     const abs = Math.abs(value)
-    const sign = isDeduction && value > 0 ? '-' : ''
+    const sign = (isDeduction && value > 0) || value < 0 ? '-' : ''
     const thousands = Math.round(abs / 1000)
     return `${sign}$${thousands.toLocaleString('es-CL')}`
 }

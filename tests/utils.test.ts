@@ -54,9 +54,9 @@ describe('displayCurrencyCompact', () => {
         expect(displayCurrencyCompact(0, true)).toBe('$0')
     })
 
-    it('handles negative values', () => {
-        const result = displayCurrencyCompact(-300_000)
-        expect(result).toBe('$300')
+    it('preserves negative sign for negative values', () => {
+        expect(displayCurrencyCompact(-300_000)).toBe('-$300')
+        expect(displayCurrencyCompact(-35_614_000)).toBe('-$35.614')
     })
 })
 
