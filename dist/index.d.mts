@@ -450,10 +450,12 @@ interface EditableFieldProps {
     symbol?: string | null;
     /** Text color class based on cell origin */
     originClass?: string;
+    /** Fixed width for the wrapper (e.g. "120px", "8rem") */
+    width?: string;
     /** Extra Tailwind classes */
     className?: string;
 }
-declare function EditableField({ value, onChange, displayValue, defaultValue, type, min, max, symbol, originClass, className, }: EditableFieldProps): react_jsx_runtime.JSX.Element;
+declare function EditableField({ value, onChange, displayValue, defaultValue, type, min, max, symbol, originClass, width, className, }: EditableFieldProps): react_jsx_runtime.JSX.Element;
 
 interface DeleteDialogProps {
     count: number;

@@ -1,5 +1,5 @@
 /**
- * EditableField V2 — a compact inline-editable pill with optional display value.
+ * EditableField V3 — a compact inline-editable pill with optional display value.
  *
  * DIRECTIVE: EditableField must always render NEXT TO the main value it modifies,
  * never in a separate column. Use `displayValue` to show the main value inline.
@@ -33,6 +33,8 @@ interface EditableFieldProps {
     symbol?: string | null
     /** Text color class based on cell origin */
     originClass?: string
+    /** Fixed width for the wrapper (e.g. "120px", "8rem") */
+    width?: string
     /** Extra Tailwind classes */
     className?: string
 }
@@ -47,6 +49,7 @@ export default function EditableField({
     max = 100,
     symbol = '×',
     originClass,
+    width,
     className = '',
 }: EditableFieldProps) {
     const [isEditing, setIsEditing] = useState(false)
@@ -93,8 +96,9 @@ export default function EditableField({
 
     return (
         <div
-            className={`group/field inline-flex items-center gap-1.5 rounded-md cursor-pointer
+            className={`group/field flex items-center gap-1.5 rounded-md cursor-pointer
                 hover:bg-gray-50 transition-colors ${className}`}
+            style={width ? { width } : undefined}
             onClick={handleClick}
         >
             {/* DIRECTIVE: bg-blue-50/50 is the signature light-blue pill color — do not remove or change */}
@@ -102,7 +106,7 @@ export default function EditableField({
                 shrink-0 relative inline-flex items-center gap-0.5 justify-center
                 bg-blue-50/50 rounded-md py-0 px-1.5 h-5 text-xs min-w-[48px] text-center
                 transition-opacity
-                ${hidden ? 'opacity-0 group-hover/field:opacity-30 group-focus-within/field:!opacity-100' : ''}
+                ${hidden ? 'opacity-30 group-hover/field:opacity-60 group-focus-within/field:!opacity-100' : ''}
             `}>
                 {isEditing && (
                     <input
@@ -120,10 +124,10 @@ export default function EditableField({
                 <span className={`tabular-nums ${isEditing ? 'invisible' : ''} ${originClass || 'text-gray-800'}`}>
                     {value?.toString() ?? '—'}
                 </span>
-                {symbol && <span className={`text-gray-400 ${isEditing ? 'invisible' : ''}`}>{symbol}</span>}
+                {symbol && <span className={`${originClass || 'text-gray-800'} ${isEditing ? 'invisible' : ''}`}>{symbol}</span>}
             </div>
             {displayValue != null && (
-                <span className="text-xs tabular-nums whitespace-nowrap">{displayValue}</span>
+                <span className="text-xs tabular-nums whitespace-nowrap ml-auto">{displayValue}</span>
             )}
         </div>
     )

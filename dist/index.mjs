@@ -2195,6 +2195,7 @@ function EditableField({
   max = 100,
   symbol = "\xD7",
   originClass,
+  width,
   className = ""
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -2233,15 +2234,16 @@ function EditableField({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: `group/field inline-flex items-center gap-1.5 rounded-md cursor-pointer
+      className: `group/field flex items-center gap-1.5 rounded-md cursor-pointer
                 hover:bg-gray-50 transition-colors ${className}`,
+      style: width ? { width } : void 0,
       onClick: handleClick,
       children: [
         /* @__PURE__ */ jsxs("div", { className: `
                 shrink-0 relative inline-flex items-center gap-0.5 justify-center
                 bg-blue-50/50 rounded-md py-0 px-1.5 h-5 text-xs min-w-[48px] text-center
                 transition-opacity
-                ${hidden ? "opacity-0 group-hover/field:opacity-30 group-focus-within/field:!opacity-100" : ""}
+                ${hidden ? "opacity-30 group-hover/field:opacity-60 group-focus-within/field:!opacity-100" : ""}
             `, children: [
           isEditing && /* @__PURE__ */ jsx(
             "input",
@@ -2258,9 +2260,9 @@ function EditableField({
             }
           ),
           /* @__PURE__ */ jsx("span", { className: `tabular-nums ${isEditing ? "invisible" : ""} ${originClass || "text-gray-800"}`, children: value?.toString() ?? "\u2014" }),
-          symbol && /* @__PURE__ */ jsx("span", { className: `text-gray-400 ${isEditing ? "invisible" : ""}`, children: symbol })
+          symbol && /* @__PURE__ */ jsx("span", { className: `${originClass || "text-gray-800"} ${isEditing ? "invisible" : ""}`, children: symbol })
         ] }),
-        displayValue != null && /* @__PURE__ */ jsx("span", { className: "text-xs tabular-nums whitespace-nowrap", children: displayValue })
+        displayValue != null && /* @__PURE__ */ jsx("span", { className: "text-xs tabular-nums whitespace-nowrap ml-auto", children: displayValue })
       ]
     }
   );
