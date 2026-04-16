@@ -2613,7 +2613,7 @@ function AssetTable({
           }),
           /* @__PURE__ */ jsxRuntime.jsx("th", { className: T.actionCol })
         ] }),
-        renderFooter: () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold text-xs", children: [
+        renderFooter: () => /* @__PURE__ */ jsxRuntime.jsxs("tr", { className: "font-semibold text-xs text-ink-tertiary", children: [
           resolvedColumns.map((col) => {
             if (col.isLabel) {
               return /* @__PURE__ */ jsxRuntime.jsx("td", { className: `${T.totalCell} ${T.totalLabel} border-t border-edge-subtle/10`, children: "TOTAL" }, col.key);

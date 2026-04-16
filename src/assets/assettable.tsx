@@ -241,7 +241,7 @@ function AssetTable<T extends AssetRow>({
                     )
                 )}
                 renderFooter={() => (
-                    <tr className="font-semibold text-xs">
+                    <tr className="font-semibold text-xs text-ink-tertiary">
                         {resolvedColumns.map((col) => {
                             if (col.isLabel) {
                                 return <td key={col.key} className={`${T.totalCell} ${T.totalLabel} border-t border-edge-subtle/10`}>TOTAL</td>
