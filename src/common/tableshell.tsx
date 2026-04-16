@@ -79,7 +79,7 @@ const TableShell = ({
                         {renderHeader()}
                     </tr>
                 </thead>
-                <tbody className="text-ink-primary">
+                <tbody className="text-ink-secondary">
                     {children}
                 </tbody>
                 {renderFooter && rowCount !== 0 && (

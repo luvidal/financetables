@@ -105,7 +105,7 @@ var TableShell = ({
   return /* @__PURE__ */ jsxs("div", { className: `border-t border-edge-subtle/20 mb-4 sm:mb-6 ${className || ""}`, children: [
     /* @__PURE__ */ jsxs("table", { className: T.table, children: [
       /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { className: `${headerBg} ${headerText} ${headerClassName || ""} group/header`, children: renderHeader() }) }),
-      /* @__PURE__ */ jsx("tbody", { className: "text-ink-primary", children }),
+      /* @__PURE__ */ jsx("tbody", { className: "text-ink-secondary", children }),
       renderFooter && rowCount !== 0 && /* @__PURE__ */ jsx("tfoot", { children: renderFooter() })
     ] }),
     renderAfterContent?.()
@@ -3213,7 +3213,7 @@ var CollapsibleSection = ({
       {
         type: "button",
         onClick: onToggle,
-        className: `w-full flex items-center gap-1.5 px-1 py-1.5 text-xs font-medium text-ink-tertiary uppercase tracking-wide hover:text-ink-secondary transition-colors cursor-pointer ${headerClassName || ""}`,
+        className: `w-full flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-ink-secondary uppercase tracking-wide bg-surface-2 rounded hover:brightness-110 transition-colors cursor-pointer ${headerClassName || ""}`,
         children: [
           /* @__PURE__ */ jsx(Chevron, { size: 14, className: "shrink-0" }),
           /* @__PURE__ */ jsx("span", { children: label }),
