@@ -31,7 +31,6 @@ import { T } from '../common/styles'
 import EditableCell from '../common/editablecell'
 import DeleteRowButton from '../common/deletebutton'
 import ViewSourceButton from '../common/viewsourcebutton'
-import EmptyStateRow from '../common/emptystaterow'
 import TableShell, { SourceIcon } from '../common/tableshell'
 import { useRowHover } from '../common/userowhover'
 import { useFieldUpdate } from '../common/usefieldupdate'
@@ -117,13 +116,12 @@ const MyTable = ({
 6. **Use `EditableCell`** — for any editable numeric cells. Supports `currency`, `number`, `text`, `percent` modes.
 7. **Use `DeleteRowButton`** — for row delete buttons. Handles opacity transition, icon sizing (`sm`/`default`).
 8. **Use `ViewSourceButton`** — for row-level source file viewing. Returns null when no source/handler.
-9. **Use `EmptyStateRow`** — for empty table states. Pass `show`, `colSpan`, and `message`.
-10. **Use `useRowHover()`** — for row hover state. Returns `getHoverProps(id)` (spread on `<tr>`) and `isHovered(id)`.
-11. **Use `useFieldUpdate()`** — for generic row update/remove. Returns `updateField(id, field, value)` and `removeRow(id)`.
-12. **Use `useGridKeyboard()`** — for keyboard navigation between EditableCell instances.
-13. **`renderAfterContent`** — use this for content that sits after the `<table>` (e.g., RentaTable's recycle bin and dialogs).
-14. **Export from `index.tsx`** — add your component + types to the root `src/index.tsx`.
-15. **Add a README** — create `src/mytable/README.md` documenting features, dependencies, and props.
+9. **Use `useRowHover()`** — for row hover state. Returns `getHoverProps(id)` (spread on `<tr>`) and `isHovered(id)`.
+10. **Use `useFieldUpdate()`** — for generic row update/remove. Returns `updateField(id, field, value)` and `removeRow(id)`.
+11. **Use `useGridKeyboard()`** — for keyboard navigation between EditableCell instances.
+12. **`renderAfterContent`** — use this for content that sits after the `<table>` (e.g., RentaTable's recycle bin and dialogs).
+13. **Export from `index.tsx`** — add your component + types to the root `src/index.tsx`.
+14. **Add a README** — create `src/mytable/README.md` documenting features, dependencies, and props.
 
 ### Reference implementations
 
