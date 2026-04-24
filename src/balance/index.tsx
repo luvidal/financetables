@@ -65,8 +65,6 @@ const BalanceTable = ({
         onRowsChange(updated)
     }
 
-    if (rows.length === 0) return null
-
     const currencyColIndex = (key: keyof BalanceRow): number => {
         switch (key) {
             case 'total_activos': return 0
@@ -77,6 +75,49 @@ const BalanceTable = ({
             case 'resultado': return 5
             default: return -1
         }
+    }
+
+    if (rows.length === 0) {
+        return (
+            <div className="outline-none flex flex-col gap-3">
+                <div>
+                    <div className={`flex items-start justify-between gap-3 px-3 py-2 rounded-t ${headerBg} border-b ${borderColor}`}>
+                        <div className={`text-xs font-semibold ${headerText} leading-snug`}>—</div>
+                    </div>
+                    <table className={`${T.table} border-b border-edge-subtle/20`}>
+                        <thead>
+                            <tr>
+                                {COL_HEADERS.map((col, i) => (
+                                    <th
+                                        key={i}
+                                        className={`${T.headerCell} ${T.th} ${i < COL_HEADERS.length - 1 ? T.vline : ''} ${i === 0 ? 'text-left w-14' : 'text-right'}`}
+                                    >
+                                        {col.label}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[0, 1].map(rowIdx => (
+                                <tr key={rowIdx} className={rowIdx === 0 ? T.rowHover : T.rowBorder}>
+                                    <td className={`${T.cellEdit} ${T.vline} text-center`}>
+                                        <span className="text-xs tabular-nums text-ink-tertiary">—</span>
+                                    </td>
+                                    {CURRENCY_KEYS.map((key, i) => (
+                                        <td
+                                            key={key}
+                                            className={`${T.cellValue} ${i < CURRENCY_KEYS.length - 1 ? T.vline : ''} text-ink-tertiary`}
+                                        >
+                                            —
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )
     }
 
     return (

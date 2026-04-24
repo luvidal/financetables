@@ -3079,7 +3079,6 @@ var BalanceTable = ({
     updated[rowIdx] = { ...updated[rowIdx], [key]: value };
     onRowsChange(updated);
   };
-  if (rows.length === 0) return null;
   const currencyColIndex = (key) => {
     switch (key) {
       case "total_activos":
@@ -3098,6 +3097,32 @@ var BalanceTable = ({
         return -1;
     }
   };
+  if (rows.length === 0) {
+    return /* @__PURE__ */ jsx("div", { className: "outline-none flex flex-col gap-3", children: /* @__PURE__ */ jsxs("div", { children: [
+      /* @__PURE__ */ jsx("div", { className: `flex items-start justify-between gap-3 px-3 py-2 rounded-t ${headerBg} border-b ${borderColor}`, children: /* @__PURE__ */ jsx("div", { className: `text-xs font-semibold ${headerText} leading-snug`, children: "\u2014" }) }),
+      /* @__PURE__ */ jsxs("table", { className: `${T.table} border-b border-edge-subtle/20`, children: [
+        /* @__PURE__ */ jsx("thead", { children: /* @__PURE__ */ jsx("tr", { children: COL_HEADERS.map((col, i) => /* @__PURE__ */ jsx(
+          "th",
+          {
+            className: `${T.headerCell} ${T.th} ${i < COL_HEADERS.length - 1 ? T.vline : ""} ${i === 0 ? "text-left w-14" : "text-right"}`,
+            children: col.label
+          },
+          i
+        )) }) }),
+        /* @__PURE__ */ jsx("tbody", { children: [0, 1].map((rowIdx) => /* @__PURE__ */ jsxs("tr", { className: rowIdx === 0 ? T.rowHover : T.rowBorder, children: [
+          /* @__PURE__ */ jsx("td", { className: `${T.cellEdit} ${T.vline} text-center`, children: /* @__PURE__ */ jsx("span", { className: "text-xs tabular-nums text-ink-tertiary", children: "\u2014" }) }),
+          CURRENCY_KEYS.map((key, i) => /* @__PURE__ */ jsx(
+            "td",
+            {
+              className: `${T.cellValue} ${i < CURRENCY_KEYS.length - 1 ? T.vline : ""} text-ink-tertiary`,
+              children: "\u2014"
+            },
+            key
+          ))
+        ] }, rowIdx)) })
+      ] })
+    ] }) });
+  }
   return /* @__PURE__ */ jsx("div", { onKeyDown: keyboard.handleContainerKeyDown, tabIndex: 0, className: "outline-none flex flex-col gap-3", children: rows.map((row, rowIdx) => {
     const participacion = row.participacion ?? 0;
     const period = parsePeriod(row);

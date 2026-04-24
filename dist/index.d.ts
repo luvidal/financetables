@@ -393,7 +393,7 @@ interface BalanceTableProps {
     getCellOriginClass?: (rowId: string, field: string) => string | undefined;
 }
 
-declare const BalanceTable: ({ rows, onRowsChange, colorScheme: colorSchemeProp, onViewSource, getCellOriginClass, }: BalanceTableProps) => react_jsx_runtime.JSX.Element | null;
+declare const BalanceTable: ({ rows, onRowsChange, colorScheme: colorSchemeProp, onViewSource, getCellOriginClass, }: BalanceTableProps) => react_jsx_runtime.JSX.Element;
 
 type CellOrigin = 'ai' | 'user' | 'calculated';
 declare const ORIGIN_CLASSES: Record<CellOrigin, string>;
